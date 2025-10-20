@@ -1,0 +1,8 @@
+{
+  "name": "luxurycondos-server",
+  "version": "1.0.0",
+  "description": "Servidor local para Luxury Condos",
+  "main": "server.js",
+  "scripts": { "start": "node server.js" },
+  "dependencies": { "express": "^4.18.2" }
+}
