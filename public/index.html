@@ -113,39 +113,43 @@ Nuestro lobby y bar ofrecen un punto de encuentro íntimo y sofisticado, mientra
   </section>
 
   <!-- Rooms section -->
-  <section class="container rooms-section" id="habitaciones">
-    <h2 class="text-center mb-4">Habitaciones</h2>
-    <div class="row g-4">
-      <!-- Room 1 -->
-<div class="col-md-4">
-  <div class="room-card" role="button" data-bs-toggle="modal" data-bs-target="#room1Modal" data-room-name="Lake View" data-price-mxn="1800">
-    <img src="https://hotelchablis.com/wp-content/uploads/2019/11/1kingsize2.jpg" alt="Habitación Deluxe" class="card-img-top">
-    <div class="room-body">
-      <h5 class="room-title">Lake View</h5>
-      <p class="room-desc">Balcón con vista al lago. · 2 huéspedes</p>
-      <div>
-        <div class="price" data-price-mxn="1800">
-          $2,800 MXN 
-          <span class="price-usd text-muted" style="font-weight:500"></span>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-      <!-- Room 2 -->
-      <div class="col-md-4">
-        <div class="room-card" role="button" data-bs-toggle="modal" data-bs-target="#room2Modal" data-room-name="Mountain View" data-price-mxn="2900">
-          <img src="assets/img/mountainview1.jpg" alt="Departamentos con vista a montaña>
-          <div class="room-body">
-            <h5 class="room-title">Mountain View</h5>
-            <p class="room-desc">Balcón con vista a la montaña · 2 huéspedes</p>
-            <div>
-              <div class="price" data-price-mxn="2900">$2,900 MXN <span class="price-usd text-muted" style="font-weight:500"></span></div>
+<section class="container rooms-section" id="habitaciones">
+  <h2 class="text-center mb-4">Habitaciones</h2>
+  <div class="row g-4 justify-content-center">
+    <!-- Room 1 -->
+    <div class="col-md-5">
+      <div class="room-card" role="button" data-bs-toggle="modal" data-bs-target="#room1Modal" data-room-name="Lake View" data-price-mxn="1800">
+        <img src="https://hotelchablis.com/wp-content/uploads/2019/11/1kingsize2.jpg" alt="Habitación Deluxe" class="card-img-top">
+        <div class="room-body">
+          <h5 class="room-title">Lake View</h5>
+          <p class="room-desc">Balcón con vista al lago. · 2 huéspedes</p>
+          <div>
+            <div class="price" data-price-mxn="1800">
+              $2,800 MXN 
+              <span class="price-usd text-muted" style="font-weight:500"></span>
             </div>
           </div>
         </div>
       </div>
+    </div>
+
+    <!-- Room 2 (ahora igual que Room 1) -->
+    <div class="col-md-5">
+      <div class="room-card" role="button" data-bs-toggle="modal" data-bs-target="#room2Modal" data-room-name="Mountain View" data-price-mxn="2900">
+        <img src="assets/img/mountainview1.jpg" alt="Mountain View" class="card-img-top">
+        <div class="room-body">
+          <h5 class="room-title">Mountain View</h5>
+          <p class="room-desc">Balcón con vista a la montaña · 2 huéspedes</p>
+          <div>
+            <div class="price" data-price-mxn="2900">
+              $2,900 MXN 
+              <span class="price-usd text-muted" style="font-weight:500"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- Room 1 Modal -->
   <div class="modal fade" id="room1Modal" tabindex="-1" aria-hidden="true">
