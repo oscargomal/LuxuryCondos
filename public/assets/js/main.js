@@ -71,57 +71,50 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // ------------------------------
-  // 4️⃣ Abrir modal de booking desde cualquier habitación
-  // ------------------------------
-  document.querySelectorAll('.room-card').forEach(card => {
-    card.addEventListener('click', () => {
-      const roomName = card.dataset.roomName;
-      const priceMXN = parseFloat(card.dataset.priceMxn);
-
-      bkRoomName.value = roomName;
-      bkPricePerNight.textContent = formatMXN(priceMXN) + ' (~' + formatUSD(priceMXN*EXCHANGE_RATE) + ')';
-      bkPricePerNight.dataset.price = priceMXN;
-      bkNights.textContent = '—';
-      bkTotal.textContent = '—';
-      document.getElementById('bookingRoomTitle').textContent = 'Reservar — ' + roomName;
-
-      checkinInput.value = '';
-      checkoutInput.value = '';
-      guestsInput.value = '2';
-
-      bookingModal.show();
-    });
+// 4️⃣ Abrir modal de vista expandida (carrusel) al click en la habitación
+// ------------------------------
+document.querySelectorAll('.room-card').forEach(card => {
+  card.addEventListener('click', () => {
+    const targetModalId = card.dataset.bsTarget; // por ejemplo #room1Modal
+    const modalEl = document.querySelector(targetModalId);
+    if(modalEl){
+      const bsModal = new bootstrap.Modal(modalEl);
+      bsModal.show();
+    }
   });
+});
 
-  // ------------------------------
-  // 5️⃣ Abrir modal de booking desde botones "Reservar ahora"
-  // ------------------------------
-  document.querySelectorAll('.open-booking').forEach(btn => {
-    btn.addEventListener('click', () => {
-      // Hide any open modal first
-      const activeModalEl = document.querySelector('.modal.show');
-      if(activeModalEl){
-        const activeModal = bootstrap.Modal.getInstance(activeModalEl);
-        if(activeModal) activeModal.hide();
-      }
 
-      const roomName = btn.dataset.room;
-      const price = Number(btn.dataset.price) || 0;
+  
+// ------------------------------
+// 5️⃣ Abrir modal de booking solo desde botones "Reservar ahora"
+// ------------------------------
+document.querySelectorAll('.open-booking').forEach(btn => {
+  btn.addEventListener('click', () => {
+    // cerrar modal activo antes de abrir booking
+    const activeModalEl = document.querySelector('.modal.show');
+    if(activeModalEl){
+      const activeModal = bootstrap.Modal.getInstance(activeModalEl);
+      if(activeModal) activeModal.hide();
+    }
 
-      bkRoomName.value = roomName;
-      bkPricePerNight.textContent = formatMXN(price) + ' (~' + formatUSD(price*EXCHANGE_RATE) + ')';
-      bkPricePerNight.dataset.price = price;
-      document.getElementById('bookingRoomTitle').textContent = 'Reservar — ' + roomName;
+    const roomName = btn.dataset.room;
+    const price = Number(btn.dataset.price) || 0;
 
-      checkinInput.value = '';
-      checkoutInput.value = '';
-      bkNights.textContent = '—';
-      bkTotal.textContent = '—';
-      guestsInput.value = '2';
+    bkRoomName.value = roomName;
+    bkPricePerNight.textContent = formatMXN(price) + ' (~' + formatUSD(price*EXCHANGE_RATE) + ')';
+    bkPricePerNight.dataset.price = price;
+    document.getElementById('bookingRoomTitle').textContent = 'Reservar — ' + roomName;
 
-      setTimeout(() => bookingModal.show(), 250);
-    });
+    checkinInput.value = '';
+    checkoutInput.value = '';
+    bkNights.textContent = '—';
+    bkTotal.textContent = '—';
+    guestsInput.value = '2';
+
+    setTimeout(() => bookingModal.show(), 100); // delay pequeño para evitar overlay
   });
+});
 
   // ------------------------------
   // 6️⃣ Actualizar total al cambiar fechas
