@@ -1,9 +1,9 @@
 // ------------------------------
-// 1️⃣ Configuración general
+// 1️⃣ Configuración
 // ------------------------------
 const EXCHANGE_RATE = 0.053; // MXN -> USD aproximado
 
-// Booking modal elements (solo uno)
+// Booking modal elements
 const bookingModalEl = document.getElementById('bookingModal');
 const bookingModal = new bootstrap.Modal(bookingModalEl);
 const bkRoomName = document.getElementById('bookingRoomName');
@@ -40,7 +40,7 @@ function updateBookingTotals() {
 }
 
 // ------------------------------
-// 3️⃣ Lightbox para imágenes
+// 3️⃣ Lightbox universal
 // ------------------------------
 const lightboxModalEl = document.getElementById('lightboxModal');
 const lightboxModal = new bootstrap.Modal(lightboxModalEl);
@@ -71,7 +71,7 @@ document.querySelectorAll('.room-card').forEach(card => {
 });
 
 // ------------------------------
-// 5️⃣ Abrir modal de booking dinámico (CORREGIDO)
+// 5️⃣ Abrir modal de booking dinámico
 // ------------------------------
 function openBookingModal(roomName, price) {
   // Setear datos en el modal de booking
@@ -87,38 +87,19 @@ function openBookingModal(roomName, price) {
   bkTotal.textContent = '—';
   guestsInput.value = '2';
 
-  // Mostrar modal de booking
+  // Mostrar modal
   bookingModal.show();
 }
 
 // Escuchar click en botones "Reservar ahora"
 document.querySelectorAll('.open-booking').forEach(btn => {
   btn.addEventListener('click', (e) => {
-    e.stopPropagation(); // Evita click propagado
-
-    // Cerrar modal de habitación abierto
-    const activeRoomModalEl = document.querySelector('.modal.show');
-    if(activeRoomModalEl){
-      const activeRoomModal = bootstrap.Modal.getInstance(activeRoomModalEl);
-      if(activeRoomModal && activeRoomModalEl.id !== 'bookingModal'){
-        activeRoomModal.hide();
-      }
-    }
-
+    e.stopPropagation(); // Evita que se active click de la card detrás
     const roomName = btn.dataset.room;
     const price = Number(btn.dataset.price) || 0;
     openBookingModal(roomName, price);
   });
 });
-
-// Opcional: abrir directamente desde la card (si quieres)
-// document.querySelectorAll('.room-card').forEach(card => {
-//   card.addEventListener('dblclick', () => { 
-//      const roomName = card.dataset.roomName;
-//      const price = Number(card.dataset.priceMxn) || 0;
-//      openBookingModal(roomName, price);
-//   });
-// });
 
 // ------------------------------
 // 6️⃣ Actualizar total al cambiar fechas
