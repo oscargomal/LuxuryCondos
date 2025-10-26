@@ -157,13 +157,30 @@ Nuestro lobby y bar ofrecen un punto de encuentro íntimo y sofisticado, mientra
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body">
-          <div class="d-flex flex-column flex-lg-row gap-3">
-            <div class="flex-lg-1">
-              <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1400&q=80" class="room-modal-img mb-2" alt="Lake View">
-              <img src="https://images.unsplash.com/photo-1616627454537-cb2cb63d0a23?auto=format&fit=crop&w=1400&q=80" class="room-modal-img" alt="Lake View 2">
+          <div class="row gap-3">
+            <div class="col-lg-7">
+              <!-- Carrusel de imágenes -->
+              <div id="carouselLakeView" class="carousel slide mb-3" data-bs-ride="carousel">
+                <div class="carousel-inner">
+                  <div class="carousel-item active">
+                    <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1400&q=80" class="d-block w-100 room-modal-img" alt="">
+                  </div>
+                  <div class="carousel-item">
+                    <img src="https://images.unsplash.com/photo-1616627454537-cb2cb63d0a23?auto=format&fit=crop&w=1400&q=80" class="d-block w-100 room-modal-img" alt="">
+                  </div>
+                </div>
+                <button class="carousel-control-prev" type="button" data-bs-target="#carouselLakeView" data-bs-slide="prev">
+                  <span class="carousel-control-prev-icon"></span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#carouselLakeView" data-bs-slide="next">
+                  <span class="carousel-control-next-icon"></span>
+                </button>
+              </div>
+              <p>Amplia habitación con cama king size, balcón privado y sillas. Ideal para parejas que buscan tranquilidad con un toque de diseño y estilo.</p>
+              <p class="mb-1"><strong>Incluye:</strong> Wifi, estacionamiento, gas y limpieza.</p>
             </div>
-            <div class="flex-lg-1">
-              <form class="booking-form" data-room="Lake View">
+            <div class="col-lg-5">
+              <form class="booking-form" data-room="Lake View" data-price="1800">
                 <div class="mb-3">
                   <label>Check-in</label>
                   <input type="date" class="form-control checkin">
@@ -204,13 +221,29 @@ Nuestro lobby y bar ofrecen un punto de encuentro íntimo y sofisticado, mientra
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body">
-          <div class="d-flex flex-column flex-lg-row gap-3">
-            <div class="flex-lg-1">
-              <img src="https://images.unsplash.com/photo-1616627454537-cb2cb63d0a23?auto=format&fit=crop&w=1400&q=80" class="room-modal-img mb-2" alt="Mountain View">
-              <img src="https://images.unsplash.com/photo-1616627454537-cb2cb63d0a23?auto=format&fit=crop&w=1400&q=80" class="room-modal-img" alt="Mountain View 2">
+          <div class="row gap-3">
+            <div class="col-lg-7">
+              <div id="carouselMountainView" class="carousel slide mb-3" data-bs-ride="carousel">
+                <div class="carousel-inner">
+                  <div class="carousel-item active">
+                    <img src="https://images.unsplash.com/photo-1616627454537-cb2cb63d0a23?auto=format&fit=crop&w=1400&q=80" class="d-block w-100 room-modal-img" alt="">
+                  </div>
+                  <div class="carousel-item">
+                    <img src="https://images.unsplash.com/photo-1616627454537-cb2cb63d0a23?auto=format&fit=crop&w=1400&q=80" class="d-block w-100 room-modal-img" alt="">
+                  </div>
+                </div>
+                <button class="carousel-control-prev" type="button" data-bs-target="#carouselMountainView" data-bs-slide="prev">
+                  <span class="carousel-control-prev-icon"></span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#carouselMountainView" data-bs-slide="next">
+                  <span class="carousel-control-next-icon"></span>
+                </button>
+              </div>
+              <p>Departamento amplio con terraza privada, sala y opciones para familias. Diseño contemporáneo y servicios premium.</p>
+              <p class="mb-1"><strong>Incluye:</strong> Wifi, estacionamiento, gas y limpieza.</p>
             </div>
-            <div class="flex-lg-1">
-              <form class="booking-form" data-room="Mountain View">
+            <div class="col-lg-5">
+              <form class="booking-form" data-room="Mountain View" data-price="2900">
                 <div class="mb-3">
                   <label>Check-in</label>
                   <input type="date" class="form-control checkin">
@@ -244,17 +277,6 @@ Nuestro lobby y bar ofrecen un punto de encuentro íntimo y sofisticado, mientra
 
 </section>
 
-
-  <!-- Lightbox for clicked images -->
-  <div class="modal fade" id="lightboxModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-fullscreen-sm-down">
-      <div class="modal-content">
-        <div class="modal-body d-flex justify-content-center align-items-center p-3">
-          <img id="lightboxImage" src="" alt="Ampliar" class="lightbox-img">
-        </div>
-      </div>
-    </div>
-  </div>
 
   <!-- Location (satellite) -->
 <section class="container my-5" id="ubicacion">
