@@ -115,31 +115,33 @@ Nuestro lobby y bar ofrecen un punto de encuentro íntimo y sofisticado, mientra
   </div>
 </section>
 
-<!-- Rooms Section (Optimizado) -->
+<!-- Rooms section -->
 <section class="container rooms-section" id="habitaciones">
   <h2 class="text-center mb-4">Habitaciones</h2>
   <div class="row g-4 justify-content-center">
 
-    <!-- Room 1 Card -->
+    <!-- Lake View -->
     <div class="col-md-5">
-      <div class="room-card" role="button" data-bs-toggle="modal" data-bs-target="#modalLakeView" data-room="Lake View" data-price="1800">
-        <img src="https://hotelchablis.com/wp-content/uploads/2019/11/1kingsize2.jpg" class="card-img-top" alt="Lake View">
+      <div class="room-card" role="button" data-bs-toggle="modal" data-bs-target="#modalLakeView" data-room-name="Lake View" data-price-mxn="1800">
+        <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1400&q=80" alt="Lake View" class="card-img-top">
         <div class="room-body">
           <h5 class="room-title">Lake View</h5>
           <p class="room-desc">Balcón con vista al lago · 2 huéspedes</p>
           <div class="price" data-price-mxn="1800">$1,800 MXN <span class="price-usd text-muted"></span></div>
+          <button class="btn btn-primary w-100 mt-2 open-booking-btn" data-room="Lake View" data-price="1800">Reservar ahora</button>
         </div>
       </div>
     </div>
 
-    <!-- Room 2 Card -->
+    <!-- Mountain View -->
     <div class="col-md-5">
-      <div class="room-card" role="button" data-bs-toggle="modal" data-bs-target="#modalMountainView" data-room="Mountain View" data-price="2900">
-        <img src="assets/img/mountainview1.jpg" class="card-img-top" alt="Mountain View">
+      <div class="room-card" role="button" data-bs-toggle="modal" data-bs-target="#modalMountainView" data-room-name="Mountain View" data-price-mxn="2900">
+        <img src="https://images.unsplash.com/photo-1616627454537-cb2cb63d0a23?auto=format&fit=crop&w=1400&q=80" alt="Mountain View" class="card-img-top">
         <div class="room-body">
           <h5 class="room-title">Mountain View</h5>
           <p class="room-desc">Balcón con vista a la montaña · 2 huéspedes</p>
           <div class="price" data-price-mxn="2900">$2,900 MXN <span class="price-usd text-muted"></span></div>
+          <button class="btn btn-primary w-100 mt-2 open-booking-btn" data-room="Mountain View" data-price="2900">Reservar ahora</button>
         </div>
       </div>
     </div>
@@ -151,31 +153,28 @@ Nuestro lobby y bar ofrecen un punto de encuentro íntimo y sofisticado, mientra
     <div class="modal-dialog modal-xl modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header border-0">
-          <h5 class="modal-title">Lake View</h5>
+          <h5 class="modal-title" id="modalLakeViewTitle">Lake View</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body">
-          <div class="row">
-            <div class="col-lg-7">
-              <img src="https://hotelchablis.com/wp-content/uploads/2019/11/1kingsize2.jpg" class="w-100 room-modal-img" style="height:400px; object-fit:cover;" alt="Lake View">
-              <p class="mt-3">Amplia habitación con cama king size, balcón privado y sillas. Ideal para parejas.</p>
-              <p><strong>Incluye:</strong> Wifi, estacionamiento, gas, limpieza.</p>
+          <div class="d-flex flex-column flex-lg-row gap-3">
+            <div class="flex-lg-1">
+              <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1400&q=80" class="room-modal-img mb-2" alt="Lake View">
+              <img src="https://images.unsplash.com/photo-1616627454537-cb2cb63d0a23?auto=format&fit=crop&w=1400&q=80" class="room-modal-img" alt="Lake View 2">
             </div>
-            <div class="col-lg-5">
-              <div class="p-3 map-card">
-                <h6>Reservar</h6>
-                <div class="mb-2"><small class="text-muted">Precio por noche</small><div class="fw-bold" id="lakeViewPriceText">$1,800 MXN</div></div>
+            <div class="flex-lg-1">
+              <form class="booking-form" data-room="Lake View">
                 <div class="mb-3">
                   <label>Check-in</label>
-                  <input type="date" class="form-control booking-checkin" data-room="Lake View">
+                  <input type="date" class="form-control checkin">
                 </div>
                 <div class="mb-3">
                   <label>Check-out</label>
-                  <input type="date" class="form-control booking-checkout" data-room="Lake View">
+                  <input type="date" class="form-control checkout">
                 </div>
                 <div class="mb-3">
-                  <label>Personas</label>
-                  <select class="form-select booking-guests" data-room="Lake View">
+                  <label>Huéspedes</label>
+                  <select class="form-select guests">
                     <option value="1">1</option>
                     <option value="2" selected>2</option>
                     <option value="3">3</option>
@@ -183,11 +182,12 @@ Nuestro lobby y bar ofrecen un punto de encuentro íntimo y sofisticado, mientra
                   </select>
                 </div>
                 <div class="mb-3">
-                  <div>Número de noches: <strong class="booking-nights">—</strong></div>
-                  <div>Total estimado: <strong class="booking-total">—</strong></div>
+                  <div>Precio noche: <strong class="price-per-night">$1,800 MXN</strong></div>
+                  <div>Noches: <strong class="nights">—</strong></div>
+                  <div>Total estimado: <strong class="total">—</strong></div>
                 </div>
-                <button class="btn btn-success w-100 btn-book-now" data-room="Lake View" data-price="1800">Pagar / Confirmar reserva</button>
-              </div>
+                <button type="submit" class="btn btn-success w-100">Pagar / Confirmar reserva</button>
+              </form>
             </div>
           </div>
         </div>
@@ -200,30 +200,28 @@ Nuestro lobby y bar ofrecen un punto de encuentro íntimo y sofisticado, mientra
     <div class="modal-dialog modal-xl modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header border-0">
-          <h5 class="modal-title">Mountain View</h5>
+          <h5 class="modal-title" id="modalMountainViewTitle">Mountain View</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body">
-          <div class="row">
-            <div class="col-lg-7">
-              <img src="assets/img/mountainview1.jpg" class="w-100 room-modal-img" style="height:400px; object-fit:cover;" alt="Mountain View">
-              <p class="mt-3">Departamento amplio con terraza privada y sala. Diseño contemporáneo y servicios premium.</p>
+          <div class="d-flex flex-column flex-lg-row gap-3">
+            <div class="flex-lg-1">
+              <img src="https://images.unsplash.com/photo-1616627454537-cb2cb63d0a23?auto=format&fit=crop&w=1400&q=80" class="room-modal-img mb-2" alt="Mountain View">
+              <img src="https://images.unsplash.com/photo-1616627454537-cb2cb63d0a23?auto=format&fit=crop&w=1400&q=80" class="room-modal-img" alt="Mountain View 2">
             </div>
-            <div class="col-lg-5">
-              <div class="p-3 map-card">
-                <h6>Reservar</h6>
-                <div class="mb-2"><small class="text-muted">Precio por noche</small><div class="fw-bold" id="mountainViewPriceText">$2,900 MXN</div></div>
+            <div class="flex-lg-1">
+              <form class="booking-form" data-room="Mountain View">
                 <div class="mb-3">
                   <label>Check-in</label>
-                  <input type="date" class="form-control booking-checkin" data-room="Mountain View">
+                  <input type="date" class="form-control checkin">
                 </div>
                 <div class="mb-3">
                   <label>Check-out</label>
-                  <input type="date" class="form-control booking-checkout" data-room="Mountain View">
+                  <input type="date" class="form-control checkout">
                 </div>
                 <div class="mb-3">
-                  <label>Personas</label>
-                  <select class="form-select booking-guests" data-room="Mountain View">
+                  <label>Huéspedes</label>
+                  <select class="form-select guests">
                     <option value="1">1</option>
                     <option value="2" selected>2</option>
                     <option value="3">3</option>
@@ -231,11 +229,12 @@ Nuestro lobby y bar ofrecen un punto de encuentro íntimo y sofisticado, mientra
                   </select>
                 </div>
                 <div class="mb-3">
-                  <div>Número de noches: <strong class="booking-nights">—</strong></div>
-                  <div>Total estimado: <strong class="booking-total">—</strong></div>
+                  <div>Precio noche: <strong class="price-per-night">$2,900 MXN</strong></div>
+                  <div>Noches: <strong class="nights">—</strong></div>
+                  <div>Total estimado: <strong class="total">—</strong></div>
                 </div>
-                <button class="btn btn-success w-100 btn-book-now" data-room="Mountain View" data-price="2900">Pagar / Confirmar reserva</button>
-              </div>
+                <button type="submit" class="btn btn-success w-100">Pagar / Confirmar reserva</button>
+              </form>
             </div>
           </div>
         </div>
@@ -243,7 +242,6 @@ Nuestro lobby y bar ofrecen un punto de encuentro íntimo y sofisticado, mientra
     </div>
   </div>
 </section>
-
   <!-- Lightbox for clicked images -->
   <div class="modal fade" id="lightboxModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-fullscreen-sm-down">
