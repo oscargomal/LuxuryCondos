@@ -1,165 +1,88 @@
 // ------------------------------
 // 1️⃣ Configuración
 // ------------------------------
-const EXCHANGE_RATE = 0.053; // MXN -> USD aproximado
-
-// Booking modal elements
-const bookingModalEl = document.getElementById('bookingModal');
-const bookingModal = new bootstrap.Modal(bookingModalEl);
-const bkRoomName = document.getElementById('bookingRoomName');
-const bkPricePerNight = document.getElementById('bookingPricePerNight');
-const bkNights = document.getElementById('bookingNights');
-const bkTotal = document.getElementById('bookingTotal');
-const checkinInput = document.getElementById('bookingCheckin');
-const checkoutInput = document.getElementById('bookingCheckout');
-const guestsInput = document.getElementById('bookingGuests');
+const EXCHANGE_RATE = 0.053; // MXN -> USD
 
 // ------------------------------
 // 2️⃣ Funciones auxiliares
 // ------------------------------
-function formatMXN(amount) { return `$${amount.toLocaleString()} MXN`; }
-function formatUSD(amount) { return `$${amount.toFixed(2)} USD`; }
-function nightsBetween(a, b) {
-  if (!a || !b) return 0;
-  const d1 = new Date(a), d2 = new Date(b);
+function formatMXN(amount){ return `$${amount.toLocaleString()} MXN`; }
+function formatUSD(amount){ return `$${amount.toFixed(2)} USD`; }
+function nightsBetween(a,b){
+  if(!a||!b) return 0;
+  const d1=new Date(a), d2=new Date(b);
   d1.setHours(0,0,0,0); d2.setHours(0,0,0,0);
-  const diff = (d2 - d1) / (1000*60*60*24);
-  return diff > 0 ? diff : 0;
+  const diff=(d2-d1)/(1000*60*60*24);
+  return diff>0?diff:0;
 }
-function updateBookingTotals() {
-  const price = Number(bkPricePerNight.dataset.price) || 0;
-  const nights = nightsBetween(checkinInput.value, checkoutInput.value);
-  if (nights <= 0) {
-    bkNights.textContent = '—';
-    bkTotal.textContent = '—';
-    return;
+
+// ------------------------------
+// 3️⃣ Actualizar total al cambiar fechas
+// ------------------------------
+function attachBookingListeners(modalId){
+  const modal = document.getElementById(modalId);
+  const checkin = modal.querySelector('.booking-checkin');
+  const checkout = modal.querySelector('.booking-checkout');
+  const nightsEl = modal.querySelector('.booking-nights');
+  const totalEl = modal.querySelector('.booking-total');
+  const price = Number(modal.querySelector('.btn-book-now').dataset.price);
+
+  function updateTotals(){
+    const nights = nightsBetween(checkin.value, checkout.value);
+    nightsEl.textContent = nights || '—';
+    totalEl.textContent = nights ? formatMXN(price*nights)+' (~'+formatUSD(price*nights*EXCHANGE_RATE)+')' : '—';
   }
-  bkNights.textContent = nights;
-  const total = price * nights;
-  bkTotal.textContent = formatMXN(total) + ' (~' + formatUSD(total*EXCHANGE_RATE) + ')';
+
+  checkin.addEventListener('change', updateTotals);
+  checkout.addEventListener('change', updateTotals);
 }
 
 // ------------------------------
-// 3️⃣ Lightbox universal
+// 4️⃣ Inicializar listeners para modales
 // ------------------------------
-const lightboxModalEl = document.getElementById('lightboxModal');
-const lightboxModal = new bootstrap.Modal(lightboxModalEl);
-const lightboxImage = document.getElementById('lightboxImage');
-
-function openLightbox(src) {
-  lightboxImage.src = src;
-  lightboxModal.show();
-}
-
-document.querySelectorAll('.room-modal-img, .carousel-item img').forEach(img => {
-  img.style.cursor = 'zoom-in';
-  img.addEventListener('click', () => openLightbox(img.src));
+['modalLakeView','modalMountainView'].forEach(id=>{
+  attachBookingListeners(id);
 });
 
 // ------------------------------
-// 4️⃣ Abrir modal de vista expandida
+// 5️⃣ Botones "Pagar / Confirmar reserva"
 // ------------------------------
-document.querySelectorAll('.room-card').forEach(card => {
-  card.addEventListener('click', () => {
-    const targetModalId = card.dataset.bsTarget;
-    const modalEl = document.querySelector(targetModalId);
-    if(modalEl){
-      const bsModal = new bootstrap.Modal(modalEl);
-      bsModal.show();
+document.querySelectorAll('.btn-book-now').forEach(btn=>{
+  btn.addEventListener('click', async ()=>{
+    const modal = btn.closest('.modal');
+    const room = btn.dataset.room;
+    const price = Number(btn.dataset.price);
+    const checkin = modal.querySelector('.booking-checkin').value;
+    const checkout = modal.querySelector('.booking-checkout').value;
+    const nights = nightsBetween(checkin, checkout);
+    const total = price * nights;
+
+    if(!checkin||!checkout||nights<=0){
+      alert('Por favor completa fechas válidas');
+      return;
     }
+
+    // Aquí se envía al backend para Stripe
+    try{
+      const res = await fetch('/api/reservas',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({habitacion:room, fechaInicio:checkin, fechaFin:checkout, total})
+      });
+      const data = await res.json();
+      if(data.url) window.location.href = data.url;
+      else alert('Error creando reserva');
+    }catch(err){ console.error(err); alert('Error conectando con el servidor'); }
   });
 });
 
 // ------------------------------
-// 5️⃣ Abrir modal de booking dinámico
+// 6️⃣ Mostrar precio aproximado en USD en cada card
 // ------------------------------
-function openBookingModal(roomName, price) {
-  // Setear datos en el modal de booking
-  bkRoomName.value = roomName;
-  bkPricePerNight.textContent = formatMXN(price) + ' (~' + formatUSD(price*EXCHANGE_RATE) + ')';
-  bkPricePerNight.dataset.price = price;
-  document.getElementById('bookingRoomTitle').textContent = 'Reservar — ' + roomName;
-
-  // Resetar fechas y totales
-  checkinInput.value = '';
-  checkoutInput.value = '';
-  bkNights.textContent = '—';
-  bkTotal.textContent = '—';
-  guestsInput.value = '2';
-
-  // Mostrar modal
-  bookingModal.show();
-}
-
-// Escuchar click en botones "Reservar ahora"
-document.querySelectorAll('.open-booking').forEach(btn => {
-  btn.addEventListener('click', (e) => {
-    e.stopPropagation(); // Evita que se active click de la card detrás
-    const roomName = btn.dataset.room;
-    const price = Number(btn.dataset.price) || 0;
-    openBookingModal(roomName, price);
-  });
-});
-
-// ------------------------------
-// 6️⃣ Actualizar total al cambiar fechas
-// ------------------------------
-[checkinInput, checkoutInput].forEach(inp => inp.addEventListener('change', updateBookingTotals));
-
-// ------------------------------
-// 7️⃣ Enviar reserva al backend (Stripe)
-// ------------------------------
-document.getElementById('bookingForm').addEventListener('submit', async e => {
-  e.preventDefault();
-
-  const room = bkRoomName.value;
-  const checkinDate = checkinInput.value;
-  const checkoutDate = checkoutInput.value;
-
-  if (!room || !checkinDate || !checkoutDate) {
-    alert('Por favor completa todos los campos');
-    return;
-  }
-
-  const price = Number(bkPricePerNight.dataset.price) || 0;
-  const nights = nightsBetween(checkinDate, checkoutDate);
-  const total = price * nights;
-
-  try {
-    const res = await fetch('/api/reservas', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({
-        nombre: 'Cliente Prueba',
-        email: 'test@example.com',
-        habitacion: room,
-        fechaInicio: checkinDate,
-        fechaFin: checkoutDate,
-        total
-      })
-    });
-
-    const data = await res.json();
-    if(data.url) window.location.href = data.url;
-    else alert('Error creando reserva');
-  } catch(err) {
-    console.error(err);
-    alert('Error conectando con el servidor');
-  }
-});
-
-// ------------------------------
-// 8️⃣ Mostrar precio aproximado en USD en cada card y modal
-// ------------------------------
-document.querySelectorAll('[data-price-mxn]').forEach(el => {
+document.querySelectorAll('[data-price-mxn]').forEach(el=>{
   const mxn = Number(el.dataset.priceMxn);
   if(!isNaN(mxn)){
-    let usdSpan = el.querySelector('.price-usd');
-    if(!usdSpan){
-      usdSpan = document.createElement('span');
-      usdSpan.className = 'price-usd';
-      el.appendChild(usdSpan);
-    }
-    usdSpan.textContent = ' ≈ ' + formatUSD(mxn*EXCHANGE_RATE);
+    const usdSpan = el.querySelector('.price-usd');
+    if(usdSpan) usdSpan.textContent = ' ≈ '+formatUSD(mxn*EXCHANGE_RATE);
   }
 });
