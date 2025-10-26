@@ -116,38 +116,35 @@ Nuestro lobby y bar ofrecen un punto de encuentro íntimo y sofisticado, mientra
 </section>
 
 <!-- Rooms section -->
+ 
 <section class="container rooms-section" id="habitaciones">
   <h2 class="text-center mb-4">Habitaciones</h2>
   <div class="row g-4 justify-content-center">
-    <!-- Room 1 -->
+
+    <!-- Room 1 Card -->
     <div class="col-md-5">
-      <div class="room-card" role="button" data-bs-toggle="modal" data-bs-target="#room1Modal" data-room-name="Lake View" data-price-mxn="1800">
+      <div class="room-card" role="button" data-bs-toggle="modal" data-bs-target="#room1Modal" data-room-name="Lake View" data-price="1800">
         <img src="https://hotelchablis.com/wp-content/uploads/2019/11/1kingsize2.jpg" alt="Habitación Deluxe" class="card-img-top">
         <div class="room-body">
           <h5 class="room-title">Lake View</h5>
-          <p class="room-desc">Balcón con vista al lago. · 2 huéspedes</p>
-          <div class="price" data-price-mxn="1800">
-            $1,800 MXN 
-            <span class="price-usd text-muted" style="font-weight:500"></span>
-          </div>
+          <p class="room-desc">Balcón con vista al lago · 2 huéspedes</p>
+          <div class="price" data-price="1800">$1,800 MXN</div>
         </div>
       </div>
     </div>
 
-    <!-- Room 2 -->
+    <!-- Room 2 Card -->
     <div class="col-md-5">
-      <div class="room-card" role="button" data-bs-toggle="modal" data-bs-target="#room2Modal" data-room-name="Mountain View" data-price-mxn="2900">
+      <div class="room-card" role="button" data-bs-toggle="modal" data-bs-target="#room2Modal" data-room-name="Mountain View" data-price="2900">
         <img src="assets/img/mountainview1.jpg" alt="Mountain View" class="card-img-top">
         <div class="room-body">
           <h5 class="room-title">Mountain View</h5>
           <p class="room-desc">Balcón con vista a la montaña · 2 huéspedes</p>
-          <div class="price" data-price-mxn="2900">
-            $2,900 MXN 
-            <span class="price-usd text-muted" style="font-weight:500"></span>
-          </div>
+          <div class="price" data-price="2900">$2,900 MXN</div>
         </div>
       </div>
     </div>
+
   </div>
 
   <!-- Room 1 Modal -->
@@ -159,7 +156,7 @@ Nuestro lobby y bar ofrecen un punto de encuentro íntimo y sofisticado, mientra
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body">
-          <!-- Carousel -->
+          <!-- Carousel fixed size -->
           <div id="carouselRoom1" class="carousel slide mb-3" data-bs-ride="carousel">
             <div class="carousel-inner">
               <div class="carousel-item active">
@@ -175,22 +172,16 @@ Nuestro lobby y bar ofrecen un punto de encuentro íntimo y sofisticado, mientra
 
           <div class="row">
             <div class="col-lg-7">
-              <p>Amplia habitación con cama king size, balcón privado y sillas. Ideal para parejas que buscan tranquilidad con un toque de diseño y estilo.</p>
+              <p>Amplia habitación con cama king size, balcón privado y sillas. Ideal para parejas.</p>
               <p class="mb-1"><strong>Incluye:</strong> Wifi, estacionamiento, gas y limpieza.</p>
-              <p class="mb-0 price" data-price-mxn="1800">$1,800 MXN <span class="price-usd text-muted" style="font-weight:500"></span></p>
+              <p class="mb-0 price">$1,800 MXN</p>
             </div>
             <div class="col-lg-5">
-              <div class="p-3 map-card">
+              <div class="p-3 map-card text-center">
                 <h6>Reservar</h6>
-                <div class="mb-2"><small class="text-muted">Precio por noche</small><div class="fw-bold" id="room1PriceText">$1,800 MXN</div></div>
+                <div class="mb-2"><small class="text-muted">Precio por noche</small><div class="fw-bold">$1,800 MXN</div></div>
                 <button class="btn btn-primary w-100 mb-2 open-booking" data-room="Lake View" data-price="1800">Reservar ahora</button>
-                <div class="secure-badge">Pago 100% seguro</div>
-                <div class="mt-3 payment-logos">
-                  <img src="https://upload.wikimedia.org/wikipedia/commons/5/5a/PayPal.svg" alt="PayPal" style="width: 50px; height: auto; margin-right: 10px;">
-                  <img src="https://upload.wikimedia.org/wikipedia/commons/0/04/Mastercard-logo.png" alt="Mastercard" style="width: 50px; height: auto; margin-right: 10px;">
-                  <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Visa_2014_logo_detail.svg" alt="Visa" style="width: 50px; height: auto; margin-right: 10px;">
-                  <img src="https://upload.wikimedia.org/wikipedia/commons/f/f6/Stripe_Logo%2C_revised_2016.svg" alt="Stripe" style="width: 50px; height: auto;">
-                </div>                
+                <div class="secure-badge mt-2">Pago 100% seguro</div>
               </div>
             </div>
           </div>
@@ -223,21 +214,15 @@ Nuestro lobby y bar ofrecen un punto de encuentro íntimo y sofisticado, mientra
 
           <div class="row">
             <div class="col-lg-7">
-              <p>Departamento amplio con terraza privada, sala y opciones para familias. Diseño contemporáneo y servicios premium.</p>
-              <p class="mb-0 price" data-price-mxn="2900">$2,900 MXN <span class="price-usd text-muted" style="font-weight:500"></span></p>
+              <p>Departamento amplio con terraza privada, sala y opciones para familias.</p>
+              <p class="mb-0 price">$2,900 MXN</p>
             </div>
             <div class="col-lg-5">
-              <div class="p-3 map-card">
+              <div class="p-3 map-card text-center">
                 <h6>Reservar</h6>
-                <div class="mb-2"><small class="text-muted">Precio por noche</small><div class="fw-bold" id="room2PriceText">$2,900 MXN</div></div>
+                <div class="mb-2"><small class="text-muted">Precio por noche</small><div class="fw-bold">$2,900 MXN</div></div>
                 <button class="btn btn-primary w-100 mb-2 open-booking" data-room="Mountain View" data-price="2900">Reservar ahora</button>
-                <div class="secure-badge">Pago 100% seguro</div>
-                <div class="mt-3 payment-logos">
-                  <img src="https://upload.wikimedia.org/wikipedia/commons/5/5a/PayPal.svg" alt="PayPal" style="width: 50px; height: auto; margin-right: 10px;">
-                  <img src="https://upload.wikimedia.org/wikipedia/commons/0/04/Mastercard-logo.png" alt="Mastercard" style="width: 50px; height: auto; margin-right: 10px;">
-                  <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Visa_2014_logo_detail.svg" alt="Visa" style="width: 50px; height: auto; margin-right: 10px;">
-                  <img src="https://upload.wikimedia.org/wikipedia/commons/f/f6/Stripe_Logo%2C_revised_2016.svg" alt="Stripe" style="width: 50px; height: auto;">
-                </div>                
+                <div class="secure-badge mt-2">Pago 100% seguro</div>
               </div>
             </div>
           </div>
@@ -246,7 +231,7 @@ Nuestro lobby y bar ofrecen un punto de encuentro íntimo y sofisticado, mientra
     </div>
   </div>
 
-  <!-- Booking Modal (shared) -->
+  <!-- Booking Modal (único y compartido) -->
   <div class="modal fade" id="bookingModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
@@ -286,16 +271,6 @@ Nuestro lobby y bar ofrecen un punto de encuentro íntimo y sofisticado, mientra
               <div class="mt-2">Total estimado: <strong id="bookingTotal">—</strong></div>
             </div>
 
-            <div class="mb-3 text-center">
-              <div class="secure-badge">Pago 100% seguro</div>
-              <div class="payment-logos mt-2">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/5/5a/PayPal.svg" alt="PayPal">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/0/04/Mastercard-logo.png" alt="Mastercard">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Visa_2014_logo_detail.svg" alt="Visa">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/f/f6/Stripe_Logo%2C_revised_2016.svg" alt="Stripe">
-              </div>
-            </div>
-
             <div class="d-grid gap-2">
               <button type="submit" class="btn btn-success">Pagar / Confirmar reserva</button>
             </div>
@@ -305,7 +280,6 @@ Nuestro lobby y bar ofrecen un punto de encuentro íntimo y sofisticado, mientra
     </div>
   </div>
 </section>
-<!-- FIN Rooms Section -->
 
   <!-- Lightbox for clicked images -->
   <div class="modal fade" id="lightboxModal" tabindex="-1" aria-hidden="true">
