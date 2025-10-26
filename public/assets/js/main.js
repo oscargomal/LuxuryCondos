@@ -71,7 +71,7 @@ document.querySelectorAll('.room-card').forEach(card => {
 });
 
 // ------------------------------
-// 5️⃣ Abrir modal de booking dinámico
+// 5️⃣ Abrir modal de booking dinámico (CORREGIDO)
 // ------------------------------
 function openBookingModal(roomName, price) {
   // Setear datos en el modal de booking
@@ -87,14 +87,24 @@ function openBookingModal(roomName, price) {
   bkTotal.textContent = '—';
   guestsInput.value = '2';
 
-  // Mostrar modal
+  // Mostrar modal de booking
   bookingModal.show();
 }
 
 // Escuchar click en botones "Reservar ahora"
 document.querySelectorAll('.open-booking').forEach(btn => {
   btn.addEventListener('click', (e) => {
-    e.stopPropagation(); // Evita que se active click de la card detrás
+    e.stopPropagation(); // Evita click propagado
+
+    // Cerrar modal de habitación abierto
+    const activeRoomModalEl = document.querySelector('.modal.show');
+    if(activeRoomModalEl){
+      const activeRoomModal = bootstrap.Modal.getInstance(activeRoomModalEl);
+      if(activeRoomModal && activeRoomModalEl.id !== 'bookingModal'){
+        activeRoomModal.hide();
+      }
+    }
+
     const roomName = btn.dataset.room;
     const price = Number(btn.dataset.price) || 0;
     openBookingModal(roomName, price);
