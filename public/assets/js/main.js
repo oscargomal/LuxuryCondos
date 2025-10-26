@@ -74,31 +74,34 @@ document.querySelectorAll('.room-card').forEach(card => {
 // 5️⃣ Abrir modal de booking dinámico
 // ------------------------------
 function openBookingModal(roomName, price) {
+  // Setear datos en el modal de booking
   bkRoomName.value = roomName;
   bkPricePerNight.textContent = formatMXN(price) + ' (~' + formatUSD(price*EXCHANGE_RATE) + ')';
   bkPricePerNight.dataset.price = price;
   document.getElementById('bookingRoomTitle').textContent = 'Reservar — ' + roomName;
 
+  // Resetar fechas y totales
   checkinInput.value = '';
   checkoutInput.value = '';
   bkNights.textContent = '—';
   bkTotal.textContent = '—';
   guestsInput.value = '2';
 
+  // Mostrar modal
   bookingModal.show();
 }
 
-// Botón "Reservar ahora" dentro del modal de habitación
+// Escuchar click en botones "Reservar ahora"
 document.querySelectorAll('.open-booking').forEach(btn => {
   btn.addEventListener('click', (e) => {
-    e.stopPropagation(); // Evita que el click abra modal de room-card
+    e.stopPropagation(); // Evita que se active click de la card detrás
     const roomName = btn.dataset.room;
     const price = Number(btn.dataset.price) || 0;
     openBookingModal(roomName, price);
   });
 });
 
-// También se puede abrir directamente desde la card si quieres
+// Opcional: abrir directamente desde la card (si quieres)
 // document.querySelectorAll('.room-card').forEach(card => {
 //   card.addEventListener('dblclick', () => { 
 //      const roomName = card.dataset.roomName;
