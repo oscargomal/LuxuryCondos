@@ -130,3 +130,26 @@ body{
 /* Asegura que el contenido del lado derecho quede fijo en altura mínima */
 .map-card { min-height: 320px; }
 .modal .modal-body { padding: 1rem 1.25rem; }
+
+
+.room-modal-img {
+  height: 400px;
+  object-fit: cover;
+}
+
+.modal .row {
+  align-items: flex-start;
+}
+
+.modal .booking-form {
+  min-width: 100%;
+}
+
+.modal .carousel {
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.modal .btn-success {
+  font-weight: 600;
+}
