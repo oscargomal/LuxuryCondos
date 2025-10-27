@@ -122,3 +122,11 @@ body{
   .hero-caption{ padding:12px; }
   .room-modal-img { height:250px; }
 }
+
+/* Ajustes mínimos para modales/carrusel de habitaciones */
+.room-modal-img { width:100%; height:400px; object-fit:cover; border-radius:8px; }
+@media (max-width:576px){ .room-modal-img { height:220px; } }
+
+/* Asegura que el contenido del lado derecho quede fijo en altura mínima */
+.map-card { min-height: 320px; }
+.modal .modal-body { padding: 1rem 1.25rem; }
