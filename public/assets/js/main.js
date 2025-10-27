@@ -28,14 +28,20 @@ document.querySelectorAll('.booking-form').forEach(form => {
   const totalEl = form.querySelector('.total');
 
   function updateTotal() {
-    const price = parseFloat(form.dataset.price);
-    const inDate = new Date(checkin.value);
-    const outDate = new Date(checkout.value);
-    if (!checkin.value || !checkout.value || inDate >= outDate) {
-      nightsEl.textContent = '—';
-      totalEl.textContent = '—';
-      return;
-    }
+  const price = parseFloat(form.dataset.price);
+  const inDate = new Date(checkin.value);
+  const outDate = new Date(checkout.value);
+  if (checkin.value && checkout.value && inDate < outDate) {
+    const diff = Math.ceil((outDate - inDate) / (1000 * 60 * 60 * 24));
+    const total = diff * price;
+    nightsEl.textContent = diff;
+    totalEl.textContent = `$${total.toLocaleString()} MXN`;
+  } else {
+    nightsEl.textContent = '—';
+    totalEl.textContent = '—';
+  }
+}
+
     const diff = Math.ceil((outDate - inDate) / (1000 * 60 * 60 * 24));
     const total = diff * price;
     nightsEl.textContent = diff;
