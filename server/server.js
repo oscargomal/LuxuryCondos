@@ -7,27 +7,28 @@ const fs = require('fs').promises; // para leer/escribir reservas.json
 const path = require('path');
 const Stripe = require('stripe');
 
+// 3️⃣ Configuración del servidor
 const app = express();
-const stripe = Stripe(process.env.STRIPE_SECRET);
+const stripe = Stripe(process.env.STRIPE_SECRET); // Usar la clave secreta desde las variables de entorno
 
 const PORT = process.env.PORT || 3000;
 const RESERVAS_FILE = path.join(__dirname, 'reservas.json');
 
-// 3️⃣ Middleware para parsear JSON y servir archivos estáticos
+// 4️⃣ Middleware para parsear JSON y servir archivos estáticos
 app.use(express.json());
-app.use(express.static(path.join(__dirname, '../public'))); // frontend público
-app.use('/admin', express.static(path.join(__dirname, '../admin'))); // backend/admin
+app.use(express.static(path.join(__dirname, 'public'))); // Directorio público para el frontend
+app.use('/admin', express.static(path.join(__dirname, 'admin'))); // Directorio para el panel de administración
 
 // ------------------------------
-// 4️⃣ Endpoints
+// 5️⃣ Endpoints
 // ------------------------------
 
-// 4.1 Endpoint para obtener la clave pública de Stripe
+// 5.1 Endpoint para obtener la clave pública de Stripe
 app.get('/api/stripe-key', (req, res) => {
   res.json({ publicKey: process.env.STRIPE_PUBLIC });
 });
 
-// 4.2 Endpoint para obtener todas las reservas (panel admin)
+// 5.2 Endpoint para obtener todas las reservas (panel admin)
 app.get('/api/reservas', async (req, res) => {
   try {
     const data = await fs.readFile(RESERVAS_FILE, 'utf8');
@@ -39,7 +40,7 @@ app.get('/api/reservas', async (req, res) => {
   }
 });
 
-// 4.3 Endpoint para crear una nueva reserva y sesión de pago en Stripe
+// 5.3 Endpoint para crear una nueva reserva y sesión de pago en Stripe
 app.post('/api/reservas', async (req, res) => {
   const { nombre, email, habitacion, fechaInicio, fechaFin, total } = req.body;
 
@@ -48,7 +49,7 @@ app.post('/api/reservas', async (req, res) => {
   }
 
   try {
-    // 1️⃣ Crear sesión de pago en Stripe
+    // Crear sesión de pago en Stripe
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [
@@ -69,14 +70,13 @@ app.post('/api/reservas', async (req, res) => {
       customer_email: email,
     });
 
-    // 2️⃣ Guardar reserva en JSON con estado "pendiente"
+    // Guardar reserva en JSON con estado "pendiente"
     let reservas = [];
     try {
       const data = await fs.readFile(RESERVAS_FILE, 'utf8');
       reservas = JSON.parse(data);
     } catch (err) {
-      // Si el archivo no existe aún, iniciamos arreglo vacío
-      reservas = [];
+      reservas = []; // Si el archivo no existe aún, empezamos con un arreglo vacío
     }
 
     const nuevaReserva = {
@@ -94,14 +94,14 @@ app.post('/api/reservas', async (req, res) => {
     reservas.push(nuevaReserva);
     await fs.writeFile(RESERVAS_FILE, JSON.stringify(reservas, null, 2));
 
-    res.json({ url: session.url }); // enviar URL de checkout al frontend
+    res.json({ url: session.url }); // Devolver URL de Stripe para el checkout
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Error creando la reserva' });
   }
 });
 
-// 4.4 Endpoint para actualizar estado de reserva (panel admin)
+// 5.4 Endpoint para actualizar estado de reserva (panel admin)
 app.patch('/api/reservas/:id', async (req, res) => {
   const { id } = req.params;
   const { estado } = req.body;
@@ -125,14 +125,7 @@ app.patch('/api/reservas/:id', async (req, res) => {
   }
 });
 
-// ------------------------------
-// 5️⃣ Iniciar servidor
-// ------------------------------
+// 6️⃣ Iniciar servidor
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en http://localhost:${PORT}`);
-
-
-  console.log("STRIPE_SECRET_KEY:", process.env.STRIPE_SECRET_KEY);
-
-
 });
