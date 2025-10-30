@@ -130,4 +130,9 @@ app.patch('/api/reservas/:id', async (req, res) => {
 // ------------------------------
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en http://localhost:${PORT}`);
+
+
+  console.log("STRIPE_SECRET_KEY:", process.env.STRIPE_SECRET_KEY);
+
+
 });
