@@ -1,5 +1,3 @@
-// server/server.js
-
 // 1️⃣ Cargar variables de entorno
 require('dotenv').config();
 
@@ -17,8 +15,8 @@ const RESERVAS_FILE = path.join(__dirname, 'reservas.json');
 
 // 3️⃣ Middleware para parsear JSON y servir archivos estáticos
 app.use(express.json());
-app.use(express.static(path.join(__dirname, '../public'))); // frontend
-app.use('/admin', express.static(path.join(__dirname, '../admin')));
+app.use(express.static(path.join(__dirname, '../public'))); // frontend público
+app.use('/admin', express.static(path.join(__dirname, '../admin'))); // backend/admin
 
 // ------------------------------
 // 4️⃣ Endpoints
