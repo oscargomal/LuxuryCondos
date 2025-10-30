@@ -40,8 +40,6 @@ document.querySelectorAll('.booking-form').forEach(form => {
     nightsEl.textContent = '—';
     totalEl.textContent = '—';
   }
-}
-
     const diff = Math.ceil((outDate - inDate) / (1000 * 60 * 60 * 24));
     const total = diff * price;
     nightsEl.textContent = diff;

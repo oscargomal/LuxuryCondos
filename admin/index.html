@@ -1,5 +1,118 @@
 <!doctype html>
-<html lang="es">
-<head><meta charset="utf-8"><title>Admin - Luxury Condos</title></head>
-<body><h2>Panel de administración</h2><p>Próximamente...</p></body>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Admin Luxury Condos</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>.hidden{display:none;}</style>
+</head>
+<body class="p-3">
+<div id="loginBox">
+  <h3>Login Admin</h3>
+  <form id="loginForm">
+    <input class="form-control mb-2" id="username" placeholder="Usuario">
+    <input class="form-control mb-2" id="password" type="password" placeholder="Contraseña">
+    <button class="btn btn-primary">Entrar</button>
+    <div id="loginMsg" class="mt-2 text-danger"></div>
+  </form>
+</div>
+
+<div id="panelBox" class="hidden">
+  <div class="d-flex justify-content-between mb-2">
+    <h3>Dashboard</h3>
+    <button id="logoutBtn" class="btn btn-secondary btn-sm">Salir</button>
+  </div>
+  <table class="table table-striped" id="reservasTable">
+    <thead>
+      <tr><th>Folio</th><th>Cliente</th><th>Room</th><th>Fechas</th><th>Total</th><th>Estado</th><th>Cambiar</th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
+
+<script>
+const api = { token: localStorage.getItem('lc_token') || null };
+
+async function login(u,p){
+  const res = await fetch('/api/login',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({username:u,password:p})
+  });
+  if(!res.ok) throw new Error('Usuario o contraseña inválidos');
+  const j = await res.json();
+  api.token=j.token; localStorage.setItem('lc_token',j.token);
+}
+
+function headers(){ return { 'Authorization':'Bearer '+api.token,'Content-Type':'application/json'};}
+
+async function fetchReservas(){
+  const res = await fetch('/api/reservas',{headers: headers()});
+  if(!res.ok) throw new Error('No autorizado');
+  return res.json();
+}
+
+async function updateReserva(id,status){
+  const res = await fetch('/api/reservas/'+id,{
+    method:'PATCH', headers: headers(), body: JSON.stringify({status})
+  });
+  if(!res.ok) throw new Error('Error actualizando');
+  return res.json();
+}
+
+const loginBox=document.getElementById('loginBox');
+const panelBox=document.getElementById('panelBox');
+const loginForm=document.getElementById('loginForm');
+const reservasTableBody=document.querySelector('#reservasTable tbody');
+const logoutBtn=document.getElementById('logoutBtn');
+
+function showPanel(){ loginBox.classList.add('hidden'); panelBox.classList.remove('hidden'); loadReservas();}
+function showLogin(){ loginBox.classList.remove('hidden'); panelBox.classList.add('hidden');}
+
+loginForm.addEventListener('submit',async e=>{
+  e.preventDefault();
+  try{await login(document.getElementById('username').value,document.getElementById('password').value); showPanel();}
+  catch(err){document.getElementById('loginMsg').textContent=err.message;}
+});
+
+logoutBtn.addEventListener('click',()=>{
+  api.token=null; localStorage.removeItem('lc_token'); showLogin();
+});
+
+async function loadReservas(){
+  reservasTableBody.innerHTML='<tr><td colspan="7">Cargando...</td></tr>';
+  try{
+    const data=await fetchReservas();
+    if(!data.length){reservasTableBody.innerHTML='<tr><td colspan="7">No hay reservas</td></tr>';return;}
+    reservasTableBody.innerHTML='';
+    data.forEach(r=>{
+      const tr=document.createElement('tr');
+      tr.innerHTML=`<td>${r.id}</td><td>${r.customer.name}</td><td>${r.room}</td><td>${r.checkin}→${r.checkout}</td><td>${r.total}</td><td>${r.status}</td>
+        <td><select class="form-select form-select-sm status-select" data-id="${r.id}">
+       <option value="pendiente" ${r.status==='pendiente'?'selected':''}>Pendiente</option>
+<option value="pagado" ${r.status==='pagado'?'selected':''}>Pagado</option>
+<option value="cancelado" ${r.status==='cancelado'?'selected':''}>Cancelado</option>
+</select></td>`;
+      reservasTableBody.appendChild(tr);
+    });
+
+    // Añadir listeners para cambiar estado
+    document.querySelectorAll('.status-select').forEach(sel=>{
+      sel.addEventListener('change', async e=>{
+        const id = e.target.dataset.id;
+        const status = e.target.value;
+        try{ await updateReserva(id,status); alert('Estado actualizado'); }
+        catch(err){ alert('Error actualizando'); }
+      });
+    });
+  }catch(err){
+    reservasTableBody.innerHTML='<tr><td colspan="7">Error cargando reservas</td></tr>';
+    console.error(err);
+  }
+}
+
+// Mostrar panel si ya hay token válido
+if(api.token) showPanel();
+</script>
+</body>
 </html>
