@@ -60,5 +60,5 @@ app.get('/admin', (req, res) => {
 
 // Resto del código para las rutas de Stripe y reservas
 app.listen(PORT, () => {
-  console.log(`Servidor corriendo en http://localhost:${PORT}`);
+  console.log(`Servidor corriendo en http://localhost:${PORT}`);  // Ahora está usando el puerto de Render
 });
