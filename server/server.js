@@ -7,7 +7,7 @@ const Stripe = require('stripe');
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 
 const app = express();
-const PORT = process.env.PORT || 10000;  // Usamos el puerto proporcionado por Render
+const PORT = process.env.PORT || 10000;  // Usa el puerto proporcionado por Render
 const RESERVAS_FILE = path.join(__dirname, 'reservas.json');
 
 // Middleware para servir archivos estáticos desde 'public' y 'admin'
