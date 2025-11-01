@@ -15,17 +15,17 @@ const app = express();
 // Configurar el puerto
 const PORT = process.env.PORT || 3000;
 
-// Middleware para servir archivos estáticos
-app.use(express.static(path.join(__dirname, 'public')));
+// Middleware para servir archivos estáticos desde la carpeta 'public' en la raíz
+app.use(express.static(path.join(__dirname, '..', 'public')));
 
 // Ruta para la página principal
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));
 });
 
 // Ruta para el panel de administración
 app.get('/admin', (req, res) => {
-  res.sendFile(path.join(__dirname, 'admin', 'admin.html'));
+  res.sendFile(path.join(__dirname, '..', 'admin', 'admin.html'));
 });
 
 // Configuración para Stripe y otras funcionalidades pueden ir aquí
