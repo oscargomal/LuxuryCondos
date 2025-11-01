@@ -7,7 +7,7 @@ const Stripe = require('stripe');
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 
 const app = express();
-const PORT = process.env.PORT || 3000;  // Usa el puerto proporcionado por Render
+const PORT = process.env.PORT || 10000;  // Cambié el puerto para que Render lo detecte correctamente
 const RESERVAS_FILE = path.join(__dirname, 'reservas.json');
 
 // Middleware para servir archivos estáticos desde 'public' y 'admin'
@@ -16,8 +16,8 @@ app.use('/admin', express.static(path.join(__dirname, '..', 'admin'))); // Archi
 
 // Ruta para la página principal (index.html)
 app.get('/', (req, res) => {
-  const indexPath = path.join(__dirname, '..', 'public', 'index.html');  // Ajusta la ruta al directorio correcto
-  console.log('Ruta de index.html:', indexPath);  // Verifica la ruta de index.html
+  const indexPath = path.join(__dirname, '..', 'public', 'index.html');
+  console.log('Ruta de index.html:', indexPath);
   fs.access(indexPath, fs.constants.F_OK, (err) => {
     if (err) {
       console.error('Archivo index.html no encontrado:', err);
@@ -38,8 +38,8 @@ app.get('/', (req, res) => {
 
 // Ruta para la página de administración (admin.html)
 app.get('/admin', (req, res) => {
-  const adminIndexPath = path.join(__dirname, '..', 'admin', 'admin.html');  // Ajusta la ruta al directorio correcto
-  console.log('Ruta de admin.html:', adminIndexPath);  // Verifica la ruta de admin.html
+  const adminIndexPath = path.join(__dirname, '..', 'admin', 'admin.html');  // Ajustamos la ruta
+  console.log('Ruta de admin.html:', adminIndexPath);
   fs.access(adminIndexPath, fs.constants.F_OK, (err) => {
     if (err) {
       console.error('Archivo admin.html no encontrado:', err);
@@ -60,5 +60,5 @@ app.get('/admin', (req, res) => {
 
 // Resto del código para las rutas de Stripe y reservas
 app.listen(PORT, () => {
-  console.log(`Servidor corriendo en http://localhost:${PORT}`);  // Ahora está usando el puerto de Render
+  console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });
