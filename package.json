@@ -1,26 +1,14 @@
 {
-  "name": "luxurycondos",
+  "name": "mi-sitio",
   "version": "1.0.0",
-  "description": "",
-  "main": "server/server.js",
+  "main": "server.js",
+  "type": "module",
   "scripts": {
-    "start": "node server/server.js"
+    "start": "node server.js"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/oscargomal/LuxuryCondos.git"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/oscargomal/LuxuryCondos/issues"
-  },
-  "homepage": "https://github.com/oscargomal/LuxuryCondos#readme",
   "dependencies": {
-    "dotenv": "^17.2.3",
-    "express": "^5.1.0",
-    "jsonwebtoken": "^9.0.2",
-    "stripe": "^19.2.0"
+    "express": "^4.19.2",
+    "stripe": "^14.0.0",
+    "dotenv": "^16.4.5"
   }
 }
