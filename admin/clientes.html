@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Clientes | Hotel</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="css/admin.css">
+    <link rel="stylesheet" href="css/clientes.css">
+</head>
+<body>
+
+  <aside class="sidebar">
+    <h2>Hotel</h2>
+    <nav>
+      <a href="admin.html" class="active">Dashboard</a>
+      <a href="reservaciones.html">Reservaciones</a>
+      <a href="habitaciones.html">Habitaciones</a>
+      <a href="avisos.html">Avisos</a>
+      <a href="clientes.html">Clientes</a>
+      <a href="reportes.html">Reportes</a>
+
+      <a href="login.html" class="logout">Cerrar sesión</a>
+    </nav>
+  </aside>
+
+  <main class="main">
+
+    <header class="header">
+      <h1>Clientes</h1>
+    </header>
+
+    <section class="table-section">
+      <h2>Clientes registrados</h2>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Correo</th>
+            <th>Teléfono</th>
+            <th>Reservaciones</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr>
+            <td>Ana López</td>
+            <td>ana@mail.com</td>
+            <td>555-123-4567</td>
+            <td>3</td>
+            <td>
+              <button class="btn btn-info btn-small">Ver</button>
+              <button class="btn btn-primary btn-small">Editar</button>
+              <button class="btn btn-danger btn-small">Eliminar</button>
+            </td>
+          </tr>
+
+          <tr>
+            <td>Carlos Ruiz</td>
+            <td>carlos@mail.com</td>
+            <td>555-987-6543</td>
+            <td>1</td>
+            <td>
+              <button class="btn btn-info btn-small">Ver</button>
+              <button class="btn btn-primary btn-small">Editar</button>
+              <button class="btn btn-danger btn-small">Eliminar</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+  </main>
+
+</body>
+</html>

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Reservaciones | Hotel</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="css/reservaciones.css">
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+
+  <aside class="sidebar">
+    <h2>Hotel</h2>
+    <nav>
+      <a href="admin.html" class="active">Dashboard</a>
+      <a href="reservaciones.html">Reservaciones</a>
+      <a href="habitaciones.html">Habitaciones</a>
+      <a href="avisos.html">Avisos</a>
+      <a href="clientes.html">Clientes</a>
+      <a href="reportes.html">Reportes</a>
+
+      <a href="login.html" class="logout">Cerrar sesión</a>
+    </nav>
+  </aside>
+
+  <main class="main">
+
+    <header class="header">
+      <h1>Reservaciones</h1>
+    </header>
+
+    <section class="form-card">
+      <h2>Filtros</h2>
+
+      <div class="filters">
+        <div class="form-group">
+          <label>Estado</label>
+          <select>
+            <option>Todos</option>
+            <option>Pendiente</option>
+            <option>Confirmada</option>
+            <option>Cancelada</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Fecha entrada</label>
+          <input type="date">
+        </div>
+
+        <div class="form-group">
+          <label>Fecha salida</label>
+          <input type="date">
+        </div>
+
+        <button class="btn btn-primary">Buscar</button>
+      </div>
+    </section>
+
+    <section class="table-section">
+      <h2>Listado de reservaciones</h2>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Cliente</th>
+            <th>Habitación</th>
+            <th>Entrada</th>
+            <th>Salida</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr>
+            <td>Ana López</td>
+            <td>Suite Deluxe</td>
+            <td>20/01/2026</td>
+            <td>23/01/2026</td>
+            <td class="status pending">Pendiente</td>
+            <td>
+              <button class="btn btn-warning btn-small">Ver</button>
+              <button class="btn btn-success btn-small">Confirmar</button>
+              <button class="btn btn-danger btn-small">Cancelar</button>
+            </td>
+          </tr>
+
+          <tr>
+            <td>Carlos Ruiz</td>
+            <td>Habitación Doble</td>
+            <td>18/01/2026</td>
+            <td>19/01/2026</td>
+            <td class="status active">Confirmada</td>
+            <td>
+              <button class="btn btn-warning btn-small">Ver</button>
+              <button class="btn btn-danger btn-small">Cancelar</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+  </main>
+
+</body>
+</html>

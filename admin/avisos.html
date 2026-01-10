@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Avisos | Hotel</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="css/admin.css">
+  <link rel="stylesheet" href="css/avisos.css">
+</head>
+<body>
+
+  <aside class="sidebar">
+    <h2>Hotel</h2>
+    <nav>
+      <a href="admin.html" class="active">Dashboard</a>
+      <a href="reservaciones.html">Reservaciones</a>
+      <a href="habitaciones.html">Habitaciones</a>
+      <a href="avisos.html">Avisos</a>
+      <a href="clientes.html">Clientes</a>
+      <a href="reportes.html">Reportes</a>
+
+      <a href="login.html" class="logout">Cerrar sesión</a>
+    </nav>
+  </aside>
+
+  <main class="main">
+
+    <header class="header">
+      <h1>Avisos y Anuncios</h1>
+    </header>
+
+    <section class="form-card">
+      <h2>Nuevo aviso</h2>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Título</label>
+          <input type="text" placeholder="Promoción de temporada">
+        </div>
+
+        <div class="form-group">
+          <label>Tipo</label>
+          <select>
+            <option>Informativo</option>
+            <option>Promoción</option>
+            <option>Urgente</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Estado</label>
+          <select>
+            <option>Activo</option>
+            <option>Inactivo</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Mensaje</label>
+        <textarea placeholder="Escribe el aviso que se mostrará en la página principal..."></textarea>
+      </div>
+
+      <button class="btn btn-primary">Publicar aviso</button>
+    </section>
+
+    <section class="table-section">
+      <h2>Avisos publicados</h2>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Título</th>
+            <th>Tipo</th>
+            <th>Fecha</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr>
+            <td>Mantenimiento</td>
+            <td class="type-info">Informativo</td>
+            <td>15/01/2026</td>
+            <td class="status active">Activo</td>
+            <td>
+              <button class="btn btn-info btn-small">Ver</button>
+              <button class="btn btn-primary btn-small">Editar</button>
+              <button class="btn btn-danger btn-small">Eliminar</button>
+            </td>
+          </tr>
+
+          <tr>
+            <td>Descuento fin de semana</td>
+            <td class="type-promo">Promoción</td>
+            <td>10/01/2026</td>
+            <td class="status inactive">Inactivo</td>
+            <td>
+              <button class="btn btn-info btn-small">Ver</button>
+              <button class="btn btn-primary btn-small">Editar</button>
+              <button class="btn btn-danger btn-small">Eliminar</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+  </main>
+
+</body>
+</html>

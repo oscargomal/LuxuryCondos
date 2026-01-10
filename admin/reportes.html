@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Reportes | Hotel</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="css/admin.css">
+    <link rel="stylesheet" href="css/reportes.css">
+</head>
+<body>
+
+  <aside class="sidebar">
+    <h2>Hotel</h2>
+    <nav>
+      <a href="admin.html" class="active">Dashboard</a>
+      <a href="reservaciones.html">Reservaciones</a>
+      <a href="habitaciones.html">Habitaciones</a>
+      <a href="avisos.html">Avisos</a>
+      <a href="clientes.html">Clientes</a>
+      <a href="reportes.html">Reportes</a>
+
+      <a href="login.html" class="logout">Cerrar sesión</a>
+    </nav>
+  </aside>
+
+  <main class="main">
+
+    <header class="header">
+      <h1>Reportes</h1>
+    </header>
+
+    <section class="form-card">
+      <h2>Filtrar por fecha</h2>
+
+      <div class="filters">
+        <div class="form-group">
+          <label>Desde</label>
+          <input type="date">
+        </div>
+
+        <div class="form-group">
+          <label>Hasta</label>
+          <input type="date">
+        </div>
+
+        <button class="btn btn-primary">Generar reporte</button>
+      </div>
+    </section>
+
+    <section class="cards">
+      <div class="card">
+        <h3>Total reservaciones</h3>
+        <p>120</p>
+      </div>
+
+      <div class="card">
+        <h3>Ingresos estimados</h3>
+        <p>$180,000</p>
+      </div>
+
+      <div class="card">
+        <h3>Ocupación promedio</h3>
+        <p>78%</p>
+      </div>
+    </section>
+
+  </main>
+
+</body>
+</html>
+

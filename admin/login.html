@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Hotel</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="css/login.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+</head>
+<body class="login-body">
+
+  <div class="login-card">
+    <h1>Hotel</h1>
+    <p>Acceso Administrativo</p>
+
+    <form id="loginForm">
+      <div class="input-group">
+        <label>Usuario o correo</label>
+        <input type="text" id="usuario" placeholder="admin@hotel.com" required>
+      </div>
+
+      <div class="input-group">
+        <label>Contraseña</label>
+        <input type="password" id="password" placeholder="********" required>
+      </div>
+
+      <button type="submit">Ingresar</button>
+    </form>
+  </div>
+
+  <script>
+    const form = document.getElementById("loginForm");
+
+    form.addEventListener("submit", function (e) {
+      e.preventDefault(); // evita recarga
+
+      const usuario = document.getElementById("usuario").value;
+      const password = document.getElementById("password").value;
+
+      // Credenciales demo
+      const userCorrecto = "admin@hotel";
+      const passCorrecta = "admin123";
+
+      if (usuario === userCorrecto && password === passCorrecta) {
+        alert("✅ Bienvenido al panel de administración");
+        window.location.href = "admin.html"; // cambia la ruta si quieres
+      } else {
+        alert("❌ Usuario o contraseña incorrectos");
+      }
+    });
+  </script>
+
+</body>
+</html>
