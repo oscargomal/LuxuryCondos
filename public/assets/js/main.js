@@ -9,7 +9,7 @@ document.querySelectorAll('.open-booking-btn').forEach(btn => {
     const price = parseFloat(btn.dataset.price);
 
     // Configurar modal al abrir
-    const modalId = room === 'Lake View' ? '#modalLakeView' : '#modalMountainView';
+    const modalId = room === 'Vista al Lago' ? '#modalLakeView' : '#modalMountainView';
     const modalEl = document.querySelector(modalId);
     const form = modalEl.querySelector('.booking-form');
 
@@ -61,4 +61,3 @@ document.querySelectorAll('.booking-form').forEach(form => {
     // Aquí se integrará Stripe más adelante
   });
 });
-
