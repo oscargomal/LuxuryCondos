@@ -5,6 +5,8 @@ const modalImg = document.getElementById("modalMainImg");
 const modalTitle = document.getElementById("modalTitle");
 const modalPrice = document.getElementById("modalPrice");
 const modalReservar = document.getElementById("modalReservar");
+const isEnglish = document.documentElement.lang === "en";
+const priceUnit = isEnglish ? "MXN / night" : "MXN / noche";
 
 // Abrir modal
 document.querySelectorAll(".open-modal").forEach(btn => {
@@ -19,7 +21,7 @@ document.querySelectorAll(".open-modal").forEach(btn => {
 
     modalImg.src = roomData.img;
     modalTitle.textContent = roomData.name;
-    modalPrice.textContent = `$${roomData.price} MXN / noche`;
+    modalPrice.textContent = `$${roomData.price} ${priceUnit}`;
 
     // Guardar datos en el botón
     modalReservar.dataset.room = JSON.stringify(roomData);

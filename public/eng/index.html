@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <title>Luxury Condo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="/assets/img/icon.ico" type="image/x-icon">
 
   <!-- Fuente -->
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
@@ -26,29 +27,61 @@
     <!-- MENÚ -->
     <nav class="menu">
       <a href="/eng/">Home</a>
-      <a href="/galeria.html">Gallery</a>
-      <a href="/habitaciones.html">Rooms</a>
-      <a href="/servicios.html">Services</a>
-      <a href="/ubicacion.html">Location</a>
-      <a href="/contacto.html">Contact</a>
-      <a href="/">Español</a>
+      <a href="/eng/galeria.html">Gallery</a>
+      <a href="/eng/habitaciones.html">Rooms</a>
+      <a href="/eng/servicios.html">Services</a>
+      <a href="/eng/ubicacion.html">Location</a>
+      <a href="/eng/contacto.html">Contact</a>
+      <a href="/index.html">Español</a>
     </nav>
 
   </div>
 </header>
 
 <!-- ================= HERO ================= -->
-<section class="hero">
-  <div class="hero-content">
-    <h2>A space to rest</h2>
-    <p>Comfort, tranquility, and a unique location</p>
+<section class="hero-carousel" data-hero-carousel>
+  <div class="hero-slide is-active" style="background-image: url('/assets/img/slide2.jpeg');">
+    <div class="hero-overlay"></div>
+    <div class="hero-caption">
+      <h2>Available</h2>
+      <p>12 exclusive apartments for short or long stays</p>
+    </div>
+  </div>
+  <div class="hero-slide" style="background-image: url('/assets/img/slide1.jpg');">
+    <div class="hero-overlay"></div>
+    <div class="hero-caption">
+      <h2>Amenities</h2>
+      <p>Excellent location 5 minutes from downtown Ajijic</p>
+    </div>
+  </div>
+  <div class="hero-slide" style="background-image: url('/assets/img/slide3.jpeg');">
+    <div class="hero-overlay"></div>
+    <div class="hero-caption">
+      <h2>Your home</h2>
+      <p>A place created to rest and disconnect</p>
+    </div>
+  </div>
+  <button class="hero-control prev" type="button" data-hero-prev aria-label="Previous">‹</button>
+  <button class="hero-control next" type="button" data-hero-next aria-label="Next">›</button>
+</section>
+<section class="site-notice" id="siteNotice" hidden>
+  <div class="notice-inner">
+    <span class="notice-tag" data-notice-type></span>
+    <div class="notice-text">
+      <h3 data-notice-title></h3>
+      <p data-notice-message></p>
+    </div>
   </div>
 </section>
 <!-- ================= INTRO ================= -->
 <section class="intro container">
- <justify><p>
+  <p class="intro-text">
     A refuge where time moves calmly and every space invites rest. Our apartments offer lake or mountain views, combining comfort and elegance in a unique natural setting in Ajijic. We provide essential services such as a heated pool, internet, housekeeping, and personalized attention so your stay is comfortable and worry-free.
-  </p></justify> 
+  </p>
+</section>
+<section class="home-cta">
+  <a class="cta-button" href="/eng/habitaciones.html">View rooms</a>
+  <p class="cta-sub">Explore our apartments and availability</p>
 </section>
 <section class="home-videos container">
   <div class="video-main">
@@ -76,5 +109,6 @@
       <small>Contact: <a href="mailto:luxurycondo@hotmail.com" class="text-white text-decoration-underline">luxurycondo@gmail.com</a> • Phone: +52 33 1369 5589</small>
 </footer>
 
+<script src="/assets/js/main.js"></script>
 </body>
 </html>

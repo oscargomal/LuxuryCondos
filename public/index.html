@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <title>Luxury Condo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="assets/img/icon.ico" type="image/x-icon">
 
   <!-- Fuente -->
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
@@ -38,17 +39,49 @@
 </header>
 
 <!-- ================= HERO ================= -->
-<section class="hero">
-  <div class="hero-content">
-    <h2>Un espacio para descansar</h2>
-    <p>Comodidad, tranquilidad y una ubicación única</p>
+<section class="hero-carousel" data-hero-carousel>
+  <div class="hero-slide is-active" style="background-image: url('assets/img/slide2.jpeg');">
+    <div class="hero-overlay"></div>
+    <div class="hero-caption">
+      <h2>Disponible</h2>
+      <p>12 exclusivos departamentos para estancias cortas o largas</p>
+    </div>
+  </div>
+  <div class="hero-slide" style="background-image: url('assets/img/slide1.jpg');">
+    <div class="hero-overlay"></div>
+    <div class="hero-caption">
+      <h2>Amenidades</h2>
+      <p>Excelente ubicación a 5 minutos del centro de Ajijic</p>
+    </div>
+  </div>
+  <div class="hero-slide" style="background-image: url('assets/img/slide3.jpeg');">
+    <div class="hero-overlay"></div>
+    <div class="hero-caption">
+      <h2>Tu hogar</h2>
+      <p>Un lugar creado para descansar y desconectarte</p>
+    </div>
+  </div>
+  <button class="hero-control prev" type="button" data-hero-prev aria-label="Anterior">‹</button>
+  <button class="hero-control next" type="button" data-hero-next aria-label="Siguiente">›</button>
+</section>
+<section class="site-notice" id="siteNotice" hidden>
+  <div class="notice-inner">
+    <span class="notice-tag" data-notice-type></span>
+    <div class="notice-text">
+      <h3 data-notice-title></h3>
+      <p data-notice-message></p>
+    </div>
   </div>
 </section>
 <!-- ================= INTRO ================= -->
 <section class="intro container">
- <justify><p>
+  <p class="intro-text">
     Un refugio donde el tiempo avanza con calma y cada espacio invita al descanso. Nuestros departamentos ofrecen vistas al lago o a la montaña, combinando comodidad y elegancia en un entorno natural único en Ajijic. Contamos con servicios esenciales como alberca climatizada, internet, limpieza y atención personalizada para que tu estancia sea cómoda y sin preocupaciones.
-  </p></justify> 
+  </p>
+</section>
+<section class="home-cta">
+  <a class="cta-button" href="habitaciones.html">Ver habitaciones</a>
+  <p class="cta-sub">Explora nuestros departamentos y disponibilidad</p>
 </section>
 <section class="home-videos container">
   <div class="video-main">
@@ -76,5 +109,6 @@
       <small>Contacto: <a href="mailto:luxurycondo@hotmail.com" class="text-white text-decoration-underline">luxurycondo@gmail.com</a> • Tel: +52 33 1369 5589</small>
 </footer>
 
+<script src="assets/js/main.js"></script>
 </body>
 </html>

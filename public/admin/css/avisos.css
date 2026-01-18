@@ -97,10 +97,14 @@ body {
   font-size: 32px;
   font-weight: 600;
   color: #0b2c4d;
-}s
+}
     /* ========================
        FORM
     ======================== */
+    #noticeForm {
+      display: grid;
+      gap: 16px;
+    }
     .form-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -140,7 +144,7 @@ body {
     textarea:focus {
       outline: none;
       border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.25);
+      box-shadow: 0 0 0 3px rgba(17, 17, 17, 0.12);
     }
 
     /* ========================

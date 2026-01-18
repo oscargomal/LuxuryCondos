@@ -1,18 +1,18 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Reservar | Luxury Condo</title>
+  <title>Book | Luxury Condo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="/assets/css/style.css">
 </head>
 <body>
 
 <header class="header">
   <div class="container nav">
-    <h1 class="logo">Hotel Boutique</h1>
+    <h1 class="logo">Luxury Condo</h1>
   </div>
 </header>
 
@@ -21,13 +21,13 @@
 
     <!-- ===== RESUMEN ===== -->
     <aside class="booking-summary">
-      <h2>Resumen de tu estancia</h2>
+      <h2>Your stay summary</h2>
 
       <div class="summary-card">
-        <img id="summaryImg" src="" alt="Habitación" class="summary-img">
+        <img id="summaryImg" src="" alt="Room" class="summary-img">
 
         <h3 class="summary-title" id="summaryTitle">
-          Habitación seleccionada
+          Selected room
         </h3>
 
         <p class="summary-desc" id="summaryDesc">
@@ -35,69 +35,69 @@
         </p>
 
         <div class="summary-row">
-          <span>Precio base</span>
+          <span>Base price</span>
           <strong id="summaryPrice">$— MXN</strong>
         </div>
 
         <div class="summary-row">
-          <span>Periodo</span>
+          <span>Period</span>
           <strong id="summaryPeriod">—</strong>
         </div>
 
         <hr>
 
         <div class="summary-total">
-          <span>Total estimado</span>
+          <span>Estimated total</span>
           <strong id="summaryTotal">—</strong>
         </div>
       </div>
     </aside>
 
-    <!-- ===== FORMULARIO ===== -->
+    <!-- ===== FORM ===== -->
     <form class="booking-form">
 
-      <h2>Datos del huésped</h2>
+      <h2>Guest details</h2>
 
       <div class="form-group">
-        <label>Nombre completo</label>
-        <input type="text" placeholder="Ej. Juan Pérez">
+        <label>Full name</label>
+        <input type="text" placeholder="E.g. Jane Doe">
       </div>
 
       <div class="form-group">
-        <label>Correo electrónico</label>
-        <input type="email" placeholder="correo@ejemplo.com">
+        <label>Email</label>
+        <input type="email" placeholder="email@example.com">
       </div>
 
       <div class="form-group">
-        <label>Teléfono / WhatsApp</label>
+        <label>Phone / WhatsApp</label>
         <input type="tel" placeholder="+52 33 0000 0000">
       </div>
 
-      <!-- ===== TIPO DE ESTANCIA ===== -->
-      <h3 class="form-subtitle">Tipo de estancia</h3>
+      <!-- ===== STAY TYPE ===== -->
+      <h3 class="form-subtitle">Stay type</h3>
 
       <div class="stay-options">
         <label class="stay-card">
           <input type="radio" name="stay" value="night" checked>
           <div>
-            <strong>Por noche</strong>
-            <span>$3,000 MXN / noche</span>
+            <strong>Per night</strong>
+            <span>$3,000 MXN / night</span>
           </div>
         </label>
 
         <label class="stay-card">
           <input type="radio" name="stay" value="month">
           <div>
-            <strong>Estancia mensual</strong>
-            <span>$33,000 MXN / mes</span>
+            <strong>Monthly stay</strong>
+            <span>$33,000 MXN / month</span>
           </div>
         </label>
 
         <label class="stay-card">
           <input type="radio" name="stay" value="year">
           <div>
-            <strong>Contrato anual</strong>
-            <span>$31,000 MXN / mes</span>
+            <strong>Annual contract</strong>
+            <span>$31,000 MXN / month</span>
           </div>
         </label>
       </div>
@@ -116,7 +116,7 @@
       </div>
 
       <div class="form-group">
-        <label>Huéspedes</label>
+        <label>Guests</label>
         <select>
           <option>1</option>
           <option selected>2</option>
@@ -126,11 +126,11 @@
       </div>
 
       <button class="btn-primary" type="button">
-        Confirmar reservación
+        Confirm booking
       </button>
 
       <p class="form-note">
-        No se realizará ningún cargo hasta confirmar disponibilidad.
+        No charge will be made until availability is confirmed.
       </p>
 
     </form>
@@ -139,10 +139,8 @@
 </section>
 
 <footer class="footer">
-  <p>© 2026 Hotel Boutique · Ajijic, Jalisco</p>
+  <p>© 2026 Luxury Condo · Ajijic, Jalisco</p>
 </footer>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="assets/js/supabase.js"></script>
-<script src="assets/js/reservar.js"></script>
+<script src="/assets/js/reservar.js"></script>
 </body>
 </html>

@@ -5,6 +5,26 @@ const PRICES = {
   year: 31000
 };
 
+const isEnglish = document.documentElement.lang === "en";
+const strings = {
+  summaryDesc: isEnglish ? "2 guests · Wi-Fi · King bed" : "2 huéspedes · Wi-Fi · Cama King",
+  noRoom: isEnglish ? "No room selected" : "No hay habitación seleccionada",
+  nights: isEnglish ? "night(s)" : "noche(s)",
+  month: isEnglish ? "month" : "mes",
+  yearly: isEnglish ? "Annual contract" : "Contrato anual",
+  priceNight: isEnglish ? "MXN / night" : "MXN / noche",
+  priceMonth: isEnglish ? "MXN / month" : "MXN / mes",
+  missingGuest: isEnglish
+    ? "⚠️ Please complete all guest details."
+    : "⚠️ Por favor completa todos los datos del huésped.",
+  invalidDates: isEnglish
+    ? "⚠️ Select valid dates."
+    : "⚠️ Selecciona fechas válidas.",
+  confirmMessage: isEnglish
+    ? "✅ Request sent successfully.\n\nWe will contact you to confirm availability."
+    : "✅ Solicitud enviada correctamente.\n\nNos pondremos en contacto para confirmar disponibilidad."
+};
+
 // ================= ELEMENTOS =================
 const summaryImg = document.getElementById("summaryImg");
 const summaryTitle = document.getElementById("summaryTitle");
@@ -24,9 +44,9 @@ const room = JSON.parse(localStorage.getItem("selectedRoom"));
 if (room) {
   summaryImg.src = room.img;
   summaryTitle.textContent = room.name;
-  summaryDesc.textContent = "2 huéspedes · Wi-Fi · Cama King";
+  summaryDesc.textContent = strings.summaryDesc;
 } else {
-  summaryTitle.textContent = "No hay habitación seleccionada";
+  summaryTitle.textContent = strings.noRoom;
 }
 
 // ================= CALCULAR NOCHES =================
@@ -50,20 +70,20 @@ function updateSummary() {
 
   if (stayType === "night") {
     total = nights * PRICES.night;
-    summaryPrice.textContent = `$${PRICES.night.toLocaleString()} MXN / noche`;
-    periodText = nights ? `${nights} noche(s)` : "—";
+    summaryPrice.textContent = `$${PRICES.night.toLocaleString()} ${strings.priceNight}`;
+    periodText = nights ? `${nights} ${strings.nights}` : "—";
   }
 
   if (stayType === "month") {
     total = PRICES.month;
-    summaryPrice.textContent = `$${PRICES.month.toLocaleString()} MXN / mes`;
-    periodText = "1 mes";
+    summaryPrice.textContent = `$${PRICES.month.toLocaleString()} ${strings.priceMonth}`;
+    periodText = `1 ${strings.month}`;
   }
 
   if (stayType === "year") {
     total = PRICES.year;
-    summaryPrice.textContent = `$${PRICES.year.toLocaleString()} MXN / mes`;
-    periodText = "Contrato anual";
+    summaryPrice.textContent = `$${PRICES.year.toLocaleString()} ${strings.priceMonth}`;
+    periodText = strings.yearly;
   }
 
   summaryPeriod.textContent = periodText;
@@ -88,12 +108,12 @@ confirmBtn.addEventListener("click", () => {
   const stayType = document.querySelector("input[name='stay']:checked").value;
 
   if (!name || !email || !phone) {
-    alert("⚠️ Por favor completa todos los datos del huésped.");
+    alert(strings.missingGuest);
     return;
   }
 
   if (stayType === "night" && getNights() === 0) {
-    alert("⚠️ Selecciona fechas válidas.");
+    alert(strings.invalidDates);
     return;
   }
 
@@ -108,9 +128,6 @@ confirmBtn.addEventListener("click", () => {
 
   console.log("📌 RESERVACIÓN:", reservationData);
 
-  alert(
-    "✅ Solicitud enviada correctamente.\n\n" +
-    "Nos pondremos en contacto para confirmar disponibilidad."
-  );
+  alert(strings.confirmMessage);
 });
   

@@ -2,19 +2,19 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Avisos | Hotel</title>
+  <title>Avisos | Luxury Condo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="css/admin.css">
   <link rel="stylesheet" href="css/avisos.css">
+  <link rel="stylesheet" href="css/admin.css">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
 </head>
 <body>
 
   <aside class="sidebar">
-    <h2>Hotel</h2>
+    <h2>Luxury Condo</h2>
     <nav>
       <a href="admin.html" class="active">Dashboard</a>
       <a href="reservaciones.html">Reservaciones</a>
-      <a href="habitaciones.html">Habitaciones</a>
       <a href="avisos.html">Avisos</a>
       <a href="clientes.html">Clientes</a>
       <a href="reportes.html">Reportes</a>
@@ -32,36 +32,50 @@
     <section class="form-card">
       <h2>Nuevo aviso</h2>
 
-      <div class="form-grid">
-        <div class="form-group">
-          <label>Título</label>
-          <input type="text" placeholder="Promoción de temporada">
+      <form id="noticeForm">
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Título</label>
+            <input type="text" id="noticeTitle" placeholder="Promoción de temporada" required>
+          </div>
+
+          <div class="form-group">
+            <label>Tipo</label>
+            <select id="noticeType">
+              <option>Informativo</option>
+              <option>Promoción</option>
+              <option>Urgente</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Estado</label>
+            <select id="noticeStatus">
+              <option>Activo</option>
+              <option>Inactivo</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Título (English)</label>
+            <input type="text" id="noticeTitleEn" placeholder="Seasonal promotion">
+          </div>
         </div>
 
         <div class="form-group">
-          <label>Tipo</label>
-          <select>
-            <option>Informativo</option>
-            <option>Promoción</option>
-            <option>Urgente</option>
-          </select>
+          <label>Mensaje</label>
+          <textarea id="noticeMessage" placeholder="Escribe el aviso que se mostrará en la página principal..." required></textarea>
         </div>
 
         <div class="form-group">
-          <label>Estado</label>
-          <select>
-            <option>Activo</option>
-            <option>Inactivo</option>
-          </select>
+          <label>Mensaje (English)</label>
+          <textarea id="noticeMessageEn" placeholder="Write the notice that will appear on the home page..."></textarea>
         </div>
-      </div>
 
-      <div class="form-group">
-        <label>Mensaje</label>
-        <textarea placeholder="Escribe el aviso que se mostrará en la página principal..."></textarea>
-      </div>
-
-      <button class="btn btn-primary">Publicar aviso</button>
+        <button class="btn btn-primary" type="submit">Guardar aviso</button>
+      </form>
     </section>
 
     <section class="table-section">
@@ -78,29 +92,9 @@
           </tr>
         </thead>
 
-        <tbody>
+        <tbody id="noticeTableBody">
           <tr>
-            <td>Mantenimiento</td>
-            <td class="type-info">Informativo</td>
-            <td>15/01/2026</td>
-            <td class="status active">Activo</td>
-            <td>
-              <button class="btn btn-info btn-small">Ver</button>
-              <button class="btn btn-primary btn-small">Editar</button>
-              <button class="btn btn-danger btn-small">Eliminar</button>
-            </td>
-          </tr>
-
-          <tr>
-            <td>Descuento fin de semana</td>
-            <td class="type-promo">Promoción</td>
-            <td>10/01/2026</td>
-            <td class="status inactive">Inactivo</td>
-            <td>
-              <button class="btn btn-info btn-small">Ver</button>
-              <button class="btn btn-primary btn-small">Editar</button>
-              <button class="btn btn-danger btn-small">Eliminar</button>
-            </td>
+            <td colspan="5">No hay avisos publicados.</td>
           </tr>
         </tbody>
       </table>
@@ -108,5 +102,112 @@
 
   </main>
 
+  <script>
+    const STORAGE_KEY = "luxuryNotice";
+    const form = document.getElementById("noticeForm");
+    const titleInput = document.getElementById("noticeTitle");
+    const typeInput = document.getElementById("noticeType");
+    const statusInput = document.getElementById("noticeStatus");
+    const messageInput = document.getElementById("noticeMessage");
+    const titleEnInput = document.getElementById("noticeTitleEn");
+    const messageEnInput = document.getElementById("noticeMessageEn");
+    const tableBody = document.getElementById("noticeTableBody");
+
+    const typeClassMap = {
+      Informativo: "type-info",
+      Promoción: "type-promo",
+      Urgente: "type-urgent"
+    };
+
+    const statusClassMap = {
+      Activo: "active",
+      Inactivo: "inactive"
+    };
+
+    const readNotice = () => {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return null;
+      try {
+        return JSON.parse(raw);
+      } catch (error) {
+        return null;
+      }
+    };
+
+    const formatDate = (value) => {
+      if (!value) return "—";
+      return value;
+    };
+
+    const renderTable = (notice) => {
+      if (!tableBody) return;
+      tableBody.innerHTML = "";
+
+      if (!notice) {
+        tableBody.innerHTML = "<tr><td colspan=\"5\">No hay avisos publicados.</td></tr>";
+        return;
+      }
+
+      const typeClass = typeClassMap[notice.type] || "type-info";
+      const statusClass = statusClassMap[notice.status] || "inactive";
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${notice.title}</td>
+        <td class="${typeClass}">${notice.type}</td>
+        <td>${formatDate(notice.date)}</td>
+        <td class="status ${statusClass}">${notice.status}</td>
+        <td>
+          <button class="btn btn-danger btn-small" data-action="delete">Eliminar</button>
+        </td>
+      `;
+      tableBody.appendChild(row);
+    };
+
+    const fillForm = (notice) => {
+      if (!notice) return;
+      titleInput.value = notice.title || "";
+      typeInput.value = notice.type || "Informativo";
+      statusInput.value = notice.status || "Activo";
+      messageInput.value = notice.message || "";
+      titleEnInput.value = notice.titleEn || "";
+      messageEnInput.value = notice.messageEn || "";
+    };
+
+    const saveNotice = (event) => {
+      event.preventDefault();
+      const today = new Date().toLocaleDateString("es-MX");
+      const notice = {
+        title: titleInput.value.trim(),
+        type: typeInput.value,
+        status: statusInput.value,
+        message: messageInput.value.trim(),
+        titleEn: titleEnInput.value.trim(),
+        messageEn: messageEnInput.value.trim(),
+        date: today
+      };
+
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(notice));
+      renderTable(notice);
+    };
+
+    form.addEventListener("submit", saveNotice);
+
+    tableBody.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-action]");
+      if (!button) return;
+
+      if (button.dataset.action === "delete") {
+        localStorage.removeItem(STORAGE_KEY);
+        tableBody.innerHTML = "<tr><td colspan=\"5\">No hay avisos publicados.</td></tr>";
+        form.reset();
+      }
+    });
+
+    const existingNotice = readNotice();
+    if (existingNotice) {
+      fillForm(existingNotice);
+      renderTable(existingNotice);
+    }
+  </script>
 </body>
 </html>

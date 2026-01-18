@@ -1,19 +1,36 @@
+:root {
+  --admin-bg: #f6f6f6;
+  --admin-panel: #ffffff;
+  --admin-text: #222;
+  --admin-muted: #666;
+  --primary: #222;
+  --primary-dark: #000;
+  --accent: #111;
+  --border: #e3e3e3;
+  --card: #ffffff;
+  --success: #2f8f4e;
+  --warning: #c28a2c;
+  --danger: #8b1f1f;
+  --info: #3c6e71;
+}
+
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: 'Poppins', sans-serif;
+  font-family: 'Montserrat', sans-serif;
 }
 
 body {
   display: flex;
-  background: #f4f6f9;
+  background: var(--admin-bg);
+  color: var(--admin-text);
 }
 
 /* ===== SIDEBAR ===== */
 .sidebar {
   width: 250px;
-  background: #0b2c4d;
+  background: #1f1f1f;
   min-height: 100vh;
   padding: 30px 20px;
   color: #fff;
@@ -37,7 +54,7 @@ body {
 
 .sidebar nav a:hover,
 .sidebar nav a.active {
-  background: #163a5f;
+  background: #111;
 }
 
 /* SUB MENU */
@@ -50,11 +67,11 @@ body {
 /* LOGOUT */
 .logout {
   margin-top: 30px;
-  background: #b52b2b;
+  background: var(--danger);
 }
 
 .logout:hover {
-  background: #912121;
+  background: #721818;
 }
 
 /* ===== MAIN ===== */
@@ -72,11 +89,11 @@ body {
 }
 
 .header h1 {
-  color: #0b2c4d;
+  color: var(--admin-text);
 }
 
 .header span {
-  color: #555;
+  color: var(--admin-muted);
 }
 
 /* CARDS */
@@ -88,35 +105,46 @@ body {
 }
 
 .card {
-  background: #fff;
+  background: var(--admin-panel);
   padding: 25px;
   border-radius: 14px;
   box-shadow: 0 10px 20px rgba(0,0,0,0.06);
+  border: 1px solid var(--border);
 }
 
 .card h3 {
   font-size: 15px;
-  color: #666;
+  color: var(--admin-muted);
   margin-bottom: 10px;
 }
 
 .card p {
   font-size: 32px;
   font-weight: 600;
-  color: #0b2c4d;
+  color: var(--admin-text);
 }
 
 /* TABLE */
 .table-section {
-  background: #fff;
+  background: var(--admin-panel);
   padding: 25px;
   border-radius: 14px;
   box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+  border: 1px solid var(--border);
+}
+
+.form-card {
+  background: var(--admin-panel);
+  padding: 25px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+  margin-bottom: 30px;
 }
 
 .table-section h2 {
   margin-bottom: 15px;
-  color: #0b2c4d;
+  color: var(--admin-text);
 }
 
 table {
@@ -132,12 +160,11 @@ th, td {
 }
 
 th {
-  background: #f4f6f9;
+  background: #f0f0f0;
   font-weight: 500;
 }
 
 .status.active {
-  color: green;
+  color: var(--success);
   font-weight: 500;
 }
-
