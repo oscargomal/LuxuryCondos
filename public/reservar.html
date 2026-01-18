@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Reservar | Luxury Condo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+<header class="header">
+  <div class="container nav">
+    <h1 class="logo">Hotel Boutique</h1>
+  </div>
+</header>
+
+<section class="booking">
+  <div class="container booking-box">
+
+    <!-- ===== RESUMEN ===== -->
+    <aside class="booking-summary">
+      <h2>Resumen de tu estancia</h2>
+
+      <div class="summary-card">
+        <img id="summaryImg" src="" alt="Habitación" class="summary-img">
+
+        <h3 class="summary-title" id="summaryTitle">
+          Habitación seleccionada
+        </h3>
+
+        <p class="summary-desc" id="summaryDesc">
+          —
+        </p>
+
+        <div class="summary-row">
+          <span>Precio base</span>
+          <strong id="summaryPrice">$— MXN</strong>
+        </div>
+
+        <div class="summary-row">
+          <span>Periodo</span>
+          <strong id="summaryPeriod">—</strong>
+        </div>
+
+        <hr>
+
+        <div class="summary-total">
+          <span>Total estimado</span>
+          <strong id="summaryTotal">—</strong>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ===== FORMULARIO ===== -->
+    <form class="booking-form">
+
+      <h2>Datos del huésped</h2>
+
+      <div class="form-group">
+        <label>Nombre completo</label>
+        <input type="text" placeholder="Ej. Juan Pérez">
+      </div>
+
+      <div class="form-group">
+        <label>Correo electrónico</label>
+        <input type="email" placeholder="correo@ejemplo.com">
+      </div>
+
+      <div class="form-group">
+        <label>Teléfono / WhatsApp</label>
+        <input type="tel" placeholder="+52 33 0000 0000">
+      </div>
+
+      <!-- ===== TIPO DE ESTANCIA ===== -->
+      <h3 class="form-subtitle">Tipo de estancia</h3>
+
+      <div class="stay-options">
+        <label class="stay-card">
+          <input type="radio" name="stay" value="night" checked>
+          <div>
+            <strong>Por noche</strong>
+            <span>$3,000 MXN / noche</span>
+          </div>
+        </label>
+
+        <label class="stay-card">
+          <input type="radio" name="stay" value="month">
+          <div>
+            <strong>Estancia mensual</strong>
+            <span>$33,000 MXN / mes</span>
+          </div>
+        </label>
+
+        <label class="stay-card">
+          <input type="radio" name="stay" value="year">
+          <div>
+            <strong>Contrato anual</strong>
+            <span>$31,000 MXN / mes</span>
+          </div>
+        </label>
+      </div>
+
+      <!-- ===== FECHAS ===== -->
+      <div class="form-row">
+        <div class="form-group">
+          <label>Check-in</label>
+          <input type="date" id="checkin">
+        </div>
+
+        <div class="form-group">
+          <label>Check-out</label>
+          <input type="date" id="checkout">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Huéspedes</label>
+        <select>
+          <option>1</option>
+          <option selected>2</option>
+          <option>3</option>
+          <option>4</option>
+        </select>
+      </div>
+
+      <button class="btn-primary" type="button">
+        Confirmar reservación
+      </button>
+
+      <p class="form-note">
+        No se realizará ningún cargo hasta confirmar disponibilidad.
+      </p>
+
+    </form>
+
+  </div>
+</section>
+
+<footer class="footer">
+  <p>© 2026 Hotel Boutique · Ajijic, Jalisco</p>
+</footer>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/supabase.js"></script>
+<script src="assets/js/reservar.js"></script>
+</body>
+</html>

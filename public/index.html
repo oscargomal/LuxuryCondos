@@ -1,369 +1,80 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-<!-- icono-->
-  <link rel="icon" href="assets/img/icon.ico" type="image/x-icon">
+  <meta charset="UTF-8">
+  <title>Luxury Condo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>Luxury Condo Hotel</title>
+  <!-- Fuente -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
 
-  <!-- Bootstrap (CDN 5.3.3) -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-
-  <!-- Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
-
-  <!-- Estilos -->
+  <!-- CSS -->
   <link rel="stylesheet" href="assets/css/style.css">
-
 </head>
 <body>
 
-  <!-- Navegacion -->
-  <nav class="navbar navbar-expand-lg fixed-top">
-    <div class="container">
-      <a class="navbar-brand" href="#inicio">Luxury Condo</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMain">
-        <span class="navbar-toggler-icon"></span>
-      </button>
+<!-- ================= NAV ================= -->
+<header class="header">
+  <div class="container nav">
 
-      <div class="collapse navbar-collapse" id="navMain">
-        <ul class="navbar-nav ms-auto align-items-lg-center">
-          <li class="nav-item"><a class="nav-link" href="#inicio">Inicio</a></li>
-          <li class="nav-item"><a class="nav-link" href="#gallerySection">Galería</a></li>
-          <li class="nav-item"><a class="nav-link" href="#habitaciones">Habitaciones</a></li>
-          <li class="nav-item"><a class="nav-link" href="#ubicacion">Ubicación</a></li>
-          <li class="nav-item"><a class="nav-link" href="#contacto">Contacto</a></li>
-          <li class="nav-item"><a class="nav-link" href="/eng/">English</a></li>
-        </ul>
-      </div>
-    </div>
-  </nav>
+ <h1 class="logo">Luxury Condo</h1>
 
-  <!-- Carrusel principal -->
-<section id="inicio" class="hero-carousel">
-  <div id="heroSlides" class="carousel slide" data-bs-ride="carousel">
-    <div class="carousel-inner">
+    <!-- BOTÓN HAMBURGUESA -->
+    <input type="checkbox" id="menu-toggle">
+    <label for="menu-toggle" class="menu-icon">☰</label>
 
-      <div class="carousel-item active" style="background-image: url('assets/img/slide2.jpeg');">
-        <div class="d-flex h-100 align-items-center justify-content-center">
-          <div class="hero-caption text-center">
-            <h1 class="hero-title">Disponible</h1>
-            <p class="hero-sub">12 exclusivos departamentos para estancias cortas o largas</p>
-          </div>
-        </div>
-      </div>
+    <!-- MENÚ -->
+    <nav class="menu">
+      <a href="index.html">Inicio</a>
+      <a href="galeria.html">Galería</a>
+      <a href="habitaciones.html">Habitaciones</a>
+      <a href="servicios.html">Servicios</a>
+      <a href="ubicacion.html">Ubicación</a>
+      <a href="contacto.html">Contacto</a>
+      <a href="/eng/">English</a>
+    </nav>
 
-      <div class="carousel-item" style="background-image: url('assets/img/slide1.jpg');">
-        <div class="d-flex h-100 align-items-center justify-content-center">
-          <div class="hero-caption text-center">
-            <h1 class="hero-title">Amenidades</h1>
-            <p class="hero-sub">Descubre todas las amenidades con las que contamos, con excelente ubicación a 5 minutos del centro de Ajijic.</p>
-          </div>
-        </div>
-      </div>
+  </div>
+</header>
 
-      <div class="carousel-item" style="background-image: url('assets/img/slide3.jpeg');">
-        <div class="d-flex h-100 align-items-center justify-content-center">
-          <div class="hero-caption text-center">
-            <h1 class="hero-title">Tu Hogar</h1>
-            <p class="hero-sub">Un lugar creado para descansar y desconectarte</p>
-          </div>
-        </div>
-      </div>
+<!-- ================= HERO ================= -->
+<section class="hero">
+  <div class="hero-content">
+    <h2>Un espacio para descansar</h2>
+    <p>Comodidad, tranquilidad y una ubicación única</p>
+  </div>
+</section>
+<!-- ================= INTRO ================= -->
+<section class="intro container">
+ <justify><p>
+    Un refugio donde el tiempo avanza con calma y cada espacio invita al descanso. Nuestros departamentos ofrecen vistas al lago o a la montaña, combinando comodidad y elegancia en un entorno natural único en Ajijic. Contamos con servicios esenciales como alberca climatizada, internet, limpieza y atención personalizada para que tu estancia sea cómoda y sin preocupaciones.
+  </p></justify> 
+</section>
+<section class="home-videos container">
+  <div class="video-main">
+    <video autoplay muted loop playsinline>
+      <source src="assets/img/i1.mp4" type="video/mp4">
+    </video>
+  </div>
 
-    </div>
-
-    <button class="carousel-control-prev" type="button" data-bs-target="#heroSlides" data-bs-slide="prev">
-      <span class="carousel-control-prev-icon"></span>
-    </button>
-    <button class="carousel-control-next" type="button" data-bs-target="#heroSlides" data-bs-slide="next">
-      <span class="carousel-control-next-icon"></span>
-    </button>
-
+  <div class="video-side">
+    <video autoplay muted loop playsinline>
+      <source src="assets/img/i2.mp4" type="video/mp4">
+    </video>
   </div>
 </section>
 
-<!-- Texto extendido bajo la galeria -->
-<div class="intro-block">
-  <p>
-    Un refugio donde el tiempo parece moverse más despacio, y cada instante invita a respirar, contemplar y reconectar. Desde tu balcón, despierta con la luz suave sobre la laguna o contempla la serenidad de la montaña; cuatro de nuestros espacios ofrecen vistas al agua y tres más, a las montañas que rodean Ajijic.
-    Cada rincón de nuestro hotel ha sido diseñado para combinar comodidad y elegancia discreta: desde la calidez de la alberca climatizada hasta los espacios pensados para relajarte, leer o simplemente disfrutar del paisaje. Con servicios esenciales cuidadosamente integrados —electricidad, agua, internet, calefacción y limpieza —, todo está dispuesto para que tu estancia sea cómoda y sin preocupaciones.
-    Nuestro lobby y bar ofrecen un punto de encuentro íntimo y sofisticado, mientras que la atención atenta y personalizada de nuestro equipo asegura que cada momento sea memorable. Además, podrás disfrutar de nuestro servicio de cocina y masajes, transportándote a un estado de tranquilidad absoluta sin salir del edificio.
-  </p>
-  <ul>
-    <li>Masajes</li>
-    <li>Menu comida</li>
-    <li>Lavado de Autos</li>
-    <li>Transporte</li>
-    <li>Renta de bicicletas</li>
-    <li>Servicio Lavanderia</li>
-    <li>Bar fines de semana</li>
-  </ul>
-</div>
+<section class="home-gallery container">
+  <img src="assets/img/i1.jpg">
+  <img src="assets/img/i2.jpg">
+  <img src="assets/img/i3.jpg">
+  <img src="assets/img/i4.jpg">
 </section>
 
-<!-- Carrusel de galeria bajo el principal -->
-<section class="container my-5" id="gallerySection">
-  <h2 class="text-center mb-3">Servicios</h2>
-  <div id="galleryCarousel" class="carousel slide gallery-carousel" data-bs-ride="carousel">
-    <div class="carousel-inner rounded-3 shadow-sm">
-
-      <div class="carousel-item active" style="background-image: url('assets/img/gallery1.jpeg');"></div>
-      <div class="carousel-item" style="background-image: url('assets/img/gallery2.jpeg');"></div>
-      <div class="carousel-item" style="background-image: url('assets/img/gallery3.jpeg');"></div>
-      <div class="carousel-item" style="background-image: url('assets/img/gallery4.jpeg');"></div>
-      <div class="carousel-item" style="background-image: url('assets/img/gallery5.jpeg');"></div>
-      <div class="carousel-item" style="background-image: url('assets/img/gallery6.jpeg');"></div>
-      <div class="carousel-item" style="background-image: url('assets/img/gallery7.jpeg');"></div>
-      <div class="carousel-item" style="background-image: url('assets/img/gallery8.jpeg');"></div>
-      <div class="carousel-item" style="background-image: url('assets/img/gallery9.jpeg');"></div>
-
-    </div>
-
-    <button class="carousel-control-prev" type="button" data-bs-target="#galleryCarousel" data-bs-slide="prev">
-      <span class="carousel-control-prev-icon"></span>
-    </button>
-    <button class="carousel-control-next" type="button" data-bs-target="#galleryCarousel" data-bs-slide="next">
-      <span class="carousel-control-next-icon"></span>
-    </button>
-  </div>
-</section>
-
-
-<!-- Seccion de habitaciones -->
-<section class="container rooms-section" id="habitaciones">
-  <h2 class="text-center mb-4">Departamentos</h2>
-  <div class="row g-4 justify-content-center">
-
-    <!-- Vista al Lago -->
-    <div class="col-md-5">
-      <div class="room-card" role="button" data-bs-toggle="modal" data-bs-target="#modalLakeView" data-room-name="Vista al Lago" data-price-mxn="1800">
-        <img src="assets/img/Departamento #11 6.jpeg" alt="Vista al Lago" class="card-img-top">
-        <div class="room-body">
-          <h5 class="room-title">Vista al Lago</h5>
-          <p class="room-desc">Balcón incluido · 2 huéspedes</p>
-          <div class="price" data-price-mxn="1800">$1,800 MXN <span class="price-usd text-muted"></span></div>
-          <button class="btn btn-primary w-100 mt-2 open-booking-btn" data-room="Vista al Lago" data-price="1800">Reservar ahora</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Vista a la Montana -->
-    <div class="col-md-5">
-      <div class="room-card" role="button" data-bs-toggle="modal" data-bs-target="#modalMountainView" data-room-name="Vista a la Montaña" data-price-mxn="2900">
-        <img src="https://images.unsplash.com/photo-1616627454537-cb2cb63d0a23?auto=format&fit=crop&w=1400&q=80" alt="Vista a la Montaña" class="card-img-top">
-        <div class="room-body">
-          <h5 class="room-title">Vista a la Montaña</h5>
-          <p class="room-desc">Balcón con vista a la montaña · 2 huéspedes</p>
-          <div class="price" data-price-mxn="2900">$2,900 MXN <span class="price-usd text-muted"></span></div>
-          <button class="btn btn-primary w-100 mt-2 open-booking-btn" data-room="Vista a la Montaña" data-price="2900">Reservar ahora</button>
-        </div>
-      </div>
-    </div>
-
-  </div>
-
-<!-- ========================================================= -->
-<!-- 🏞️ MODAL: Vista al Lago -->
-<!-- ========================================================= -->
-<div class="modal fade" id="modalLakeView" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-xl modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header border-0">
-        <h5 class="modal-title">Vista al Lago</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body">
-        <div class="row g-4 align-items-start">
-
-          <!-- 🖼️ Carrusel de imagenes -->
-          <div class="col-lg-7">
-            <div id="carouselLakeView" class="carousel slide" data-bs-ride="carousel">
-              <div class="carousel-inner rounded-3 overflow-hidden">
-                <div class="carousel-item active">
-                  <img src="assets/img/Departamento #11 10.jpeg" class="d-block w-100 room-modal-img" alt="">
-                </div>
-                <div class="carousel-item">
-                  <img src="assets/img/Departamento #11 9.jpeg" class="d-block w-100 room-modal-img" alt="">
-                </div>
-                <div class="carousel-item">
-                  <img src="assets/img/Departamento #11 8.jpeg" class="d-block w-100 room-modal-img" alt="">
-                </div>
-              </div>
-              <button class="carousel-control-prev" type="button" data-bs-target="#carouselLakeView" data-bs-slide="prev">
-                <span class="carousel-control-prev-icon"></span>
-              </button>
-              <button class="carousel-control-next" type="button" data-bs-target="#carouselLakeView" data-bs-slide="next">
-                <span class="carousel-control-next-icon"></span>
-              </button>
-            </div>
-            <p class="mt-3 text-muted small">
-              Habitación con vista al lago, cama King, balcón y servicios incluidos.
-            </p>
-          </div>
-
-          <!-- 🧾 Formulario -->
-          <div class="col-lg-5">
-            <form id="lakeBookingForm" class="booking-form" data-room="Vista al Lago" data-price="1800">
-              <div class="bg-light border rounded-3 p-3 shadow-sm">
-                <h6 class="fw-bold mb-3">Reservar Vista al Lago</h6>
-
-                <label class="form-label">Check-in</label>
-                <input type="date" class="form-control mb-2 checkin">
-
-                <label class="form-label">Check-out</label>
-                <input type="date" class="form-control mb-2 checkout">
-
-                <label class="form-label">Huéspedes</label>
-                <select class="form-select mb-3 guests">
-                  <option>1</option>
-                  <option selected>2</option>
-                  <option>3</option>
-                  <option>4</option>
-                </select>
-
-                <div class="small">
-                  Precio noche: <strong class="price-per-night">$1,800 MXN</strong><br>
-                  Noches: <strong class="nights">—</strong><br>
-                  Total estimado: <strong class="total">—</strong>
-                </div>
-
-        <button type="submit" class="btn btn-success w-100 mt-3">Reservar / Pagar</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ========================================================= -->
-<!-- 🏔️ MODAL: Vista a la Montana -->
-<!-- ========================================================= -->
-<div class="modal fade" id="modalMountainView" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-xl modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header border-0">
-        <h5 class="modal-title">Vista a la Montaña</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body">
-        <div class="row g-4 align-items-start">
-
-          <!-- 🖼️ Carrusel de imagenes -->
-          <div class="col-lg-7">
-            <div id="carouselMountainView" class="carousel slide" data-bs-ride="carousel">
-              <div class="carousel-inner rounded-3 overflow-hidden">
-                <div class="carousel-item active">
-                  <img src="assets/img/mountainview1.jpg" class="d-block w-100 room-modal-img" alt="">
-                </div>
-                <div class="carousel-item">
-                  <img src="assets/img/mountainview2.jpg" class="d-block w-100 room-modal-img" alt="">
-                </div>
-                <div class="carousel-item">
-                  <img src="assets/img/mountainview3.jpg" class="d-block w-100 room-modal-img" alt="">
-                </div>
-              </div>
-              <button class="carousel-control-prev" type="button" data-bs-target="#carouselMountainView" data-bs-slide="prev">
-                <span class="carousel-control-prev-icon"></span>
-              </button>
-              <button class="carousel-control-next" type="button" data-bs-target="#carouselMountainView" data-bs-slide="next">
-                <span class="carousel-control-next-icon"></span>
-              </button>
-            </div>
-            <p class="mt-3 text-muted small">
-              Habitación con vista a la montaña, terraza privada y servicios incluidos.
-            </p>
-          </div>
-
-          <!-- 🧾 Formulario -->
-          <div class="col-lg-5">
-            <form id="mountainBookingForm" class="booking-form" data-room="Vista a la Montaña" data-price="2900">
-              <div class="bg-light border rounded-3 p-3 shadow-sm">
-                <h6 class="fw-bold mb-3">Reservar Vista a la Montaña</h6>
-
-                <label class="form-label">Check-in</label>
-                <input type="date" class="form-control mb-2 checkin">
-
-                <label class="form-label">Check-out</label>
-                <input type="date" class="form-control mb-2 checkout">
-
-                <label class="form-label">Huéspedes</label>
-                <select class="form-select mb-3 guests">
-                  <option>1</option>
-                  <option selected>2</option>
-                  <option>3</option>
-                  <option>4</option>
-                </select>
-
-                <div class="small">
-                  Precio noche: <strong class="price-per-night">$2,900 MXN</strong><br>
-                  Noches: <strong class="nights">—</strong><br>
-                  Total estimado: <strong class="total">—</strong>
-                </div>
-
-        <button type="submit" class="btn btn-success w-100 mt-3">Reservar / Pagar</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-</section>
-
-
-  <!-- Ubicacion (satelite) -->
-<section class="container my-5" id="ubicacion">
-  <h2 class="text-center mb-4">Ubicación</h2>
-  <div class="row g-4">
-    <div class="col-md-6">
-      <div class="map-card">
-        
-        <!-- Using maps.google.com with t=k for satellite -->
-        <iframe
-          src="https://maps.google.com/maps?q=Carretera%20Pte.%20506,%2045920%20San%20Antonio%20Tlayacapan,%20Jal.&t=k&z=13&output=embed"
-          width="100%" height="350" style="border:0; border-radius:10px;" allowfullscreen="" loading="lazy">
-        </iframe>
-      </div>
-    </div>
-    <div class="col-md-6 d-flex flex-column justify-content-center">
-      <h5>Nos encontramos en la carretera poniente</h5>
-      <p>A solo unos minutos de Ajijic, Jalisco. Al pie del lago de Chapala, con vistas a las montañas.</p>
-      <p><strong>Dirección:</strong> Carretera Poniente #506, San Antonio Tlayacapan</p>
-      <p><strong>Referencias:</strong> Cerca del lago de Chapala y de la zona central de San Antonio Tlayacapan</p>
-      <a href="/admin/">Ir al panel de administración</a>
-    </div>
-  </div>
-</section>
-
-
-    <!-- ========================= -->
-  <!-- 🌙 Footer -->
-  <!-- ========================= -->
-  <footer id="contacto" class="bg-dark text-white text-center py-4 mt-5">
-    <div class="container">
-      <p class="mb-1">© 2025 Luxury Condos — Ajijic, Jalisco</p>
-      <small>Contacto: <a href="mailto:luxurycondo@gmail.com" class="text-white text-decoration-underline">luxurycondo@gmail.com</a> • Tel: +52 33 1369 5589</small>
-
-    </div>
-  </footer>
-
-  <!-- ========================= -->
-  <!-- 📦 Scripts -->
-  <!-- ========================= -->
-
-  <!-- ✅ Bootstrap JS (bundle incluye Popper) -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-
-  <!-- ✅ Script principal del sitio -->
-  <script src="assets/js/main.js"></script>
+<!-- ================= FOOTER ================= -->
+<footer class="footer"><p class="mb-1">© 2025 Condominios/Hoteles Ajijic, Jalisco</p>
+      <small>Contacto: <a href="mailto:luxurycondo@hotmail.com" class="text-white text-decoration-underline">luxurycondo@gmail.com</a> • Tel: +52 33 1369 5589</small>
+</footer>
 
 </body>
 </html>
-
