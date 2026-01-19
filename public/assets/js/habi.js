@@ -18,7 +18,8 @@ document.addEventListener("click", (event) => {
     name: btn.dataset.name,
     price: btn.dataset.price,
     img: btn.dataset.img,
-    id: btn.dataset.id || null
+    id: btn.dataset.id || null,
+    summary: btn.dataset.summary || ""
   };
 
   modalImg.src = roomData.img;

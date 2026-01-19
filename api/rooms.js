@@ -20,10 +20,16 @@ export default async function handler(req, res) {
     if (!assertSupabase(res, { requireAdmin: needsAdmin })) return;
 
     const client = isPublic ? supabaseAnon : supabaseAdmin;
-    const { data, error } = await client
+    let query = client
       .from('rooms')
       .select('*')
       .order('created_at', { ascending: false });
+
+    if (isPublic) {
+      query = query.eq('is_active', true);
+    }
+
+    const { data, error } = await query;
 
     if (error) {
       res.status(500).json({ error: error.message });

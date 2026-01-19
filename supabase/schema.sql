@@ -39,7 +39,8 @@ create table if not exists customers (
   name text,
   email text unique,
   phone text,
-  created_at timestamptz default now()
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
 );
 
 create or replace function set_updated_at()
@@ -50,12 +51,22 @@ begin
 end;
 $$ language plpgsql;
 
+alter table customers add column if not exists updated_at timestamptz default now();
+
+drop trigger if exists rooms_updated_at on rooms;
+drop trigger if exists reservations_updated_at on reservations;
+drop trigger if exists customers_updated_at on customers;
+
 create trigger rooms_updated_at
 before update on rooms
 for each row execute function set_updated_at();
 
 create trigger reservations_updated_at
 before update on reservations
+for each row execute function set_updated_at();
+
+create trigger customers_updated_at
+before update on customers
 for each row execute function set_updated_at();
 
 alter table rooms enable row level security;

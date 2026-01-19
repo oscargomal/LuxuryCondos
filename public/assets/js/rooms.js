@@ -58,7 +58,7 @@
           <p>${room.summary || fallbackSummary}</p>
           <div class="room-footer">
             <span class="price">${formatPrice(room.price_night)}</span>
-            <a href="#" class="btn open-modal" data-id="${room.id || ''}" data-name="${room.name || ''}" data-price="${room.price_night || 0}" data-img="${firstImage}">
+            <a href="#" class="btn open-modal" data-id="${room.id || ''}" data-name="${room.name || ''}" data-summary="${room.summary || ''}" data-price="${room.price_night || 0}" data-img="${firstImage}">
               ${detailsLabel}
             </a>
           </div>

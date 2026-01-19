@@ -75,6 +75,24 @@ export default async function handler(req, res) {
       return;
     }
 
+    if (payload.guest_email || payload.guest_phone) {
+      const customerPayload = {
+        name: payload.guest_name,
+        email: payload.guest_email || null,
+        phone: payload.guest_phone || null
+      };
+
+      if (payload.guest_email) {
+        await supabaseAdmin
+          .from('customers')
+          .upsert(customerPayload, { onConflict: 'email' });
+      } else {
+        await supabaseAdmin
+          .from('customers')
+          .insert(customerPayload);
+      }
+    }
+
     res.status(201).json({ data: mapReservation(data) });
     return;
   }
@@ -106,6 +124,21 @@ export default async function handler(req, res) {
     if (error) {
       res.status(500).json({ error: error.message });
       return;
+    }
+
+    const nextPaymentStatus = payload.payment_status;
+    const nextRoomOccupied = payload.room_occupied;
+    const shouldUpdateRoom = data?.room_id && (nextPaymentStatus || nextRoomOccupied !== undefined);
+
+    if (shouldUpdateRoom) {
+      const occupiedValue = nextRoomOccupied !== undefined
+        ? Boolean(nextRoomOccupied)
+        : nextPaymentStatus === 'paid';
+
+      await supabaseAdmin
+        .from('rooms')
+        .update({ occupied: occupiedValue })
+        .eq('id', data.room_id);
     }
 
     res.status(200).json({ data: mapReservation(data) });

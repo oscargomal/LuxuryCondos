@@ -111,11 +111,17 @@ const confirmBtn = document.querySelector(".btn-primary");
 
 // ================= CARGAR HABITACIÓN =================
 const room = JSON.parse(localStorage.getItem("selectedRoom"));
+const getRoomNightPrice = () => {
+  const raw = room?.price_night ?? room?.price ?? PRICES.night;
+  const parsed = Number(raw);
+  if (!Number.isFinite(parsed) || parsed <= 0) return PRICES.night;
+  return parsed;
+};
 
 if (room) {
   summaryImg.src = room.img;
   summaryTitle.textContent = room.name;
-  summaryDesc.textContent = strings.summaryDesc;
+  summaryDesc.textContent = room.summary || strings.summaryDesc;
 } else {
   summaryTitle.textContent = strings.noRoom;
 }
@@ -162,8 +168,9 @@ function updateSummary() {
   let periodText = "";
 
   if (stayType === "night") {
-    total = nights * PRICES.night;
-    summaryPrice.textContent = `$${PRICES.night.toLocaleString()} ${strings.priceNight}`;
+    const nightPrice = getRoomNightPrice();
+    total = nights * nightPrice;
+    summaryPrice.textContent = `$${nightPrice.toLocaleString()} ${strings.priceNight}`;
     periodText = nights ? `${nights} ${strings.nights}` : "—";
   }
 
