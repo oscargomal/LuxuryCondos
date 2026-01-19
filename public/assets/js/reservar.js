@@ -311,7 +311,10 @@ confirmBtn.addEventListener("click", async () => {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(reservations));
   localStorage.setItem(STORAGE_LAST_ID, String(nextReservation.id));
 
-  alert(strings.redirecting);
+  if (confirmBtn) {
+    confirmBtn.disabled = true;
+    confirmBtn.textContent = strings.redirecting;
+  }
   if (stayType === "other") {
     window.location.href = isEnglish
       ? `/eng/pending.html?reservationId=${nextReservation.id}`
