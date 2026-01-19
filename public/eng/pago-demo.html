@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Demo payment | Luxury Condo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/css/style.css">
+</head>
+<body class="payment-page">
+  <main class="payment-card">
+    <h1>Payment simulation</h1>
+    <p>Reservation:</p>
+    <div class="payment-id" data-reservation-id>—</div>
+    <p class="payment-note">This is a test flow while Stripe is being integrated.</p>
+    <div class="payment-actions">
+      <a class="payment-btn" data-payment-link="/eng/thanks.html">Simulate payment success</a>
+      <a class="payment-btn secondary" data-payment-link="/eng/pending.html">Simulate payment pending</a>
+    </div>
+  </main>
+  <script src="/assets/js/payment-demo.js"></script>
+</body>
+</html>

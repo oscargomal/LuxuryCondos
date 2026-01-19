@@ -168,3 +168,13 @@ th {
   color: var(--success);
   font-weight: 500;
 }
+
+.status.pending {
+  color: var(--warning);
+  font-weight: 500;
+}
+
+.status.canceled {
+  color: var(--danger);
+  font-weight: 500;
+}

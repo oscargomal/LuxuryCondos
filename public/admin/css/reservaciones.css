@@ -216,6 +216,10 @@ body {
       color: var(--success);
     }
 
+    .canceled {
+      color: var(--danger);
+    }
+
     /* ========================
        ACTIONS
     ======================== */

@@ -97,10 +97,13 @@
       }
     };
 
-    const getStatusClass = (status) => {
-      if (!status) return "pending";
+    const getStatusClass = (reservation) => {
+      const status = reservation?.status || "";
       const normalized = status.toLowerCase();
-      if (normalized.includes("confirm")) return "active";
+      if (reservation?.paymentStatus === "paid" || normalized.includes("confirm")) {
+        return "active";
+      }
+      if (normalized.includes("cancel")) return "canceled";
       return "pending";
     };
 
@@ -120,8 +123,8 @@
         const guestName = reservation?.guest?.name || "—";
         const roomName = reservation?.room?.name
           || (reservation?.stayType === "other" ? "Otro" : "—");
-        const status = reservation?.status || "Pendiente";
-        const statusClass = getStatusClass(status);
+        const status = reservation?.status || "Pendiente de pago";
+        const statusClass = getStatusClass(reservation);
 
         row.innerHTML = `
           <td>${guestName}</td>

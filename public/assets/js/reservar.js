@@ -6,7 +6,18 @@ const PRICES = {
 };
 
 const STORAGE_KEY = "luxuryReservations";
+const STORAGE_LAST_ID = "luxuryLastReservationId";
 const MEXICO_TZ = "America/Mexico_City";
+const STATUS_PENDING = "Pendiente de pago";
+const STATUS_CONFIRMED = "Confirmada";
+const PAYMENT_STATUS = {
+  pending: "pending",
+  paid: "paid",
+  failed: "failed"
+};
+// TODO: Usa una función serverless (/api/create-checkout-session) para crear la sesión de Stripe.
+//       La función debe devolver checkoutUrl y reservationId.
+const STRIPE_CHECKOUT_URL = "https://buy.stripe.com/test_REPLACE_ME";
 const isEnglish = document.documentElement.lang === "en";
 const strings = {
   summaryDesc: isEnglish ? "2 guests · Wi-Fi · King bed" : "2 huéspedes · Wi-Fi · Cama King",
@@ -24,9 +35,9 @@ const strings = {
   invalidDates: isEnglish
     ? "⚠️ Select valid dates."
     : "⚠️ Selecciona fechas válidas.",
-  confirmMessage: isEnglish
-    ? "✅ Request sent successfully.\n\nWe will contact you to confirm availability."
-    : "✅ Solicitud enviada correctamente.\n\nNos pondremos en contacto para confirmar disponibilidad."
+  redirecting: isEnglish
+    ? "Redirecting to payment..."
+    : "Redirigiendo al pago..."
 };
 
 const getMexicoToday = () => {
@@ -57,6 +68,15 @@ const readReservations = () => {
   } catch (error) {
     return [];
   }
+};
+
+const getStripeRedirectUrl = (reservationId) => {
+  const fallback = isEnglish ? "/eng/pago-demo.html" : "/pago-demo.html";
+  if (!STRIPE_CHECKOUT_URL || STRIPE_CHECKOUT_URL.includes("REPLACE_ME")) {
+    // Flujo local de pruebas mientras se integra Stripe.
+    return `${fallback}?reservationId=${reservationId}`;
+  }
+  return STRIPE_CHECKOUT_URL;
 };
 
 // ================= ELEMENTOS =================
@@ -213,6 +233,10 @@ confirmBtn.addEventListener("click", () => {
   const reservationData = {
     id: Date.now(),
     createdAt: getMexicoTimestamp(),
+    status: STATUS_PENDING,
+    paymentStatus: PAYMENT_STATUS.pending,
+    roomOccupied: 0,
+    language: isEnglish ? "en" : "es",
     room,
     guest: { name, email, phone },
     stayType,
@@ -222,10 +246,13 @@ confirmBtn.addEventListener("click", () => {
   };
 
   console.log("📌 RESERVACIÓN:", reservationData);
+  // TODO: Enviar reservationData a Supabase vía /api/reservations (Vercel serverless).
   const reservations = readReservations();
   reservations.unshift(reservationData);
   localStorage.setItem(STORAGE_KEY, JSON.stringify(reservations));
+  localStorage.setItem(STORAGE_LAST_ID, String(reservationData.id));
 
-  alert(strings.confirmMessage);
+  alert(strings.redirecting);
+  window.location.href = getStripeRedirectUrl(reservationData.id);
 });
   

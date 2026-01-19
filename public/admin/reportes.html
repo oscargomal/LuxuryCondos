@@ -50,22 +50,73 @@
     <section class="cards">
       <div class="card">
         <h3>Total reservaciones</h3>
-        <p>120</p>
+        <p data-report="total">0</p>
       </div>
 
       <div class="card">
         <h3>Ingresos estimados</h3>
-        <p>$180,000</p>
+        <p data-report="revenue">—</p>
       </div>
 
       <div class="card">
         <h3>Ocupación promedio</h3>
-        <p>78%</p>
+        <p data-report="occupancy">—</p>
       </div>
     </section>
 
   </main>
 
+  <script>
+    const STORAGE_KEY = "luxuryReservations";
+    const TOTAL_ROOMS = 12;
+
+    const readReservations = () => {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return [];
+      try {
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (error) {
+        return [];
+      }
+    };
+
+    const parseMoney = (value) => {
+      if (!value) return 0;
+      const numeric = String(value).replace(/[^0-9]/g, "");
+      return numeric ? Number(numeric) : 0;
+    };
+
+    const reservations = readReservations();
+    const totalEl = document.querySelector('[data-report="total"]');
+    const revenueEl = document.querySelector('[data-report="revenue"]');
+    const occupancyEl = document.querySelector('[data-report="occupancy"]');
+
+    const paidReservations = reservations.filter((reservation) => (
+      reservation?.paymentStatus === "paid" || reservation?.status === "Confirmada"
+    ));
+    const revenue = paidReservations.reduce((sum, reservation) => (
+      sum + parseMoney(reservation?.total)
+    ), 0);
+    const occupiedRooms = new Set(
+      paidReservations
+        .map((reservation) => reservation?.room?.name)
+        .filter(Boolean)
+    ).size;
+    const occupancyRate = TOTAL_ROOMS
+      ? Math.round((occupiedRooms / TOTAL_ROOMS) * 100)
+      : 0;
+
+    if (totalEl) totalEl.textContent = String(reservations.length);
+    if (revenueEl) {
+      revenueEl.textContent = revenue
+        ? `$${revenue.toLocaleString()}`
+        : "—";
+    }
+    if (occupancyEl) {
+      occupancyEl.textContent = `${occupancyRate}%`;
+    }
+  </script>
 </body>
 </html>
 

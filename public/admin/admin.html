@@ -34,15 +34,15 @@
     <section class="cards">
       <div class="card">
         <h3>Habitaciones disponibles</h3>
-        <p>24</p>
+        <p data-metric="available">—</p>
       </div>
       <div class="card">
         <h3>Habitaciones ocupadas</h3>
-        <p>16</p>
+        <p data-metric="occupied">—</p>
       </div>
       <div class="card">
         <h3>Reservas activas</h3>
-        <p>8</p>
+        <p data-metric="active">—</p>
       </div>
     </section>
 
@@ -61,16 +61,75 @@
         </thead>
         <tbody>
           <tr>
-            <td>Juan Pérez</td>
-            <td>Suite Deluxe</td>
-            <td>10/01</td>
-            <td>12/01</td>
-            <td class="status active">Confirmada</td>
+            <td colspan="5">No hay reservaciones registradas.</td>
           </tr>
         </tbody>
       </table>
     </section>
   </main>
 
+  <script>
+    const STORAGE_KEY = "luxuryReservations";
+    const TOTAL_ROOMS = 12;
+
+    const readReservations = () => {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return [];
+      try {
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (error) {
+        return [];
+      }
+    };
+
+    const reservations = readReservations();
+    const paidReservations = reservations.filter((reservation) => (
+      reservation?.paymentStatus === "paid" || reservation?.status === "Confirmada"
+    ));
+    const occupiedRooms = new Set(
+      paidReservations
+        .map((reservation) => reservation?.room?.name)
+        .filter(Boolean)
+    ).size;
+    const availableRooms = Math.max(TOTAL_ROOMS - occupiedRooms, 0);
+    const activeReservations = reservations.length;
+
+    const availableEl = document.querySelector('[data-metric="available"]');
+    const occupiedEl = document.querySelector('[data-metric="occupied"]');
+    const activeEl = document.querySelector('[data-metric="active"]');
+
+    if (availableEl) availableEl.textContent = String(availableRooms);
+    if (occupiedEl) occupiedEl.textContent = String(occupiedRooms);
+    if (activeEl) activeEl.textContent = String(activeReservations);
+
+    const tableBody = document.querySelector("tbody");
+    if (tableBody) {
+      tableBody.innerHTML = "";
+      const latest = [...reservations]
+        .sort((a, b) => (b?.id || 0) - (a?.id || 0))
+        .slice(0, 5);
+
+      if (!latest.length) {
+        tableBody.innerHTML = "<tr><td colspan=\"5\">No hay reservaciones registradas.</td></tr>";
+      } else {
+        latest.forEach((reservation) => {
+          const statusText = reservation?.status || "Pendiente de pago";
+          const statusClass = statusText.toLowerCase().includes("confirm")
+            ? "active"
+            : "pending";
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>${reservation?.guest?.name || "—"}</td>
+            <td>${reservation?.room?.name || "—"}</td>
+            <td>${reservation?.checkin || "—"}</td>
+            <td>${reservation?.checkout || "—"}</td>
+            <td class="status ${statusClass}">${statusText}</td>
+          `;
+          tableBody.appendChild(row);
+        });
+      }
+    }
+  </script>
 </body>
 </html>

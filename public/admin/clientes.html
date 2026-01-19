@@ -43,29 +43,9 @@
           </tr>
         </thead>
 
-        <tbody>
+        <tbody id="clientTableBody">
           <tr>
-            <td>Ana López</td>
-            <td>ana@mail.com</td>
-            <td>555-123-4567</td>
-            <td>3</td>
-            <td>
-              <button class="btn btn-info btn-small">Ver</button>
-              <button class="btn btn-primary btn-small">Editar</button>
-              <button class="btn btn-danger btn-small">Eliminar</button>
-            </td>
-          </tr>
-
-          <tr>
-            <td>Carlos Ruiz</td>
-            <td>carlos@mail.com</td>
-            <td>555-987-6543</td>
-            <td>1</td>
-            <td>
-              <button class="btn btn-info btn-small">Ver</button>
-              <button class="btn btn-primary btn-small">Editar</button>
-              <button class="btn btn-danger btn-small">Eliminar</button>
-            </td>
+            <td colspan="5">No hay clientes registrados.</td>
           </tr>
         </tbody>
       </table>
@@ -73,5 +53,65 @@
 
   </main>
 
+  <script>
+    const STORAGE_KEY = "luxuryReservations";
+    const tableBody = document.getElementById("clientTableBody");
+
+    const readReservations = () => {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return [];
+      try {
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (error) {
+        return [];
+      }
+    };
+
+    const reservations = readReservations();
+    const clientMap = new Map();
+
+    reservations.forEach((reservation) => {
+      const guest = reservation?.guest || {};
+      const key = guest.email || guest.phone || guest.name;
+      if (!key) return;
+
+      if (!clientMap.has(key)) {
+        clientMap.set(key, {
+          name: guest.name || "—",
+          email: guest.email || "—",
+          phone: guest.phone || "—",
+          count: 0
+        });
+      }
+
+      clientMap.get(key).count += 1;
+    });
+
+    if (tableBody) {
+      tableBody.innerHTML = "";
+      const clients = Array.from(clientMap.values());
+
+      if (!clients.length) {
+        tableBody.innerHTML = "<tr><td colspan=\"5\">No hay clientes registrados.</td></tr>";
+      } else {
+        clients.forEach((client) => {
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>${client.name}</td>
+            <td>${client.email}</td>
+            <td>${client.phone}</td>
+            <td>${client.count}</td>
+            <td>
+              <button class="btn btn-info btn-small" disabled>Ver</button>
+              <button class="btn btn-primary btn-small" disabled>Editar</button>
+              <button class="btn btn-danger btn-small" disabled>Eliminar</button>
+            </td>
+          `;
+          tableBody.appendChild(row);
+        });
+      }
+    }
+  </script>
 </body>
 </html>

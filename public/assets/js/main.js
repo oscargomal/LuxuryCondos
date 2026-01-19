@@ -143,6 +143,7 @@ if (bgm && audioOverlay) {
       clearTimeout(overlayTimer);
       overlayTimer = null;
     }
+    window.dispatchEvent(new Event('audio-overlay-hidden'));
   };
 
   const showOverlay = () => {
@@ -199,4 +200,33 @@ if (bgm && audioOverlay) {
   }
 
   attemptAutoplay();
+}
+
+/* ================= CAMBIO DE IDIOMA ================= */
+const langSwitch = document.querySelector('[data-lang-switch]');
+if (langSwitch) {
+  const emojiEl = langSwitch.querySelector('[data-lang-emoji]');
+  const globeEmoji = langSwitch.dataset.emojiGlobe || '🌐';
+  const flagEmoji = langSwitch.dataset.emojiFlag || '🇺🇸';
+
+  const revealSwitch = () => {
+    if (langSwitch.classList.contains('is-visible')) return;
+    langSwitch.classList.add('is-visible');
+    if (emojiEl) emojiEl.textContent = globeEmoji;
+
+    setTimeout(() => {
+      langSwitch.classList.add('is-collapsed');
+      if (emojiEl) emojiEl.textContent = flagEmoji;
+    }, 3000);
+  };
+
+  if (typeof audioOverlay !== 'undefined' && audioOverlay) {
+    if (audioOverlay.classList.contains('hidden')) {
+      revealSwitch();
+    } else {
+      window.addEventListener('audio-overlay-hidden', revealSwitch, { once: true });
+    }
+  } else {
+    revealSwitch();
+  }
 }
