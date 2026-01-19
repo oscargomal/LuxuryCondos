@@ -900,6 +900,41 @@ a {
   object-fit: cover;
 }
 
+.audio-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 10, 10, 0.72);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  text-align: center;
+  z-index: 1200;
+}
+
+.audio-overlay__content {
+  background: rgba(255, 255, 255, 0.92);
+  color: #111;
+  border-radius: 18px;
+  padding: 24px 28px;
+  max-width: 520px;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.3);
+}
+
+.audio-overlay__content h1 {
+  font-size: 1.4rem;
+  margin-bottom: 8px;
+}
+
+.audio-overlay__content p {
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+.hidden {
+  display: none;
+}
+
 /* ===== HERO CAROUSEL ===== */
 .hero-carousel {
   position: relative;

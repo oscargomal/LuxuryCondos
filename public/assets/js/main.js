@@ -121,3 +121,73 @@ if (notice) {
     }
   }
 }
+
+/* ================= AUDIO BACKGROUND ================= */
+const bgm = document.getElementById('bgm');
+const audioOverlay = document.getElementById('audioOverlay');
+
+if (bgm && audioOverlay) {
+  const audioTriggers = Array.from(document.querySelectorAll('video'));
+
+  if (!audioTriggers.length) {
+    audioTriggers.push(...document.querySelectorAll('.video-main, .video-side'));
+  }
+
+  const events = ['click', 'touchstart', 'play'];
+  let audioStarted = false;
+
+  const hideOverlay = () => {
+    audioOverlay.classList.add('hidden');
+  };
+
+  const showOverlay = () => {
+    audioOverlay.classList.remove('hidden');
+  };
+
+  const removeListeners = () => {
+    audioTriggers.forEach((el) => {
+      events.forEach((eventName) => {
+        el.removeEventListener(eventName, startAudio);
+      });
+    });
+  };
+
+  const startAudio = async () => {
+    if (audioStarted) return;
+    bgm.muted = false;
+    bgm.volume = 0.3;
+
+    try {
+      await bgm.play();
+      audioStarted = true;
+      hideOverlay();
+      removeListeners();
+    } catch (error) {
+      showOverlay();
+    }
+  };
+
+  const attemptAutoplay = async () => {
+    bgm.muted = false;
+    bgm.volume = 0.3;
+
+    try {
+      await bgm.play();
+      audioStarted = true;
+      hideOverlay();
+      removeListeners();
+    } catch (error) {
+      showOverlay();
+    }
+  };
+
+  if (audioTriggers.length) {
+    audioTriggers.forEach((el) => {
+      events.forEach((eventName) => {
+        el.addEventListener(eventName, startAudio);
+      });
+    });
+  }
+
+  attemptAutoplay();
+}
