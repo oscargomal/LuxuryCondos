@@ -25,12 +25,17 @@
 
   <main class="main">
     <header class="header">
-      <h1>Departamentos</h1>
-      <span>Gestiona lo que se muestra en Habitaciones</span>
+      <div class="header-meta">
+        <h1>Departamentos</h1>
+        <span>Gestiona lo que se muestra en Departamentos</span>
+      </div>
+      <button class="btn btn-primary" type="button" id="toggleRoomForm" aria-expanded="false">
+        Nuevo departamento
+      </button>
     </header>
 
-    <section class="form-card">
-      <h2>Nuevo departamento</h2>
+    <section class="form-card is-hidden" data-form-card>
+      <h2 data-form-title>Nuevo departamento</h2>
       <form id="roomForm">
         <div class="form-group">
           <label>Nombre</label>
@@ -65,6 +70,17 @@
         <div class="form-group">
           <label>Imágenes (URLs separadas por coma)</label>
           <textarea id="roomImages" rows="3" placeholder="https://.../1.jpg, https://.../2.jpg"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Subir imágenes</label>
+          <input type="file" id="roomImageFiles" accept="image/*" multiple>
+          <small class="form-hint">Se guardan embebidas en la base mientras no haya almacenamiento externo.</small>
+        </div>
+
+        <div class="form-group">
+          <label>Vista previa</label>
+          <div class="image-preview" id="roomImagePreview"></div>
         </div>
 
         <div class="form-group">
@@ -120,12 +136,19 @@
     const priceMonthInput = document.getElementById("roomPriceMonth");
     const priceYearInput = document.getElementById("roomPriceYear");
     const imagesInput = document.getElementById("roomImages");
+    const imageFilesInput = document.getElementById("roomImageFiles");
+    const imagePreview = document.getElementById("roomImagePreview");
     const activeInput = document.getElementById("roomActive");
     const occupiedInput = document.getElementById("roomOccupied");
     const submitButton = document.getElementById("roomSubmit");
     const tableBody = document.getElementById("roomTableBody");
+    const toggleButton = document.getElementById("toggleRoomForm");
+    const formCard = document.querySelector("[data-form-card]");
+    const formTitle = document.querySelector("[data-form-title]");
 
     let editingId = null;
+    let urlImages = [];
+    let uploadedImages = [];
 
     const parseImages = (value) => {
       if (!value) return [];
@@ -140,6 +163,60 @@
       if (!numberValue) return "—";
       return `$${numberValue.toLocaleString()} MXN`;
     };
+
+    const setFormVisible = (visible) => {
+      if (!formCard || !toggleButton) return;
+      formCard.classList.toggle("is-hidden", !visible);
+      toggleButton.textContent = visible ? "Cerrar" : "Nuevo departamento";
+      toggleButton.setAttribute("aria-expanded", String(visible));
+    };
+
+    const splitImages = (images) => {
+      const urls = [];
+      const uploads = [];
+      (images || []).forEach((img) => {
+        if (!img) return;
+        if (img.startsWith("data:")) {
+          uploads.push(img);
+        } else {
+          urls.push(img);
+        }
+      });
+      return { urls, uploads };
+    };
+
+    const renderPreview = () => {
+      if (!imagePreview) return;
+      const items = [
+        ...urlImages.map((src, index) => ({ src, source: "url", index })),
+        ...uploadedImages.map((src, index) => ({ src, source: "upload", index }))
+      ];
+
+      if (!items.length) {
+        imagePreview.innerHTML = "<span class=\"image-preview__empty\">Sin imágenes</span>";
+        return;
+      }
+
+      imagePreview.innerHTML = "";
+      items.forEach((item) => {
+        const wrapper = document.createElement("div");
+        wrapper.className = "image-preview__item";
+        wrapper.innerHTML = `
+          <img src="${item.src}" alt="Vista previa">
+          <button class="image-preview__remove" type="button" data-remove="true" data-source="${item.source}" data-index="${item.index}">×</button>
+        `;
+        imagePreview.appendChild(wrapper);
+      });
+    };
+
+    const readFileAsDataUrl = (file) => (
+      new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(reader.error);
+        reader.readAsDataURL(file);
+      })
+    );
 
     const fetchRooms = async () => {
       try {
@@ -180,10 +257,17 @@
       priceInput.value = room.price_night || "";
       priceMonthInput.value = room.price_month || "";
       priceYearInput.value = room.price_year || "";
-      imagesInput.value = (room.images || []).join(", ");
+      const split = splitImages(room.images || []);
+      urlImages = split.urls;
+      uploadedImages = split.uploads;
+      imagesInput.value = urlImages.join(", ");
       activeInput.value = String(room.is_active);
       occupiedInput.value = String(room.occupied);
       submitButton.textContent = "Actualizar";
+      if (formTitle) formTitle.textContent = "Editar departamento";
+      if (imageFilesInput) imageFilesInput.value = "";
+      renderPreview();
+      setFormVisible(true);
       form.scrollIntoView({ behavior: "smooth" });
     };
 
@@ -191,6 +275,11 @@
       editingId = null;
       form.reset();
       submitButton.textContent = "Guardar";
+      urlImages = [];
+      uploadedImages = [];
+      if (formTitle) formTitle.textContent = "Nuevo departamento";
+      if (imageFilesInput) imageFilesInput.value = "";
+      renderPreview();
     };
 
     const renderTable = (rooms) => {
@@ -227,6 +316,8 @@
 
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
+      urlImages = parseImages(imagesInput.value);
+      const images = [...new Set([...urlImages, ...uploadedImages])];
       const payload = {
         name: nameInput.value.trim(),
         summary: summaryInput.value.trim(),
@@ -234,7 +325,7 @@
         price_night: Number(priceInput.value || 0),
         price_month: priceMonthInput.value ? Number(priceMonthInput.value) : null,
         price_year: priceYearInput.value ? Number(priceYearInput.value) : null,
-        images: parseImages(imagesInput.value),
+        images,
         is_active: activeInput.value === "true",
         occupied: occupiedInput.value === "true"
       };
@@ -269,6 +360,54 @@
       }
     });
 
+    if (imagesInput) {
+      imagesInput.addEventListener("input", () => {
+        urlImages = parseImages(imagesInput.value);
+        renderPreview();
+      });
+    }
+
+    if (imageFilesInput) {
+      imageFilesInput.addEventListener("change", async (event) => {
+        const files = Array.from(event.target.files || []);
+        if (!files.length) return;
+        const uploads = await Promise.all(files.map(readFileAsDataUrl));
+        uploadedImages = [...uploadedImages, ...uploads];
+        imageFilesInput.value = "";
+        renderPreview();
+      });
+    }
+
+    if (imagePreview) {
+      imagePreview.addEventListener("click", (event) => {
+        const button = event.target.closest("[data-remove]");
+        if (!button) return;
+        const source = button.dataset.source;
+        const index = Number(button.dataset.index);
+        if (source === "url") {
+          urlImages.splice(index, 1);
+          imagesInput.value = urlImages.join(", ");
+        } else {
+          uploadedImages.splice(index, 1);
+        }
+        renderPreview();
+      });
+    }
+
+    if (toggleButton) {
+      toggleButton.addEventListener("click", () => {
+        const shouldOpen = formCard?.classList.contains("is-hidden");
+        if (shouldOpen) {
+          setFormVisible(true);
+          renderPreview();
+        } else {
+          resetForm();
+          setFormVisible(false);
+        }
+      });
+    }
+
+    setFormVisible(false);
     loadRooms();
   </script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>

@@ -24,7 +24,7 @@ const STRIPE_CHECKOUT_URL = "https://buy.stripe.com/test_REPLACE_ME";
 const isEnglish = document.documentElement.lang === "en";
 const strings = {
   summaryDesc: isEnglish ? "2 guests · Wi-Fi · King bed" : "2 huéspedes · Wi-Fi · Cama King",
-  noRoom: isEnglish ? "No room selected" : "No hay habitación seleccionada",
+  noRoom: isEnglish ? "No apartment selected" : "No hay departamento seleccionado",
   nights: isEnglish ? "night(s)" : "noche(s)",
   month: isEnglish ? "month" : "mes",
   yearly: isEnglish ? "Annual contract" : "Contrato anual",

@@ -36,7 +36,7 @@
       const images = rawImages
         .map((img) => {
           if (!img) return '';
-          if (img.startsWith('http') || img.startsWith('/')) return img;
+          if (img.startsWith('http') || img.startsWith('/') || img.startsWith('data:')) return img;
           return `/${img}`;
         })
         .filter(Boolean);
@@ -48,7 +48,7 @@
       card.innerHTML = `
         <div class="room-carousel" data-index="0">
           ${carouselImages.map((img, index) => (
-            `<img src="${img}" class="${index === 0 ? 'active' : ''}" alt="">`
+            `<img src="${img}" class="${index === 0 ? 'active' : ''}" alt="${room.name || ''}" loading="lazy" decoding="async">`
           )).join('')}
           <button class="carousel-btn prev">‹</button>
           <button class="carousel-btn next">›</button>

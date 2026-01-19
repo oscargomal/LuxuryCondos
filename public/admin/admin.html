@@ -34,11 +34,11 @@
     <!-- DASHBOARD CARDS -->
     <section class="cards">
       <div class="card">
-        <h3>Habitaciones disponibles</h3>
+        <h3>Departamentos disponibles</h3>
         <p data-metric="available">—</p>
       </div>
       <div class="card">
-        <h3>Habitaciones ocupadas</h3>
+        <h3>Departamentos ocupados</h3>
         <p data-metric="occupied">—</p>
       </div>
       <div class="card">
@@ -54,7 +54,7 @@
         <thead>
           <tr>
             <th>Cliente</th>
-            <th>Habitación</th>
+            <th>Departamento</th>
             <th>Entrada</th>
             <th>Salida</th>
             <th>Estado</th>
@@ -71,8 +71,6 @@
 
   <script>
     const STORAGE_KEY = "luxuryReservations";
-    const TOTAL_ROOMS = 12;
-
     const readReservations = () => {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) return [];
@@ -108,17 +106,23 @@
       }
     };
 
-    const renderDashboard = (rawReservations) => {
+    const fetchRooms = async () => {
+      try {
+        const response = await fetch("/api/rooms");
+        if (!response.ok) return null;
+        const result = await response.json();
+        return result?.data || null;
+      } catch (error) {
+        return null;
+      }
+    };
+
+    const renderDashboard = (rawReservations, rawRooms) => {
       const reservations = rawReservations.map(normalizeReservation);
-      const paidReservations = reservations.filter((reservation) => (
-        reservation?.paymentStatus === "paid" || reservation?.status === "Confirmada"
-      ));
-      const occupiedRooms = new Set(
-        paidReservations
-          .map((reservation) => reservation?.room?.name)
-          .filter(Boolean)
-      ).size;
-      const availableRooms = Math.max(TOTAL_ROOMS - occupiedRooms, 0);
+      const rooms = Array.isArray(rawRooms) ? rawRooms : [];
+      const activeRooms = rooms.filter((room) => room?.is_active);
+      const occupiedRooms = activeRooms.filter((room) => room?.occupied).length;
+      const availableRooms = Math.max(activeRooms.length - occupiedRooms, 0);
       const activeReservations = reservations.length;
 
       const availableEl = document.querySelector('[data-metric="available"]');
@@ -159,12 +163,16 @@
     };
 
     const loadDashboard = async () => {
-      const apiReservations = await fetchReservations();
-      if (apiReservations && apiReservations.length) {
-        renderDashboard(apiReservations);
-        return;
-      }
-      renderDashboard(readReservations());
+      const [apiReservations, apiRooms] = await Promise.all([
+        fetchReservations(),
+        fetchRooms()
+      ]);
+
+      const reservations = apiReservations && apiReservations.length
+        ? apiReservations
+        : readReservations();
+
+      renderDashboard(reservations, apiRooms || []);
     };
 
     loadDashboard();

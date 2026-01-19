@@ -69,8 +69,6 @@
 
   <script>
     const STORAGE_KEY = "luxuryReservations";
-    const TOTAL_ROOMS = 12;
-
     const readReservations = () => {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) return [];
@@ -113,8 +111,22 @@
       }
     };
 
-    const renderReport = (rawReservations) => {
+    const fetchRooms = async () => {
+      try {
+        const response = await fetch("/api/rooms");
+        if (!response.ok) return null;
+        const result = await response.json();
+        return result?.data || null;
+      } catch (error) {
+        return null;
+      }
+    };
+
+    const renderReport = (rawReservations, rawRooms) => {
       const reservations = rawReservations.map(normalizeReservation);
+      const rooms = Array.isArray(rawRooms) ? rawRooms : [];
+      const activeRooms = rooms.filter((room) => room?.is_active);
+      const totalRooms = activeRooms.length || rooms.length;
       const paidReservations = reservations.filter((reservation) => (
         reservation?.paymentStatus === "paid" || reservation?.status === "Confirmada"
       ));
@@ -126,8 +138,8 @@
           .map((reservation) => reservation?.room?.name)
           .filter(Boolean)
       ).size;
-      const occupancyRate = TOTAL_ROOMS
-        ? Math.round((occupiedRooms / TOTAL_ROOMS) * 100)
+      const occupancyRate = totalRooms
+        ? Math.round((occupiedRooms / totalRooms) * 100)
         : 0;
 
       if (totalEl) totalEl.textContent = String(reservations.length);
@@ -142,12 +154,14 @@
     };
 
     const loadReport = async () => {
-      const apiReservations = await fetchReservations();
-      if (apiReservations && apiReservations.length) {
-        renderReport(apiReservations);
-        return;
-      }
-      renderReport(readReservations());
+      const [apiReservations, apiRooms] = await Promise.all([
+        fetchReservations(),
+        fetchRooms()
+      ]);
+      const reservations = apiReservations && apiReservations.length
+        ? apiReservations
+        : readReservations();
+      renderReport(reservations, apiRooms || []);
     };
 
     loadReport();
@@ -156,4 +170,3 @@
   <script src="/admin/js/auth.js"></script>
 </body>
 </html>
-

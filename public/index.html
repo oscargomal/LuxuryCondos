@@ -39,7 +39,7 @@
     <nav class="menu">
       <a href="/">Inicio</a>
       <a href="galeria.html">Galería</a>
-      <a href="habitaciones.html">Habitaciones</a>
+      <a href="habitaciones.html">Departamentos</a>
       <a href="servicios.html">Servicios</a>
       <a href="ubicacion.html">Ubicación</a>
       <a href="contacto.html">Contacto</a>
@@ -95,23 +95,23 @@
 </section>
 <section class="home-videos container">
   <div class="video-main">
-    <video autoplay muted loop playsinline>
+    <video autoplay muted loop playsinline preload="metadata" poster="assets/img/i1.jpg">
       <source src="assets/img/i1.mp4" type="video/mp4">
     </video>
   </div>
 
   <div class="video-side">
-    <video autoplay muted loop playsinline>
+    <video autoplay muted loop playsinline preload="metadata" poster="assets/img/i2.jpg">
       <source src="assets/img/i2.mp4" type="video/mp4">
     </video>
   </div>
 </section>
 
 <section class="home-gallery container">
-  <img src="assets/img/i1.jpg">
-  <img src="assets/img/i2.jpg">
-  <img src="assets/img/i3.jpg">
-  <img src="assets/img/i4.jpg">
+  <img src="assets/img/i1.jpg" loading="lazy" decoding="async">
+  <img src="assets/img/i2.jpg" loading="lazy" decoding="async">
+  <img src="assets/img/i3.jpg" loading="lazy" decoding="async">
+  <img src="assets/img/i4.jpg" loading="lazy" decoding="async">
 </section>
 
 <!-- ================= FOOTER ================= -->
