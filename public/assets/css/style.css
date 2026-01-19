@@ -902,33 +902,41 @@ a {
 
 .audio-overlay {
   position: fixed;
-  inset: 0;
-  background: rgba(10, 10, 10, 0.72);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  text-align: center;
+  right: 24px;
+  bottom: 24px;
   z-index: 1200;
+  pointer-events: none;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  width: min(360px, calc(100% - 32px));
 }
 
 .audio-overlay__content {
-  background: rgba(255, 255, 255, 0.92);
+  background: rgba(255, 255, 255, 0.96);
   color: #111;
-  border-radius: 18px;
-  padding: 24px 28px;
-  max-width: 520px;
-  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.3);
+  border-radius: 14px;
+  padding: 14px 16px;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.18);
 }
 
 .audio-overlay__content h1 {
-  font-size: 1.4rem;
-  margin-bottom: 8px;
+  font-size: 1rem;
+  margin-bottom: 4px;
 }
 
 .audio-overlay__content p {
-  font-size: 0.95rem;
+  font-size: 0.85rem;
   margin: 0;
+}
+
+@media (max-width: 768px) {
+  .audio-overlay {
+    right: 16px;
+    left: 16px;
+    bottom: 18px;
+    width: auto;
+  }
 }
 
 .hidden {

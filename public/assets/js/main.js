@@ -128,6 +128,7 @@ const audioOverlay = document.getElementById('audioOverlay');
 
 if (bgm && audioOverlay) {
   const audioTriggers = Array.from(document.querySelectorAll('video'));
+  let overlayTimer = null;
 
   if (!audioTriggers.length) {
     audioTriggers.push(...document.querySelectorAll('.video-main, .video-side'));
@@ -138,10 +139,18 @@ if (bgm && audioOverlay) {
 
   const hideOverlay = () => {
     audioOverlay.classList.add('hidden');
+    if (overlayTimer) {
+      clearTimeout(overlayTimer);
+      overlayTimer = null;
+    }
   };
 
   const showOverlay = () => {
     audioOverlay.classList.remove('hidden');
+    if (overlayTimer) clearTimeout(overlayTimer);
+    overlayTimer = setTimeout(() => {
+      hideOverlay();
+    }, 4000);
   };
 
   const removeListeners = () => {
