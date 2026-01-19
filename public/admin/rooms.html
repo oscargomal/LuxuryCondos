@@ -19,7 +19,7 @@
       <a href="clientes.html">Clientes</a>
       <a href="reportes.html">Reportes</a>
 
-      <a href="index.html" class="logout">Cerrar sesión</a>
+      <a href="index.html" class="logout" data-logout>Cerrar sesión</a>
     </nav>
   </aside>
 
@@ -50,6 +50,16 @@
         <div class="form-group">
           <label>Precio por noche (MXN)</label>
           <input type="number" id="roomPrice" placeholder="3000" min="0">
+        </div>
+
+        <div class="form-group">
+          <label>Precio mensual (MXN)</label>
+          <input type="number" id="roomPriceMonth" placeholder="33000" min="0">
+        </div>
+
+        <div class="form-group">
+          <label>Precio anual (MXN)</label>
+          <input type="number" id="roomPriceYear" placeholder="31000" min="0">
         </div>
 
         <div class="form-group">
@@ -84,6 +94,8 @@
           <tr>
             <th>Nombre</th>
             <th>Precio</th>
+            <th>Mensual</th>
+            <th>Anual</th>
             <th>Activo</th>
             <th>Ocupado</th>
             <th>Acciones</th>
@@ -91,7 +103,7 @@
         </thead>
         <tbody id="roomTableBody">
           <tr>
-            <td colspan="5">No hay departamentos registrados.</td>
+            <td colspan="7">No hay departamentos registrados.</td>
           </tr>
         </tbody>
       </table>
@@ -105,6 +117,8 @@
     const summaryInput = document.getElementById("roomSummary");
     const descriptionInput = document.getElementById("roomDescription");
     const priceInput = document.getElementById("roomPrice");
+    const priceMonthInput = document.getElementById("roomPriceMonth");
+    const priceYearInput = document.getElementById("roomPriceYear");
     const imagesInput = document.getElementById("roomImages");
     const activeInput = document.getElementById("roomActive");
     const occupiedInput = document.getElementById("roomOccupied");
@@ -164,6 +178,8 @@
       summaryInput.value = room.summary || "";
       descriptionInput.value = room.description || "";
       priceInput.value = room.price_night || "";
+      priceMonthInput.value = room.price_month || "";
+      priceYearInput.value = room.price_year || "";
       imagesInput.value = (room.images || []).join(", ");
       activeInput.value = String(room.is_active);
       occupiedInput.value = String(room.occupied);
@@ -182,7 +198,7 @@
       tableBody.innerHTML = "";
 
       if (!rooms.length) {
-        tableBody.innerHTML = "<tr><td colspan=\"5\">No hay departamentos registrados.</td></tr>";
+        tableBody.innerHTML = "<tr><td colspan=\"7\">No hay departamentos registrados.</td></tr>";
         return;
       }
 
@@ -191,6 +207,8 @@
         row.innerHTML = `
           <td>${room.name || "—"}</td>
           <td>${formatMoney(room.price_night)}</td>
+          <td>${formatMoney(room.price_month)}</td>
+          <td>${formatMoney(room.price_year)}</td>
           <td>${room.is_active ? "Sí" : "No"}</td>
           <td>${room.occupied ? "Sí" : "No"}</td>
           <td>
@@ -214,6 +232,8 @@
         summary: summaryInput.value.trim(),
         description: descriptionInput.value.trim(),
         price_night: Number(priceInput.value || 0),
+        price_month: priceMonthInput.value ? Number(priceMonthInput.value) : null,
+        price_year: priceYearInput.value ? Number(priceYearInput.value) : null,
         images: parseImages(imagesInput.value),
         is_active: activeInput.value === "true",
         occupied: occupiedInput.value === "true"
@@ -251,5 +271,7 @@
 
     loadRooms();
   </script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/admin/js/auth.js"></script>
 </body>
 </html>

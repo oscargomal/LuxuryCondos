@@ -17,6 +17,8 @@ document.addEventListener("click", (event) => {
   const roomData = {
     name: btn.dataset.name,
     price: btn.dataset.price,
+    price_month: btn.dataset.priceMonth || null,
+    price_year: btn.dataset.priceYear || null,
     img: btn.dataset.img,
     id: btn.dataset.id || null,
     summary: btn.dataset.summary || ""

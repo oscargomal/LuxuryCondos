@@ -29,6 +29,10 @@
     const index = reservations.findIndex((reservation) => String(reservation.id) === String(id));
     if (index === -1) return;
 
+    if (reservations[index]?.stayType === 'other') {
+      return;
+    }
+
     const next = {
       ...reservations[index],
       status: statusLabel,

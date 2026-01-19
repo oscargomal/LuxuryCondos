@@ -6,6 +6,8 @@ create table if not exists rooms (
   summary text,
   description text,
   price_night numeric,
+  price_month numeric,
+  price_year numeric,
   images text[] default '{}',
   is_active boolean default true,
   occupied boolean default false,
@@ -52,6 +54,8 @@ end;
 $$ language plpgsql;
 
 alter table customers add column if not exists updated_at timestamptz default now();
+alter table rooms add column if not exists price_month numeric;
+alter table rooms add column if not exists price_year numeric;
 
 drop trigger if exists rooms_updated_at on rooms;
 drop trigger if exists reservations_updated_at on reservations;
@@ -72,6 +76,9 @@ for each row execute function set_updated_at();
 alter table rooms enable row level security;
 alter table reservations enable row level security;
 alter table customers enable row level security;
+
+drop policy if exists "public read active rooms" on rooms;
+drop policy if exists "public insert reservations" on reservations;
 
 create policy "public read active rooms" on rooms
   for select

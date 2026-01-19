@@ -8,13 +8,15 @@ const PRICES = {
 const STORAGE_KEY = "luxuryReservations";
 const STORAGE_LAST_ID = "luxuryLastReservationId";
 const RESERVATIONS_API = "/api/reservations";
+const CHECKOUT_API = "/api/create-checkout-session";
 const MEXICO_TZ = "America/Mexico_City";
 const STATUS_PENDING = "Pendiente de pago";
 const STATUS_CONFIRMED = "Confirmada";
 const PAYMENT_STATUS = {
   pending: "pending",
   paid: "paid",
-  failed: "failed"
+  failed: "failed",
+  none: "none"
 };
 // TODO: Usa una función serverless (/api/create-checkout-session) para crear la sesión de Stripe.
 //       La función debe devolver checkoutUrl y reservationId.
@@ -87,6 +89,20 @@ const saveReservationToApi = async (payload) => {
   }
 };
 
+const createCheckoutSession = async (payload) => {
+  try {
+    const response = await fetch(CHECKOUT_API, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    if (!response.ok) return null;
+    return await response.json();
+  } catch (error) {
+    return null;
+  }
+};
+
 const getStripeRedirectUrl = (reservationId) => {
   const fallback = isEnglish ? "/eng/pago-demo.html" : "/pago-demo.html";
   if (!STRIPE_CHECKOUT_URL || STRIPE_CHECKOUT_URL.includes("REPLACE_ME")) {
@@ -115,6 +131,20 @@ const getRoomNightPrice = () => {
   const raw = room?.price_night ?? room?.price ?? PRICES.night;
   const parsed = Number(raw);
   if (!Number.isFinite(parsed) || parsed <= 0) return PRICES.night;
+  return parsed;
+};
+
+const getRoomMonthPrice = () => {
+  const raw = room?.price_month ?? PRICES.month;
+  const parsed = Number(raw);
+  if (!Number.isFinite(parsed) || parsed <= 0) return PRICES.month;
+  return parsed;
+};
+
+const getRoomYearPrice = () => {
+  const raw = room?.price_year ?? PRICES.year;
+  const parsed = Number(raw);
+  if (!Number.isFinite(parsed) || parsed <= 0) return PRICES.year;
   return parsed;
 };
 
@@ -175,14 +205,16 @@ function updateSummary() {
   }
 
   if (stayType === "month") {
-    total = PRICES.month;
-    summaryPrice.textContent = `$${PRICES.month.toLocaleString()} ${strings.priceMonth}`;
+    const monthPrice = getRoomMonthPrice();
+    total = monthPrice;
+    summaryPrice.textContent = `$${monthPrice.toLocaleString()} ${strings.priceMonth}`;
     periodText = `1 ${strings.month}`;
   }
 
   if (stayType === "year") {
-    total = PRICES.year;
-    summaryPrice.textContent = `$${PRICES.year.toLocaleString()} ${strings.priceMonth}`;
+    const yearPrice = getRoomYearPrice();
+    total = yearPrice;
+    summaryPrice.textContent = `$${yearPrice.toLocaleString()} ${strings.priceMonth}`;
     periodText = strings.yearly;
   }
 
@@ -257,8 +289,8 @@ confirmBtn.addEventListener("click", async () => {
   const reservationData = {
     id: Date.now(),
     createdAt: getMexicoTimestamp(),
-    status: STATUS_PENDING,
-    paymentStatus: PAYMENT_STATUS.pending,
+    status: stayType === "other" ? "Solicitud" : STATUS_PENDING,
+    paymentStatus: stayType === "other" ? PAYMENT_STATUS.none : PAYMENT_STATUS.pending,
     roomOccupied: 0,
     language: isEnglish ? "en" : "es",
     room,
@@ -280,6 +312,25 @@ confirmBtn.addEventListener("click", async () => {
   localStorage.setItem(STORAGE_LAST_ID, String(nextReservation.id));
 
   alert(strings.redirecting);
-  window.location.href = getStripeRedirectUrl(nextReservation.id);
+  if (stayType === "other") {
+    window.location.href = isEnglish
+      ? `/eng/pending.html?reservationId=${nextReservation.id}`
+      : `/pendiente.html?reservationId=${nextReservation.id}`;
+    return;
+  }
+
+  const checkoutResponse = await createCheckoutSession({
+    reservationId: nextReservation.id,
+    roomId: room?.id || null,
+    stayType,
+    checkin: checkinInput.value,
+    checkout: checkoutInput.value,
+    language: isEnglish ? "en" : "es"
+  });
+
+  const checkoutUrl = checkoutResponse?.checkoutUrl
+    || getStripeRedirectUrl(nextReservation.id);
+
+  window.location.href = checkoutUrl;
 });
   

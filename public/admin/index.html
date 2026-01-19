@@ -31,25 +31,8 @@
     <p class="login-footnote">No compartas tu acceso.</p>
   </div>
 
-  <script>
-    const form = document.getElementById("loginForm");
-
-    form.addEventListener("submit", function (e) {
-      e.preventDefault(); // evita recarga
-
-      const usuario = document.getElementById("usuario").value;
-      const password = document.getElementById("password").value;
-
-      if (!usuario || !password) {
-        alert("Completa usuario y contrasena.");
-        return;
-      }
-
-      // TODO: Reemplazar por autenticacion real (Supabase Auth o backend propio).
-      alert("Acceso de prueba. Integra autenticacion antes de publicar.");
-      window.location.href = "/admin/admin.html";
-    });
-  </script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/admin/js/auth.js"></script>
 
 </body>
 </html>
