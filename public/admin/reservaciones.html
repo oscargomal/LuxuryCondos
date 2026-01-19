@@ -15,6 +15,7 @@
     <nav>
       <a href="admin.html" class="active">Dashboard</a>
       <a href="reservaciones.html">Reservaciones</a>
+      <a href="rooms.html">Departamentos</a>
       <a href="avisos.html">Avisos</a>
       <a href="clientes.html">Clientes</a>
       <a href="reportes.html">Reportes</a>
@@ -109,6 +110,28 @@
 
     const formatDate = (value) => (value ? value : "—");
 
+    const normalizeReservation = (reservation) => {
+      if (reservation?.guest) return reservation;
+      return {
+        id: reservation?.id,
+        guest: {
+          name: reservation?.guest_name || "—",
+          email: reservation?.guest_email || "—",
+          phone: reservation?.guest_phone || "—"
+        },
+        room: {
+          name: reservation?.room_name || "—"
+        },
+        stayType: reservation?.stay_type,
+        checkin: reservation?.checkin,
+        checkout: reservation?.checkout,
+        total: reservation?.total,
+        status: reservation?.status,
+        paymentStatus: reservation?.payment_status,
+        roomOccupied: reservation?.room_occupied
+      };
+    };
+
     const renderTable = (reservations) => {
       if (!tableBody) return;
       tableBody.innerHTML = "";
@@ -118,7 +141,8 @@
         return;
       }
 
-      reservations.forEach((reservation) => {
+      reservations.forEach((reservationRaw) => {
+        const reservation = normalizeReservation(reservationRaw);
         const row = document.createElement("tr");
         const guestName = reservation?.guest?.name || "—";
         const roomName = reservation?.room?.name
@@ -140,19 +164,48 @@
       });
     };
 
-    tableBody.addEventListener("click", (event) => {
+    tableBody.addEventListener("click", async (event) => {
       const button = event.target.closest("[data-action]");
       if (!button) return;
 
       if (button.dataset.action === "delete") {
         const id = button.dataset.id;
+        try {
+          await fetch("/api/reservations", {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id })
+          });
+        } catch (error) {
+          // Mantener respaldo local si falla el API.
+        }
         const nextReservations = readReservations().filter(item => String(item.id) !== String(id));
         localStorage.setItem(STORAGE_KEY, JSON.stringify(nextReservations));
         renderTable(nextReservations);
       }
     });
 
-    renderTable(readReservations());
+    const fetchReservations = async () => {
+      try {
+        const response = await fetch("/api/reservations");
+        if (!response.ok) return null;
+        const result = await response.json();
+        return result?.data || null;
+      } catch (error) {
+        return null;
+      }
+    };
+
+    const loadReservations = async () => {
+      const apiReservations = await fetchReservations();
+      if (apiReservations && apiReservations.length) {
+        renderTable(apiReservations);
+        return;
+      }
+      renderTable(readReservations());
+    };
+
+    loadReservations();
   </script>
 </body>
 </html>

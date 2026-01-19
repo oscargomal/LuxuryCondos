@@ -7,6 +7,7 @@ const PRICES = {
 
 const STORAGE_KEY = "luxuryReservations";
 const STORAGE_LAST_ID = "luxuryLastReservationId";
+const RESERVATIONS_API = "/api/reservations";
 const MEXICO_TZ = "America/Mexico_City";
 const STATUS_PENDING = "Pendiente de pago";
 const STATUS_CONFIRMED = "Confirmada";
@@ -67,6 +68,22 @@ const readReservations = () => {
     return Array.isArray(parsed) ? parsed : [];
   } catch (error) {
     return [];
+  }
+};
+
+const saveReservationToApi = async (payload) => {
+  try {
+    const response = await fetch(RESERVATIONS_API, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) return null;
+    const result = await response.json();
+    return result?.data || null;
+  } catch (error) {
+    return null;
   }
 };
 
@@ -201,7 +218,7 @@ checkoutInput.addEventListener("change", updateSummary);
 updateStayType();
 
 // ================= CONFIRMAR RESERVA =================
-confirmBtn.addEventListener("click", () => {
+confirmBtn.addEventListener("click", async () => {
   const name = document.querySelector("input[type='text']").value.trim();
   const email = document.querySelector("input[type='email']").value.trim();
   const phone = document.querySelector("input[type='tel']").value.trim();
@@ -246,13 +263,16 @@ confirmBtn.addEventListener("click", () => {
   };
 
   console.log("📌 RESERVACIÓN:", reservationData);
-  // TODO: Enviar reservationData a Supabase vía /api/reservations (Vercel serverless).
+
+  const savedReservation = await saveReservationToApi(reservationData);
+  const nextReservation = savedReservation || reservationData;
+
   const reservations = readReservations();
-  reservations.unshift(reservationData);
+  reservations.unshift(nextReservation);
   localStorage.setItem(STORAGE_KEY, JSON.stringify(reservations));
-  localStorage.setItem(STORAGE_LAST_ID, String(reservationData.id));
+  localStorage.setItem(STORAGE_LAST_ID, String(nextReservation.id));
 
   alert(strings.redirecting);
-  window.location.href = getStripeRedirectUrl(reservationData.id);
+  window.location.href = getStripeRedirectUrl(nextReservation.id);
 });
   

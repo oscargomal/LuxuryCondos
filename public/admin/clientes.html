@@ -15,6 +15,7 @@
     <nav>
       <a href="admin.html" class="active">Dashboard</a>
       <a href="reservaciones.html">Reservaciones</a>
+      <a href="rooms.html">Departamentos</a>
       <a href="avisos.html">Avisos</a>
       <a href="clientes.html">Clientes</a>
       <a href="reportes.html">Reportes</a>
@@ -68,50 +69,88 @@
       }
     };
 
-    const reservations = readReservations();
-    const clientMap = new Map();
+    const normalizeReservation = (reservation) => {
+      if (reservation?.guest) return reservation;
+      return {
+        guest: {
+          name: reservation?.guest_name || "—",
+          email: reservation?.guest_email || "—",
+          phone: reservation?.guest_phone || "—"
+        }
+      };
+    };
 
-    reservations.forEach((reservation) => {
-      const guest = reservation?.guest || {};
-      const key = guest.email || guest.phone || guest.name;
-      if (!key) return;
+    const buildClientMap = (reservationsRaw) => {
+      const reservations = reservationsRaw.map(normalizeReservation);
+      const clientMap = new Map();
 
-      if (!clientMap.has(key)) {
-        clientMap.set(key, {
-          name: guest.name || "—",
-          email: guest.email || "—",
-          phone: guest.phone || "—",
-          count: 0
-        });
-      }
+      reservations.forEach((reservation) => {
+        const guest = reservation?.guest || {};
+        const key = guest.email || guest.phone || guest.name;
+        if (!key) return;
 
-      clientMap.get(key).count += 1;
-    });
+        if (!clientMap.has(key)) {
+          clientMap.set(key, {
+            name: guest.name || "—",
+            email: guest.email || "—",
+            phone: guest.phone || "—",
+            count: 0
+          });
+        }
 
-    if (tableBody) {
+        clientMap.get(key).count += 1;
+      });
+
+      return Array.from(clientMap.values());
+    };
+
+    const renderClients = (clients) => {
+      if (!tableBody) return;
       tableBody.innerHTML = "";
-      const clients = Array.from(clientMap.values());
 
       if (!clients.length) {
         tableBody.innerHTML = "<tr><td colspan=\"5\">No hay clientes registrados.</td></tr>";
-      } else {
-        clients.forEach((client) => {
-          const row = document.createElement("tr");
-          row.innerHTML = `
-            <td>${client.name}</td>
-            <td>${client.email}</td>
-            <td>${client.phone}</td>
-            <td>${client.count}</td>
-            <td>
-              <button class="btn btn-info btn-small" disabled>Ver</button>
-              <button class="btn btn-primary btn-small" disabled>Editar</button>
-              <button class="btn btn-danger btn-small" disabled>Eliminar</button>
-            </td>
-          `;
-          tableBody.appendChild(row);
-        });
+        return;
       }
-    }
+
+      clients.forEach((client) => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${client.name}</td>
+          <td>${client.email}</td>
+          <td>${client.phone}</td>
+          <td>${client.count}</td>
+          <td>
+            <button class="btn btn-info btn-small" disabled>Ver</button>
+            <button class="btn btn-primary btn-small" disabled>Editar</button>
+            <button class="btn btn-danger btn-small" disabled>Eliminar</button>
+          </td>
+        `;
+        tableBody.appendChild(row);
+      });
+    };
+
+    const fetchReservations = async () => {
+      try {
+        const response = await fetch("/api/reservations");
+        if (!response.ok) return null;
+        const result = await response.json();
+        return result?.data || null;
+      } catch (error) {
+        return null;
+      }
+    };
+
+    const loadClients = async () => {
+      const apiReservations = await fetchReservations();
+      if (apiReservations && apiReservations.length) {
+        renderClients(buildClientMap(apiReservations));
+        return;
+      }
+      renderClients(buildClientMap(readReservations()));
+    };
+
+    loadClients();
   </script>
 </body>
 </html>

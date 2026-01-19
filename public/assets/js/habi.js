@@ -8,26 +8,27 @@ const modalReservar = document.getElementById("modalReservar");
 const isEnglish = document.documentElement.lang === "en";
 const priceUnit = isEnglish ? "MXN / night" : "MXN / noche";
 
-// Abrir modal
-document.querySelectorAll(".open-modal").forEach(btn => {
-  btn.addEventListener("click", e => {
-    e.preventDefault();
+// Abrir modal (delegado para soportar contenido dinámico)
+document.addEventListener("click", (event) => {
+  const btn = event.target.closest(".open-modal");
+  if (!btn) return;
+  event.preventDefault();
 
-    const roomData = {
-      name: btn.dataset.name,
-      price: btn.dataset.price,
-      img: btn.dataset.img
-    };
+  const roomData = {
+    name: btn.dataset.name,
+    price: btn.dataset.price,
+    img: btn.dataset.img,
+    id: btn.dataset.id || null
+  };
 
-    modalImg.src = roomData.img;
-    modalTitle.textContent = roomData.name;
-    modalPrice.textContent = `$${roomData.price} ${priceUnit}`;
+  modalImg.src = roomData.img;
+  modalTitle.textContent = roomData.name;
+  modalPrice.textContent = `$${roomData.price} ${priceUnit}`;
 
-    // Guardar datos en el botón
-    modalReservar.dataset.room = JSON.stringify(roomData);
+  // Guardar datos en el botón
+  modalReservar.dataset.room = JSON.stringify(roomData);
 
-    modal.classList.add("active");
-  });
+  modal.classList.add("active");
 });
 
 // Guardar ANTES de ir a reservar
@@ -44,19 +45,18 @@ closeModal.addEventListener("click", () => {
 modal.addEventListener("click", e => {
   if (e.target === modal) modal.classList.remove("active");
 });
-document.addEventListener("DOMContentLoaded", () => {
-
-  document.querySelectorAll(".room-carousel").forEach(carousel => {
+const initCarousels = (root = document) => {
+  root.querySelectorAll(".room-carousel").forEach(carousel => {
+    if (carousel.dataset.initialized === "true") return;
 
     const images = carousel.querySelectorAll("img");
     const nextBtn = carousel.querySelector(".next");
     const prevBtn = carousel.querySelector(".prev");
 
-    if (!images.length) return;
+    if (!images.length || !nextBtn || !prevBtn) return;
 
     let index = 0;
 
-    // Asegurar imagen activa
     images.forEach(img => img.classList.remove("active"));
     images[0].classList.add("active");
 
@@ -72,6 +72,14 @@ document.addEventListener("DOMContentLoaded", () => {
       images[index].classList.add("active");
     });
 
+    carousel.dataset.initialized = "true";
   });
+};
 
-});
+const initRoomsUI = () => {
+  initCarousels();
+};
+
+window.initRoomsUI = initRoomsUI;
+
+document.addEventListener("DOMContentLoaded", initRoomsUI);

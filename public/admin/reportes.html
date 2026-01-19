@@ -15,6 +15,7 @@
     <nav>
       <a href="admin.html" class="active">Dashboard</a>
       <a href="reservaciones.html">Reservaciones</a>
+      <a href="rooms.html">Departamentos</a>
       <a href="avisos.html">Avisos</a>
       <a href="clientes.html">Clientes</a>
       <a href="reportes.html">Reportes</a>
@@ -87,35 +88,69 @@
       return numeric ? Number(numeric) : 0;
     };
 
-    const reservations = readReservations();
     const totalEl = document.querySelector('[data-report="total"]');
     const revenueEl = document.querySelector('[data-report="revenue"]');
     const occupancyEl = document.querySelector('[data-report="occupancy"]');
 
-    const paidReservations = reservations.filter((reservation) => (
-      reservation?.paymentStatus === "paid" || reservation?.status === "Confirmada"
-    ));
-    const revenue = paidReservations.reduce((sum, reservation) => (
-      sum + parseMoney(reservation?.total)
-    ), 0);
-    const occupiedRooms = new Set(
-      paidReservations
-        .map((reservation) => reservation?.room?.name)
-        .filter(Boolean)
-    ).size;
-    const occupancyRate = TOTAL_ROOMS
-      ? Math.round((occupiedRooms / TOTAL_ROOMS) * 100)
-      : 0;
+    const normalizeReservation = (reservation) => {
+      if (reservation?.guest) return reservation;
+      return {
+        room: { name: reservation?.room_name || "—" },
+        total: reservation?.total,
+        status: reservation?.status,
+        paymentStatus: reservation?.payment_status
+      };
+    };
 
-    if (totalEl) totalEl.textContent = String(reservations.length);
-    if (revenueEl) {
-      revenueEl.textContent = revenue
-        ? `$${revenue.toLocaleString()}`
-        : "—";
-    }
-    if (occupancyEl) {
-      occupancyEl.textContent = `${occupancyRate}%`;
-    }
+    const fetchReservations = async () => {
+      try {
+        const response = await fetch("/api/reservations");
+        if (!response.ok) return null;
+        const result = await response.json();
+        return result?.data || null;
+      } catch (error) {
+        return null;
+      }
+    };
+
+    const renderReport = (rawReservations) => {
+      const reservations = rawReservations.map(normalizeReservation);
+      const paidReservations = reservations.filter((reservation) => (
+        reservation?.paymentStatus === "paid" || reservation?.status === "Confirmada"
+      ));
+      const revenue = paidReservations.reduce((sum, reservation) => (
+        sum + parseMoney(reservation?.total)
+      ), 0);
+      const occupiedRooms = new Set(
+        paidReservations
+          .map((reservation) => reservation?.room?.name)
+          .filter(Boolean)
+      ).size;
+      const occupancyRate = TOTAL_ROOMS
+        ? Math.round((occupiedRooms / TOTAL_ROOMS) * 100)
+        : 0;
+
+      if (totalEl) totalEl.textContent = String(reservations.length);
+      if (revenueEl) {
+        revenueEl.textContent = revenue
+          ? `$${revenue.toLocaleString()}`
+          : "—";
+      }
+      if (occupancyEl) {
+        occupancyEl.textContent = `${occupancyRate}%`;
+      }
+    };
+
+    const loadReport = async () => {
+      const apiReservations = await fetchReservations();
+      if (apiReservations && apiReservations.length) {
+        renderReport(apiReservations);
+        return;
+      }
+      renderReport(readReservations());
+    };
+
+    loadReport();
   </script>
 </body>
 </html>

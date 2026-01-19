@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Departamentos | Luxury Condo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="css/admin.css">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <aside class="sidebar">
+    <h2>Luxury Condo</h2>
+    <nav>
+      <a href="admin.html">Dashboard</a>
+      <a href="reservaciones.html">Reservaciones</a>
+      <a href="rooms.html" class="active">Departamentos</a>
+      <a href="avisos.html">Avisos</a>
+      <a href="clientes.html">Clientes</a>
+      <a href="reportes.html">Reportes</a>
+
+      <a href="index.html" class="logout">Cerrar sesión</a>
+    </nav>
+  </aside>
+
+  <main class="main">
+    <header class="header">
+      <h1>Departamentos</h1>
+      <span>Gestiona lo que se muestra en Habitaciones</span>
+    </header>
+
+    <section class="form-card">
+      <h2>Nuevo departamento</h2>
+      <form id="roomForm">
+        <div class="form-group">
+          <label>Nombre</label>
+          <input type="text" id="roomName" placeholder="Vista al Lago" required>
+        </div>
+
+        <div class="form-group">
+          <label>Resumen corto</label>
+          <input type="text" id="roomSummary" placeholder="2 huéspedes · Balcón · Cama King">
+        </div>
+
+        <div class="form-group">
+          <label>Descripción</label>
+          <textarea id="roomDescription" rows="4" placeholder="Describe el departamento..."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Precio por noche (MXN)</label>
+          <input type="number" id="roomPrice" placeholder="3000" min="0">
+        </div>
+
+        <div class="form-group">
+          <label>Imágenes (URLs separadas por coma)</label>
+          <textarea id="roomImages" rows="3" placeholder="https://.../1.jpg, https://.../2.jpg"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Activo</label>
+          <select id="roomActive">
+            <option value="true" selected>Sí</option>
+            <option value="false">No</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Ocupado</label>
+          <select id="roomOccupied">
+            <option value="false" selected>No</option>
+            <option value="true">Sí</option>
+          </select>
+        </div>
+
+        <button class="btn btn-primary" type="submit" id="roomSubmit">Guardar</button>
+      </form>
+    </section>
+
+    <section class="table-section">
+      <h2>Listado de departamentos</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Precio</th>
+            <th>Activo</th>
+            <th>Ocupado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="roomTableBody">
+          <tr>
+            <td colspan="5">No hay departamentos registrados.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+  </main>
+
+  <script>
+    const API_URL = "/api/rooms";
+    const form = document.getElementById("roomForm");
+    const nameInput = document.getElementById("roomName");
+    const summaryInput = document.getElementById("roomSummary");
+    const descriptionInput = document.getElementById("roomDescription");
+    const priceInput = document.getElementById("roomPrice");
+    const imagesInput = document.getElementById("roomImages");
+    const activeInput = document.getElementById("roomActive");
+    const occupiedInput = document.getElementById("roomOccupied");
+    const submitButton = document.getElementById("roomSubmit");
+    const tableBody = document.getElementById("roomTableBody");
+
+    let editingId = null;
+
+    const parseImages = (value) => {
+      if (!value) return [];
+      return value
+        .split(",")
+        .map((item) => item.trim())
+        .filter(Boolean);
+    };
+
+    const formatMoney = (value) => {
+      const numberValue = Number(value || 0);
+      if (!numberValue) return "—";
+      return `$${numberValue.toLocaleString()} MXN`;
+    };
+
+    const fetchRooms = async () => {
+      try {
+        const response = await fetch(API_URL);
+        if (!response.ok) return [];
+        const result = await response.json();
+        return result?.data || [];
+      } catch (error) {
+        return [];
+      }
+    };
+
+    const saveRoom = async (payload) => {
+      const method = editingId ? "PUT" : "POST";
+      const body = editingId ? { ...payload, id: editingId } : payload;
+      const response = await fetch(API_URL, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+      });
+      return response.ok;
+    };
+
+    const deleteRoom = async (id) => {
+      const response = await fetch(API_URL, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id })
+      });
+      return response.ok;
+    };
+
+    const fillForm = (room) => {
+      editingId = room.id;
+      nameInput.value = room.name || "";
+      summaryInput.value = room.summary || "";
+      descriptionInput.value = room.description || "";
+      priceInput.value = room.price_night || "";
+      imagesInput.value = (room.images || []).join(", ");
+      activeInput.value = String(room.is_active);
+      occupiedInput.value = String(room.occupied);
+      submitButton.textContent = "Actualizar";
+      form.scrollIntoView({ behavior: "smooth" });
+    };
+
+    const resetForm = () => {
+      editingId = null;
+      form.reset();
+      submitButton.textContent = "Guardar";
+    };
+
+    const renderTable = (rooms) => {
+      if (!tableBody) return;
+      tableBody.innerHTML = "";
+
+      if (!rooms.length) {
+        tableBody.innerHTML = "<tr><td colspan=\"5\">No hay departamentos registrados.</td></tr>";
+        return;
+      }
+
+      rooms.forEach((room) => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${room.name || "—"}</td>
+          <td>${formatMoney(room.price_night)}</td>
+          <td>${room.is_active ? "Sí" : "No"}</td>
+          <td>${room.occupied ? "Sí" : "No"}</td>
+          <td>
+            <button class="btn btn-warning btn-small" data-action="edit" data-id="${room.id}">Editar</button>
+            <button class="btn btn-danger btn-small" data-action="delete" data-id="${room.id}">Eliminar</button>
+          </td>
+        `;
+        tableBody.appendChild(row);
+      });
+    };
+
+    const loadRooms = async () => {
+      const rooms = await fetchRooms();
+      renderTable(rooms);
+    };
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const payload = {
+        name: nameInput.value.trim(),
+        summary: summaryInput.value.trim(),
+        description: descriptionInput.value.trim(),
+        price_night: Number(priceInput.value || 0),
+        images: parseImages(imagesInput.value),
+        is_active: activeInput.value === "true",
+        occupied: occupiedInput.value === "true"
+      };
+
+      const ok = await saveRoom(payload);
+      if (ok) {
+        resetForm();
+        loadRooms();
+      } else {
+        alert("No se pudo guardar el departamento.");
+      }
+    });
+
+    tableBody.addEventListener("click", async (event) => {
+      const button = event.target.closest("[data-action]");
+      if (!button) return;
+
+      const id = button.dataset.id;
+      if (button.dataset.action === "delete") {
+        const ok = await deleteRoom(id);
+        if (ok) {
+          loadRooms();
+        } else {
+          alert("No se pudo eliminar.");
+        }
+      }
+
+      if (button.dataset.action === "edit") {
+        const rooms = await fetchRooms();
+        const room = rooms.find((item) => String(item.id) === String(id));
+        if (room) fillForm(room);
+      }
+    });
+
+    loadRooms();
+  </script>
+</body>
+</html>

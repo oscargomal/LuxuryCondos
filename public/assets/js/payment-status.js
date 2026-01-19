@@ -23,7 +23,7 @@
     }
   };
 
-  const updateReservation = (id) => {
+  const updateReservation = async (id) => {
     if (!id) return;
     const reservations = readReservations();
     const index = reservations.findIndex((reservation) => String(reservation.id) === String(id));
@@ -40,7 +40,20 @@
     reservations[index] = next;
     localStorage.setItem(STORAGE_KEY, JSON.stringify(reservations));
 
-    // TODO: Reemplazar por actualización real en Supabase vía función serverless.
+    try {
+      await fetch("/api/reservations", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id,
+          status: statusLabel,
+          paymentStatus,
+          roomOccupied
+        })
+      });
+    } catch (error) {
+      // Mantener localStorage como respaldo si el API falla.
+    }
   };
 
   updateReservation(reservationId);
