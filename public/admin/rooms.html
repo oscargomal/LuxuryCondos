@@ -175,6 +175,8 @@
       return `$${numberValue.toLocaleString()} MXN`;
     };
 
+    const isStripeAccountId = (value) => /^acct_[A-Za-z0-9]+$/.test(value);
+
     const setFormVisible = (visible) => {
       if (!formCard || !toggleButton) return;
       formCard.classList.toggle("is-hidden", !visible);
@@ -329,6 +331,13 @@
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
       urlImages = parseImages(imagesInput.value);
+      const stripeAccountValue = stripeAccountInput?.value.trim() || "";
+
+      if (stripeAccountValue && !isStripeAccountId(stripeAccountValue)) {
+        alert("El ID de Stripe debe empezar con acct_ y contener solo letras y números.");
+        return;
+      }
+
       const images = [...new Set([...urlImages, ...uploadedImages])];
       const payload = {
         name: nameInput.value.trim(),
@@ -338,7 +347,7 @@
         price_month: priceMonthInput.value ? Number(priceMonthInput.value) : null,
         price_year: priceYearInput.value ? Number(priceYearInput.value) : null,
         images,
-        stripe_account_id: stripeAccountInput?.value.trim() || null,
+        stripe_account_id: stripeAccountValue || null,
         is_active: activeInput.value === "true",
         occupied: occupiedInput.value === "true"
       };
