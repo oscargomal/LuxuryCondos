@@ -18,9 +18,7 @@ const PAYMENT_STATUS = {
   failed: "failed",
   none: "none"
 };
-// TODO: Usa una función serverless (/api/create-checkout-session) para crear la sesión de Stripe.
-//       La función debe devolver checkoutUrl y reservationId.
-const STRIPE_CHECKOUT_URL = "https://buy.stripe.com/test_REPLACE_ME";
+// Stripe Checkout se crea en backend para recalcular montos y usar Stripe Connect.
 const isEnglish = document.documentElement.lang === "en";
 const strings = {
   summaryDesc: isEnglish ? "2 guests · Wi-Fi · King bed" : "2 huéspedes · Wi-Fi · Cama King",
@@ -38,6 +36,10 @@ const strings = {
   invalidDates: isEnglish
     ? "⚠️ Select valid dates."
     : "⚠️ Selecciona fechas válidas.",
+  paymentUnavailable: isEnglish
+    ? "⚠️ Payments are not available for this hotel yet."
+    : "⚠️ Los pagos aún no están disponibles para este hotel.",
+  confirm: isEnglish ? "Confirm booking" : "Confirmar reservación",
   redirecting: isEnglish
     ? "Redirecting to payment..."
     : "Redirigiendo al pago..."
@@ -96,20 +98,14 @@ const createCheckoutSession = async (payload) => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
     });
-    if (!response.ok) return null;
-    return await response.json();
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      return { error: result?.error || "No se pudo crear la sesión de pago." };
+    }
+    return result;
   } catch (error) {
     return null;
   }
-};
-
-const getStripeRedirectUrl = (reservationId) => {
-  const fallback = isEnglish ? "/eng/pago-demo.html" : "/pago-demo.html";
-  if (!STRIPE_CHECKOUT_URL || STRIPE_CHECKOUT_URL.includes("REPLACE_ME")) {
-    // Flujo local de pruebas mientras se integra Stripe.
-    return `${fallback}?reservationId=${reservationId}`;
-  }
-  return STRIPE_CHECKOUT_URL;
 };
 
 // ================= ELEMENTOS =================
@@ -331,9 +327,15 @@ confirmBtn.addEventListener("click", async () => {
     language: isEnglish ? "en" : "es"
   });
 
-  const checkoutUrl = checkoutResponse?.checkoutUrl
-    || getStripeRedirectUrl(nextReservation.id);
+  if (!checkoutResponse?.checkoutUrl) {
+    alert(checkoutResponse?.error || strings.paymentUnavailable);
+    if (confirmBtn) {
+      confirmBtn.disabled = false;
+      confirmBtn.textContent = strings.confirm;
+    }
+    return;
+  }
 
-  window.location.href = checkoutUrl;
+  window.location.href = checkoutResponse.checkoutUrl;
 });
   

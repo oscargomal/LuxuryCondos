@@ -38,6 +38,7 @@ export default async function handler(req, res) {
     return;
   }
 
+  // Stripe Connect: habilita eventos de cuentas conectadas en el webhook de la plataforma.
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object;
     const reservationId = session?.metadata?.reservationId;

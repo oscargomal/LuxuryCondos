@@ -84,6 +84,15 @@
         </div>
 
         <div class="form-group">
+          <label>Stripe Connect (acct_...)</label>
+          <input type="text" id="roomStripeAccount" placeholder="acct_1234567890">
+          <small class="form-hint">ID de la cuenta conectada del hotel.</small>
+          <button class="btn btn-primary" type="button" id="roomConnectStripe">
+            Generar enlace de conexión
+          </button>
+        </div>
+
+        <div class="form-group">
           <label>Activo</label>
           <select id="roomActive">
             <option value="true" selected>Sí</option>
@@ -138,9 +147,11 @@
     const imagesInput = document.getElementById("roomImages");
     const imageFilesInput = document.getElementById("roomImageFiles");
     const imagePreview = document.getElementById("roomImagePreview");
+    const stripeAccountInput = document.getElementById("roomStripeAccount");
     const activeInput = document.getElementById("roomActive");
     const occupiedInput = document.getElementById("roomOccupied");
     const submitButton = document.getElementById("roomSubmit");
+    const connectStripeButton = document.getElementById("roomConnectStripe");
     const tableBody = document.getElementById("roomTableBody");
     const toggleButton = document.getElementById("toggleRoomForm");
     const formCard = document.querySelector("[data-form-card]");
@@ -261,6 +272,7 @@
       urlImages = split.urls;
       uploadedImages = split.uploads;
       imagesInput.value = urlImages.join(", ");
+      if (stripeAccountInput) stripeAccountInput.value = room.stripe_account_id || "";
       activeInput.value = String(room.is_active);
       occupiedInput.value = String(room.occupied);
       submitButton.textContent = "Actualizar";
@@ -326,6 +338,7 @@
         price_month: priceMonthInput.value ? Number(priceMonthInput.value) : null,
         price_year: priceYearInput.value ? Number(priceYearInput.value) : null,
         images,
+        stripe_account_id: stripeAccountInput?.value.trim() || null,
         is_active: activeInput.value === "true",
         occupied: occupiedInput.value === "true"
       };
@@ -403,6 +416,36 @@
         } else {
           resetForm();
           setFormVisible(false);
+        }
+      });
+    }
+
+    if (connectStripeButton) {
+      connectStripeButton.addEventListener("click", async () => {
+        if (!editingId) {
+          alert("Guarda el departamento y luego edítalo para conectar Stripe.");
+          return;
+        }
+
+        connectStripeButton.disabled = true;
+        try {
+          const response = await fetch("/api/connect-account", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ roomId: editingId })
+          });
+
+          const result = await response.json();
+          if (!response.ok) {
+            throw new Error(result?.error || "No se pudo generar el enlace.");
+          }
+
+          if (stripeAccountInput) stripeAccountInput.value = result.accountId || "";
+          if (result.url) window.open(result.url, "_blank", "noopener");
+        } catch (error) {
+          alert(error.message || "Error conectando Stripe.");
+        } finally {
+          connectStripeButton.disabled = false;
         }
       });
     }

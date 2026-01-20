@@ -67,6 +67,12 @@ export default async function handler(req, res) {
     return;
   }
 
+  const connectedAccountId = room.stripe_account_id;
+  if (!connectedAccountId) {
+    res.status(400).json({ error: 'Stripe Connect no configurado para este hotel.' });
+    return;
+  }
+
   let unitAmount = 0;
   let quantity = 1;
   let description = '';
@@ -99,6 +105,7 @@ export default async function handler(req, res) {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2023-10-16' });
 
   try {
+    // Stripe Connect: crear el Checkout en la cuenta del hotel.
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
       payment_method_types: ['card'],
@@ -120,8 +127,11 @@ export default async function handler(req, res) {
       metadata: {
         reservationId,
         roomId,
-        stayType
+        stayType,
+        connectedAccountId
       }
+    }, {
+      stripeAccount: connectedAccountId
     });
 
     res.status(200).json({ checkoutUrl: session.url });
