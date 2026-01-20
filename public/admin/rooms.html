@@ -34,6 +34,23 @@
       </button>
     </header>
 
+    <section class="form-card" id="stripeConnectCard">
+      <h2>Stripe Connect</h2>
+      <p id="stripeConnectStatus">No conectado</p>
+      <div class="form-group">
+        <button class="btn btn-primary" type="button" id="stripeConnectButton">
+          Conectar Stripe / Generar enlace de conexión
+        </button>
+        <button class="btn btn-warning btn-small" type="button" id="stripeConnectEdit">
+          Editar acct_...
+        </button>
+      </div>
+      <div class="form-group" id="stripeConnectEditGroup" hidden>
+        <input type="text" id="stripeConnectInput" placeholder="acct_1234567890">
+        <button class="btn btn-primary" type="button" id="stripeConnectSave">Guardar acct_...</button>
+      </div>
+    </section>
+
     <section class="form-card is-hidden" data-form-card>
       <h2 data-form-title>Nuevo departamento</h2>
       <form id="roomForm">
@@ -81,15 +98,6 @@
         <div class="form-group">
           <label>Vista previa</label>
           <div class="image-preview" id="roomImagePreview"></div>
-        </div>
-
-        <div class="form-group">
-          <label>Stripe Connect (acct_...)</label>
-          <input type="text" id="roomStripeAccount" placeholder="acct_1234567890">
-          <small class="form-hint">ID de la cuenta conectada del hotel.</small>
-          <button class="btn btn-primary" type="button" id="roomConnectStripe">
-            Generar enlace de conexión
-          </button>
         </div>
 
         <div class="form-group">
@@ -147,15 +155,19 @@
     const imagesInput = document.getElementById("roomImages");
     const imageFilesInput = document.getElementById("roomImageFiles");
     const imagePreview = document.getElementById("roomImagePreview");
-    const stripeAccountInput = document.getElementById("roomStripeAccount");
     const activeInput = document.getElementById("roomActive");
     const occupiedInput = document.getElementById("roomOccupied");
     const submitButton = document.getElementById("roomSubmit");
-    const connectStripeButton = document.getElementById("roomConnectStripe");
     const tableBody = document.getElementById("roomTableBody");
     const toggleButton = document.getElementById("toggleRoomForm");
     const formCard = document.querySelector("[data-form-card]");
     const formTitle = document.querySelector("[data-form-title]");
+    const stripeConnectStatus = document.getElementById("stripeConnectStatus");
+    const stripeConnectButton = document.getElementById("stripeConnectButton");
+    const stripeConnectEdit = document.getElementById("stripeConnectEdit");
+    const stripeConnectEditGroup = document.getElementById("stripeConnectEditGroup");
+    const stripeConnectInput = document.getElementById("stripeConnectInput");
+    const stripeConnectSave = document.getElementById("stripeConnectSave");
 
     let editingId = null;
     let urlImages = [];
@@ -274,7 +286,6 @@
       urlImages = split.urls;
       uploadedImages = split.uploads;
       imagesInput.value = urlImages.join(", ");
-      if (stripeAccountInput) stripeAccountInput.value = room.stripe_account_id || "";
       activeInput.value = String(room.is_active);
       occupiedInput.value = String(room.occupied);
       submitButton.textContent = "Actualizar";
@@ -331,13 +342,6 @@
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
       urlImages = parseImages(imagesInput.value);
-      const stripeAccountValue = stripeAccountInput?.value.trim() || "";
-
-      if (stripeAccountValue && !isStripeAccountId(stripeAccountValue)) {
-        alert("El ID de Stripe debe empezar con acct_ y contener solo letras y números.");
-        return;
-      }
-
       const images = [...new Set([...urlImages, ...uploadedImages])];
       const payload = {
         name: nameInput.value.trim(),
@@ -347,7 +351,6 @@
         price_month: priceMonthInput.value ? Number(priceMonthInput.value) : null,
         price_year: priceYearInput.value ? Number(priceYearInput.value) : null,
         images,
-        stripe_account_id: stripeAccountValue || null,
         is_active: activeInput.value === "true",
         occupied: occupiedInput.value === "true"
       };
@@ -429,19 +432,34 @@
       });
     }
 
-    if (connectStripeButton) {
-      connectStripeButton.addEventListener("click", async () => {
-        if (!editingId) {
-          alert("Guarda el departamento y luego edítalo para conectar Stripe.");
-          return;
-        }
+    const setStripeConnectStatus = (accountId) => {
+      if (stripeConnectStatus) {
+        stripeConnectStatus.textContent = accountId
+          ? `Conectado: ${accountId}`
+          : "No conectado";
+      }
+      if (stripeConnectInput) stripeConnectInput.value = accountId || "";
+    };
 
-        connectStripeButton.disabled = true;
+    const loadStripeConnectStatus = async () => {
+      try {
+        const response = await fetch("/api/connect-account");
+        const result = await response.json();
+        if (!response.ok) throw new Error(result?.error || "No disponible.");
+        setStripeConnectStatus(result?.stripeAccountId || "");
+      } catch (error) {
+        setStripeConnectStatus("");
+      }
+    };
+
+    if (stripeConnectButton) {
+      stripeConnectButton.addEventListener("click", async () => {
+        stripeConnectButton.disabled = true;
         try {
           const response = await fetch("/api/connect-account", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ roomId: editingId })
+            body: JSON.stringify({})
           });
 
           const result = await response.json();
@@ -449,18 +467,56 @@
             throw new Error(result?.error || "No se pudo generar el enlace.");
           }
 
-          if (stripeAccountInput) stripeAccountInput.value = result.accountId || "";
+          setStripeConnectStatus(result.accountId || "");
           if (result.url) window.open(result.url, "_blank", "noopener");
         } catch (error) {
           alert(error.message || "Error conectando Stripe.");
         } finally {
-          connectStripeButton.disabled = false;
+          stripeConnectButton.disabled = false;
+        }
+      });
+    }
+
+    if (stripeConnectEdit && stripeConnectEditGroup) {
+      stripeConnectEdit.addEventListener("click", () => {
+        stripeConnectEditGroup.hidden = !stripeConnectEditGroup.hidden;
+      });
+    }
+
+    if (stripeConnectSave) {
+      stripeConnectSave.addEventListener("click", async () => {
+        const value = stripeConnectInput?.value.trim() || "";
+        if (value && !isStripeAccountId(value)) {
+          alert("El ID de Stripe debe empezar con acct_ y contener solo letras y números.");
+          return;
+        }
+
+        stripeConnectSave.disabled = true;
+        try {
+          const response = await fetch("/api/connect-account", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ stripeAccountId: value || null })
+          });
+
+          const result = await response.json();
+          if (!response.ok) {
+            throw new Error(result?.error || "No se pudo guardar el ID.");
+          }
+
+          setStripeConnectStatus(result.accountId || "");
+          if (stripeConnectEditGroup) stripeConnectEditGroup.hidden = true;
+        } catch (error) {
+          alert(error.message || "Error guardando el ID.");
+        } finally {
+          stripeConnectSave.disabled = false;
         }
       });
     }
 
     setFormVisible(false);
     loadRooms();
+    loadStripeConnectStatus();
   </script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/admin/js/auth.js"></script>

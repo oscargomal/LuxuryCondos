@@ -6,6 +6,60 @@ const DEFAULT_PRICES = {
   year: 31000
 };
 
+const APP_SETTINGS_MISSING_MESSAGE = 'falta ejecutar SQL de app_settings';
+
+const isMissingAppSettings = (error) => (
+  error?.code === '42P01'
+  || String(error?.message || '').includes('app_settings')
+);
+
+const getStripeAccountId = async () => {
+  const { data, error } = await supabaseAdmin
+    .from('app_settings')
+    .select('stripe_account_id')
+    .order('id', { ascending: true })
+    .limit(1);
+
+  if (error) {
+    const message = isMissingAppSettings(error)
+      ? APP_SETTINGS_MISSING_MESSAGE
+      : error.message;
+    return { error: { message } };
+  }
+
+  let accountId = data?.[0]?.stripe_account_id || null;
+
+  if (!accountId) {
+    const { data: fallback } = await supabaseAdmin
+      .from('rooms')
+      .select('stripe_account_id')
+      .not('stripe_account_id', 'is', null)
+      .neq('stripe_account_id', '')
+      .limit(1);
+
+    const fallbackId = fallback?.[0]?.stripe_account_id || null;
+    if (fallbackId) {
+      const { error: upsertError } = await supabaseAdmin
+        .from('app_settings')
+        .upsert({
+          id: 1,
+          stripe_account_id: fallbackId,
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'id' });
+
+      if (upsertError) {
+        const message = isMissingAppSettings(upsertError)
+          ? APP_SETTINGS_MISSING_MESSAGE
+          : upsertError.message;
+        return { error: { message } };
+      }
+      accountId = fallbackId;
+    }
+  }
+
+  return { accountId };
+};
+
 const getNights = (checkin, checkout) => {
   if (!checkin || !checkout) return 0;
   const start = new Date(`${checkin}T00:00:00`);
@@ -67,9 +121,14 @@ export default async function handler(req, res) {
     return;
   }
 
-  const connectedAccountId = room.stripe_account_id;
+  const { accountId: connectedAccountId, error: settingsError } = await getStripeAccountId();
+  if (settingsError) {
+    res.status(500).json({ error: settingsError.message });
+    return;
+  }
+
   if (!connectedAccountId) {
-    res.status(400).json({ error: 'Stripe Connect no configurado para este hotel.' });
+    res.status(400).json({ error: 'Stripe Connect no configurado; conecta Stripe desde admin.' });
     return;
   }
 
