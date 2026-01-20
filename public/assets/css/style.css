@@ -447,10 +447,19 @@ a {
 }
 
 /* ================= MODAL GALERÍA ================= */
+.modal-gallery {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  max-height: 420px;
+  overflow: hidden;
+  align-self: start;
+}
+
 .modal-gallery img {
   width: 100%;
-  height: 250px;
+  height: 100%;
   object-fit: cover;
+  display: block;
 }
 
 .modal-thumbs {

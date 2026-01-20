@@ -197,3 +197,59 @@ body {
       font-weight: 700;
       color: var(--primary);
     }
+
+    .main .cards {
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 24px;
+    }
+
+    .main .card {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background: linear-gradient(140deg, rgba(255, 255, 255, 0.96), #fff);
+      padding: 24px;
+      border-radius: 18px;
+      box-shadow: 0 14px 30px rgba(0, 0, 0, 0.08);
+      text-align: left;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .main .card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 4px;
+      width: 100%;
+      background: var(--primary);
+    }
+
+    .main .card:nth-child(1)::before {
+      background: var(--info);
+    }
+
+    .main .card:nth-child(2)::before {
+      background: var(--success);
+    }
+
+    .main .card:nth-child(3)::before {
+      background: var(--warning);
+    }
+
+    .main .card h3 {
+      font-size: 0.85rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--admin-muted);
+      margin: 0;
+    }
+
+    .main .card p {
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: var(--admin-text);
+      margin: 0;
+    }
