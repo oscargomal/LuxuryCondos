@@ -71,11 +71,12 @@
 
     const normalizeReservation = (reservation) => {
       if (reservation?.guest) return reservation;
+      const guestSnapshot = reservation?.guest_snapshot || {};
       return {
         guest: {
-          name: reservation?.guest_name || "—",
-          email: reservation?.guest_email || "—",
-          phone: reservation?.guest_phone || "—"
+          name: reservation?.guest_name || guestSnapshot?.name || "—",
+          email: reservation?.guest_email || guestSnapshot?.email || "—",
+          phone: reservation?.guest_phone || guestSnapshot?.phone || "—"
         }
       };
     };

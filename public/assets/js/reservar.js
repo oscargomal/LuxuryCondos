@@ -64,6 +64,23 @@ const getMexicoTimestamp = () => {
   }).format(new Date());
 };
 
+const formatDateForInput = (date) => (
+  new Intl.DateTimeFormat("en-CA", {
+    timeZone: MEXICO_TZ,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+  }).format(date)
+);
+
+const addNights = (dateValue, nights) => {
+  if (!dateValue) return "";
+  const base = new Date(`${dateValue}T00:00:00`);
+  const next = new Date(base);
+  next.setDate(base.getDate() + nights);
+  return formatDateForInput(next);
+};
+
 const readReservations = () => {
   const raw = localStorage.getItem(STORAGE_KEY);
   if (!raw) return [];
@@ -233,7 +250,10 @@ function updateStayType() {
   const disableCheckout = stayType === "month" || stayType === "year";
   checkoutInput.disabled = disableCheckout;
   if (disableCheckout) {
-    checkoutInput.value = "";
+    const nights = stayType === "month" ? 30 : 364;
+    checkoutInput.value = checkinInput.value
+      ? addNights(checkinInput.value, nights)
+      : "";
   }
   setDateMinimums();
   updateSummary();
@@ -246,6 +266,12 @@ stayRadios.forEach(radio => {
 
 checkinInput.addEventListener("change", () => {
   setDateMinimums();
+  const stayType = document.querySelector("input[name='stay']:checked").value;
+  if (stayType === "month") {
+    checkoutInput.value = addNights(checkinInput.value, 30);
+  } else if (stayType === "year") {
+    checkoutInput.value = addNights(checkinInput.value, 364);
+  }
   updateSummary();
 });
 checkoutInput.addEventListener("change", updateSummary);

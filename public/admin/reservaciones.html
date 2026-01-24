@@ -64,10 +64,12 @@
       <table>
         <thead>
           <tr>
+            <th>Folio</th>
             <th>Cliente</th>
             <th>Departamento</th>
             <th>Entrada</th>
             <th>Salida</th>
+            <th>Ocupado</th>
             <th>Estado</th>
             <th>Acciones</th>
           </tr>
@@ -75,7 +77,7 @@
 
         <tbody id="reservationTableBody">
           <tr>
-            <td colspan="6">No hay reservaciones registradas.</td>
+            <td colspan="8">No hay reservaciones registradas.</td>
           </tr>
         </tbody>
       </table>
@@ -137,7 +139,7 @@
       tableBody.innerHTML = "";
 
       if (!reservations.length) {
-        tableBody.innerHTML = "<tr><td colspan=\"6\">No hay reservaciones registradas.</td></tr>";
+        tableBody.innerHTML = "<tr><td colspan=\"8\">No hay reservaciones registradas.</td></tr>";
         return;
       }
 
@@ -149,12 +151,16 @@
           || (reservation?.stayType === "other" ? "Otro" : "—");
         const status = reservation?.status || "Pendiente de pago";
         const statusClass = getStatusClass(reservation);
+        const occupiedValue = reservation?.roomOccupied ?? (reservation?.paymentStatus === "paid");
+        const occupiedLabel = occupiedValue ? "Sí" : "No";
 
         row.innerHTML = `
+          <td>${reservation?.id || "—"}</td>
           <td>${guestName}</td>
           <td>${roomName}</td>
           <td>${formatDate(reservation.checkin)}</td>
           <td>${formatDate(reservation.checkout)}</td>
+          <td>${occupiedLabel}</td>
           <td class="status ${statusClass}">${status}</td>
           <td>
             <button class="btn btn-danger btn-small" data-action="delete" data-id="${reservation.id}">Eliminar</button>
