@@ -26,6 +26,7 @@
 
       <div class="summary-card">
         <img id="summaryImg" src="" alt="Apartment" class="summary-img">
+        <div class="summary-thumbs" id="summaryThumbs"></div>
 
         <h3 class="summary-title" id="summaryTitle">
           Selected apartment
@@ -51,6 +52,16 @@
           <span>Estimated total</span>
           <strong id="summaryTotal">—</strong>
         </div>
+
+        <div class="summary-row" id="summaryCardFeeRow">
+          <span>Card payment fee (4%)</span>
+          <strong id="summaryCardFee">—</strong>
+        </div>
+
+        <div class="summary-total summary-total--card" id="summaryCardTotalRow">
+          <span>Total with card</span>
+          <strong id="summaryCardTotal">—</strong>
+        </div>
       </div>
     </aside>
 
@@ -72,6 +83,18 @@
       <div class="form-group">
         <label>Phone / WhatsApp</label>
         <input type="tel" placeholder="+52 33 0000 0000">
+      </div>
+
+      <div class="form-group">
+        <label>ID photo (front)</label>
+        <input type="file" id="idPhotoFront" accept="image/*" required>
+        <div class="id-preview" id="idPhotoFrontPreview"></div>
+      </div>
+
+      <div class="form-group">
+        <label>ID photo (back)</label>
+        <input type="file" id="idPhotoBack" accept="image/*" required>
+        <div class="id-preview" id="idPhotoBackPreview"></div>
       </div>
 
       <!-- ===== STAY TYPE ===== -->
@@ -134,9 +157,21 @@
         </select>
       </div>
 
-      <button class="btn-primary" type="button">
-        Confirm booking
-      </button>
+      <div class="payment-actions">
+        <button class="btn-primary" type="button" data-payment="card" id="payWithCard">
+          Pay by card (+4%)
+        </button>
+        <button class="btn-secondary" type="button" data-payment="transfer" id="payWithTransfer">
+          Contact for discount (bank transfer)
+        </button>
+      </div>
+
+      <div class="transfer-info" id="transferInfo" hidden>
+        <h3>Bank transfer</h3>
+        <p>CLABE: <strong data-transfer-clabe>000000000000000000</strong></p>
+        <p>Bank: <strong data-transfer-bank>Bank TBD</strong></p>
+        <p>Account holder: <strong data-transfer-holder>Luxury Condo</strong></p>
+      </div>
 
       <p class="form-note">
         No charge will be made until availability is confirmed.

@@ -79,6 +79,11 @@ export default async function handler(req, res) {
     return;
   }
 
+  if (process.env.NODE_ENV === 'production' && process.env.STRIPE_SECRET_KEY.startsWith('sk_test_')) {
+    res.status(500).json({ error: 'STRIPE_SECRET_KEY debe ser live en producción.' });
+    return;
+  }
+
   if (!process.env.SITE_URL) {
     res.status(500).json({ error: 'SITE_URL no configurado.' });
     return;
@@ -93,6 +98,8 @@ export default async function handler(req, res) {
   const checkin = body.checkin;
   const checkout = body.checkout;
   const language = body.language === 'en' ? 'en' : 'es';
+  const paymentMethod = String(body.paymentMethod || body.payment_method || 'card').toLowerCase();
+  const cardFeeRate = Number(body.cardFeeRate ?? 0.04);
 
   if (!reservationId) {
     res.status(400).json({ error: 'Falta reservationId.' });
@@ -158,6 +165,37 @@ export default async function handler(req, res) {
     return;
   }
 
+  const baseTotal = unitAmount * quantity;
+  const shouldApplyCardFee = paymentMethod === 'card' && Number.isFinite(cardFeeRate) && cardFeeRate > 0;
+  const cardFeeAmount = shouldApplyCardFee ? Math.round(baseTotal * cardFeeRate) : 0;
+  const lineItems = [
+    {
+      quantity,
+      price_data: {
+        currency: 'mxn',
+        unit_amount: unitAmount,
+        product_data: {
+          name: room.name || 'Reserva',
+          description
+        }
+      }
+    }
+  ];
+
+  if (cardFeeAmount > 0) {
+    lineItems.push({
+      quantity: 1,
+      price_data: {
+        currency: 'mxn',
+        unit_amount: cardFeeAmount,
+        product_data: {
+          name: 'Comisión por pago con tarjeta (4%)',
+          description: 'Cargo adicional por pago con tarjeta'
+        }
+      }
+    });
+  }
+
   const successUrl = `${process.env.SITE_URL}${language === 'en' ? '/eng/thanks.html' : '/gracias.html'}?reservationId=${reservationId}`;
   const cancelUrl = `${process.env.SITE_URL}${language === 'en' ? '/eng/pending.html' : '/pendiente.html'}?reservationId=${reservationId}`;
 
@@ -168,26 +206,16 @@ export default async function handler(req, res) {
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
       payment_method_types: ['card'],
-      line_items: [
-        {
-          quantity,
-          price_data: {
-            currency: 'mxn',
-            unit_amount: unitAmount,
-            product_data: {
-              name: room.name || 'Reserva',
-              description
-            }
-          }
-        }
-      ],
+      line_items: lineItems,
       success_url: successUrl,
       cancel_url: cancelUrl,
       metadata: {
         reservationId,
         roomId,
         stayType,
-        connectedAccountId
+        connectedAccountId,
+        paymentMethod,
+        cardFeeAmount
       }
     }, {
       stripeAccount: connectedAccountId

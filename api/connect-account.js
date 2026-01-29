@@ -124,6 +124,11 @@ export default async function handler(req, res) {
     return;
   }
 
+  if (process.env.NODE_ENV === 'production' && process.env.STRIPE_SECRET_KEY.startsWith('sk_test_')) {
+    res.status(500).json({ error: 'STRIPE_SECRET_KEY debe ser live en producción.' });
+    return;
+  }
+
   if (!process.env.SITE_URL) {
     res.status(500).json({ error: 'SITE_URL no configurado.' });
     return;

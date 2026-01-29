@@ -92,7 +92,7 @@
         <div class="form-group">
           <label>Subir imágenes</label>
           <input type="file" id="roomImageFiles" accept="image/*" multiple>
-          <small class="form-hint">Se guardan embebidas en la base mientras no haya almacenamiento externo.</small>
+          <small class="form-hint">Se suben a Supabase Storage automáticamente.</small>
         </div>
 
         <div class="form-group">
@@ -172,6 +172,7 @@
     let editingId = null;
     let urlImages = [];
     let uploadedImages = [];
+    let roomsCache = [];
 
     const parseImages = (value) => {
       if (!value) return [];
@@ -243,6 +244,19 @@
       })
     );
 
+    const uploadRoomImage = async (dataUrl, fileName) => {
+      const response = await fetch("/api/upload-room-image", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ dataUrl, fileName })
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(result?.error || "No se pudo subir la imagen.");
+      }
+      return result?.publicUrl || result?.path || "";
+    };
+
     const fetchRooms = async () => {
       try {
         const response = await fetch(API_URL);
@@ -270,6 +284,15 @@
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id })
+      });
+      return response.ok;
+    };
+
+    const updateRoomOccupancy = async (id, occupied) => {
+      const response = await fetch(API_URL, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, occupied })
       });
       return response.ok;
     };
@@ -326,6 +349,9 @@
           <td>${room.is_active ? "Sí" : "No"}</td>
           <td>${room.occupied ? "Sí" : "No"}</td>
           <td>
+            <button class="btn btn-info btn-small" data-action="toggle-occupied" data-id="${room.id}">
+              ${room.occupied ? "Liberar" : "Bloquear"}
+            </button>
             <button class="btn btn-warning btn-small" data-action="edit" data-id="${room.id}">Editar</button>
             <button class="btn btn-danger btn-small" data-action="delete" data-id="${room.id}">Eliminar</button>
           </td>
@@ -336,6 +362,7 @@
 
     const loadRooms = async () => {
       const rooms = await fetchRooms();
+      roomsCache = rooms;
       renderTable(rooms);
     };
 
@@ -378,6 +405,17 @@
         }
       }
 
+      if (button.dataset.action === "toggle-occupied") {
+        const room = roomsCache.find((item) => String(item.id) === String(id));
+        if (!room) return;
+        const ok = await updateRoomOccupancy(id, !room.occupied);
+        if (ok) {
+          loadRooms();
+        } else {
+          alert("No se pudo actualizar la ocupación.");
+        }
+      }
+
       if (button.dataset.action === "edit") {
         const rooms = await fetchRooms();
         const room = rooms.find((item) => String(item.id) === String(id));
@@ -396,10 +434,20 @@
       imageFilesInput.addEventListener("change", async (event) => {
         const files = Array.from(event.target.files || []);
         if (!files.length) return;
-        const uploads = await Promise.all(files.map(readFileAsDataUrl));
-        uploadedImages = [...uploadedImages, ...uploads];
-        imageFilesInput.value = "";
-        renderPreview();
+        imageFilesInput.disabled = true;
+        try {
+          const uploads = await Promise.all(files.map(async (file) => {
+            const dataUrl = await readFileAsDataUrl(file);
+            return await uploadRoomImage(dataUrl, file.name || "room-image");
+          }));
+          uploadedImages = [...uploadedImages, ...uploads].filter(Boolean);
+          renderPreview();
+        } catch (error) {
+          alert(error.message || "Error subiendo imágenes.");
+        } finally {
+          imageFilesInput.disabled = false;
+          imageFilesInput.value = "";
+        }
       });
     }
 

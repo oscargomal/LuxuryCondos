@@ -12,6 +12,11 @@ export default async function handler(req, res) {
     return;
   }
 
+  if (process.env.NODE_ENV === 'production' && process.env.STRIPE_SECRET_KEY.startsWith('sk_test_')) {
+    res.status(500).json({ error: 'STRIPE_SECRET_KEY debe ser live en producción.' });
+    return;
+  }
+
   if (!assertSupabase(res, { requireAdmin: true })) return;
 
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2023-10-16' });

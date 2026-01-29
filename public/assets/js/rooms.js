@@ -42,6 +42,7 @@
         .filter(Boolean);
       const carouselImages = images.length ? images : [fallbackImage];
       const firstImage = carouselImages[0];
+      const imagesData = encodeURIComponent(JSON.stringify(carouselImages));
 
       const card = document.createElement('div');
       card.className = 'room-card';
@@ -58,7 +59,7 @@
           <p>${room.summary || fallbackSummary}</p>
           <div class="room-footer">
             <span class="price">${formatPrice(room.price_night)}</span>
-            <a href="#" class="btn open-modal" data-id="${room.id || ''}" data-name="${room.name || ''}" data-summary="${room.summary || ''}" data-price="${room.price_night || 0}" data-price-month="${room.price_month || 0}" data-price-year="${room.price_year || 0}" data-img="${firstImage}">
+            <a href="#" class="btn open-modal" data-id="${room.id || ''}" data-name="${room.name || ''}" data-summary="${room.summary || ''}" data-price="${room.price_night || 0}" data-price-month="${room.price_month || 0}" data-price-year="${room.price_year || 0}" data-img="${firstImage}" data-images="${imagesData}">
               ${detailsLabel}
             </a>
           </div>

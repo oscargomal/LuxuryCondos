@@ -45,6 +45,15 @@ export default async function handler(req, res) {
 
     const roomSnapshot = body.room || null;
     const guestSnapshot = body.guest || null;
+    const idPhotoFront = guestSnapshot?.idPhotoFront || body.idPhotoFront || body.id_photo_front || null;
+    const idPhotoBack = guestSnapshot?.idPhotoBack || body.idPhotoBack || body.id_photo_back || null;
+    const normalizedGuestSnapshot = guestSnapshot
+      ? {
+        ...guestSnapshot,
+        idPhotoFront: idPhotoFront || guestSnapshot?.idPhotoFront || null,
+        idPhotoBack: idPhotoBack || guestSnapshot?.idPhotoBack || null
+      }
+      : null;
 
     const payload = {
       guest_name: guestSnapshot?.name || body.guest_name || '',
@@ -61,7 +70,7 @@ export default async function handler(req, res) {
       room_occupied: body.roomOccupied ?? body.room_occupied ?? 0,
       language: body.language || 'es',
       room_snapshot: roomSnapshot,
-      guest_snapshot: guestSnapshot
+      guest_snapshot: normalizedGuestSnapshot
     };
 
     const { data, error } = await supabaseAdmin
@@ -81,6 +90,9 @@ export default async function handler(req, res) {
         email: payload.guest_email || null,
         phone: payload.guest_phone || null
       };
+
+      if (idPhotoFront) customerPayload.id_photo_front = idPhotoFront;
+      if (idPhotoBack) customerPayload.id_photo_back = idPhotoBack;
 
       if (payload.guest_email) {
         await supabaseAdmin

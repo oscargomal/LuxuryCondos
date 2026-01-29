@@ -40,13 +40,15 @@
             <th>Correo</th>
             <th>Teléfono</th>
             <th>Reservaciones</th>
+            <th>ID frente</th>
+            <th>ID reverso</th>
             <th>Acciones</th>
           </tr>
         </thead>
 
         <tbody id="clientTableBody">
           <tr>
-            <td colspan="5">No hay clientes registrados.</td>
+            <td colspan="7">No hay clientes registrados.</td>
           </tr>
         </tbody>
       </table>
@@ -76,7 +78,9 @@
         guest: {
           name: reservation?.guest_name || guestSnapshot?.name || "—",
           email: reservation?.guest_email || guestSnapshot?.email || "—",
-          phone: reservation?.guest_phone || guestSnapshot?.phone || "—"
+          phone: reservation?.guest_phone || guestSnapshot?.phone || "—",
+          idPhotoFront: guestSnapshot?.idPhotoFront || null,
+          idPhotoBack: guestSnapshot?.idPhotoBack || null
         }
       };
     };
@@ -95,8 +99,14 @@
             name: guest.name || "—",
             email: guest.email || "—",
             phone: guest.phone || "—",
+            idPhotoFront: guest.idPhotoFront || null,
+            idPhotoBack: guest.idPhotoBack || null,
             count: 0
           });
+        } else {
+          const current = clientMap.get(key);
+          if (!current.idPhotoFront && guest.idPhotoFront) current.idPhotoFront = guest.idPhotoFront;
+          if (!current.idPhotoBack && guest.idPhotoBack) current.idPhotoBack = guest.idPhotoBack;
         }
 
         clientMap.get(key).count += 1;
@@ -110,17 +120,27 @@
       tableBody.innerHTML = "";
 
       if (!clients.length) {
-        tableBody.innerHTML = "<tr><td colspan=\"5\">No hay clientes registrados.</td></tr>";
+        tableBody.innerHTML = "<tr><td colspan=\"7\">No hay clientes registrados.</td></tr>";
         return;
       }
 
+      const encodePath = (path) => encodeURIComponent(path || "");
+
       clients.forEach((client) => {
         const row = document.createElement("tr");
+        const frontButton = client.idPhotoFront
+          ? `<button class="btn btn-info btn-small" data-action="view-id" data-path="${encodePath(client.idPhotoFront)}">Ver</button>`
+          : "—";
+        const backButton = client.idPhotoBack
+          ? `<button class="btn btn-info btn-small" data-action="view-id" data-path="${encodePath(client.idPhotoBack)}">Ver</button>`
+          : "—";
         row.innerHTML = `
           <td>${client.name}</td>
           <td>${client.email}</td>
           <td>${client.phone}</td>
           <td>${client.count}</td>
+          <td>${frontButton}</td>
+          <td>${backButton}</td>
           <td>
             <button class="btn btn-info btn-small" disabled>Ver</button>
             <button class="btn btn-primary btn-small" disabled>Editar</button>
@@ -130,6 +150,30 @@
         tableBody.appendChild(row);
       });
     };
+
+    tableBody.addEventListener("click", async (event) => {
+      const button = event.target.closest("[data-action='view-id']");
+      if (!button) return;
+      const path = decodeURIComponent(button.dataset.path || "");
+      if (!path) return;
+
+      try {
+        const response = await fetch("/api/signed-url", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ bucket: "customer-ids", path })
+        });
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          throw new Error(result?.error || "No se pudo generar el enlace.");
+        }
+        if (result?.signedUrl) {
+          window.open(result.signedUrl, "_blank", "noopener");
+        }
+      } catch (error) {
+        alert(error.message || "Error obteniendo el ID.");
+      }
+    });
 
     const fetchReservations = async () => {
       try {

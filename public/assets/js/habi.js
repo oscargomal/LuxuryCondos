@@ -2,11 +2,57 @@ const modal = document.getElementById("roomModal");
 const closeModal = document.getElementById("closeModal");
 
 const modalImg = document.getElementById("modalMainImg");
+const modalThumbs = document.getElementById("modalThumbs");
 const modalTitle = document.getElementById("modalTitle");
 const modalPrice = document.getElementById("modalPrice");
 const modalReservar = document.getElementById("modalReservar");
 const isEnglish = document.documentElement.lang === "en";
 const priceUnit = isEnglish ? "MXN / night" : "MXN / noche";
+
+const parseImagesData = (value) => {
+  if (!value) return [];
+  try {
+    const decoded = decodeURIComponent(value);
+    const parsed = JSON.parse(decoded);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (error) {
+    return [];
+  }
+};
+
+const renderModalGallery = (images) => {
+  const safeImages = (images || []).filter(Boolean);
+  if (!safeImages.length) {
+    if (modalImg) modalImg.removeAttribute("src");
+    if (modalThumbs) {
+      modalThumbs.innerHTML = "";
+      modalThumbs.style.display = "none";
+    }
+    return;
+  }
+
+  if (modalImg) {
+    modalImg.src = safeImages[0];
+  }
+
+  if (!modalThumbs) return;
+  modalThumbs.innerHTML = "";
+  modalThumbs.style.display = safeImages.length > 1 ? "flex" : "none";
+  if (safeImages.length <= 1) return;
+
+  safeImages.forEach((src, index) => {
+    const thumb = document.createElement("img");
+    thumb.src = src;
+    thumb.alt = isEnglish ? "Preview" : "Vista previa";
+    if (index === 0) thumb.classList.add("active");
+    thumb.addEventListener("click", () => {
+      if (modalImg) modalImg.src = src;
+      modalThumbs.querySelectorAll("img").forEach((item) => item.classList.remove("active"));
+      thumb.classList.add("active");
+    });
+    modalThumbs.appendChild(thumb);
+  });
+};
 
 // Abrir modal (delegado para soportar contenido dinámico)
 document.addEventListener("click", (event) => {
@@ -14,17 +60,20 @@ document.addEventListener("click", (event) => {
   if (!btn) return;
   event.preventDefault();
 
+  const images = parseImagesData(btn.dataset.images);
   const roomData = {
     name: btn.dataset.name,
     price: btn.dataset.price,
     price_month: btn.dataset.priceMonth || null,
     price_year: btn.dataset.priceYear || null,
     img: btn.dataset.img,
+    images,
     id: btn.dataset.id || null,
     summary: btn.dataset.summary || ""
   };
 
-  modalImg.src = roomData.img;
+  const galleryImages = roomData.images?.length ? roomData.images : (roomData.img ? [roomData.img] : []);
+  renderModalGallery(galleryImages);
   modalTitle.textContent = roomData.name;
   modalPrice.textContent = `$${roomData.price} ${priceUnit}`;
 

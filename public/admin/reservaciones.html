@@ -67,6 +67,7 @@
             <th>Folio</th>
             <th>Cliente</th>
             <th>Departamento</th>
+            <th>Tipo</th>
             <th>Entrada</th>
             <th>Salida</th>
             <th>Ocupado</th>
@@ -77,7 +78,7 @@
 
         <tbody id="reservationTableBody">
           <tr>
-            <td colspan="8">No hay reservaciones registradas.</td>
+            <td colspan="9">No hay reservaciones registradas.</td>
           </tr>
         </tbody>
       </table>
@@ -111,6 +112,15 @@
     };
 
     const formatDate = (value) => (value ? value : "—");
+    const formatStayType = (value) => {
+      if (!value) return "—";
+      const normalized = String(value).toLowerCase();
+      if (normalized === "night") return "Por noche";
+      if (normalized === "month") return "Mensual";
+      if (normalized === "year") return "Anual";
+      if (normalized === "other") return "Otro";
+      return value;
+    };
 
     const normalizeReservation = (reservation) => {
       if (reservation?.guest) return reservation;
@@ -139,7 +149,7 @@
       tableBody.innerHTML = "";
 
       if (!reservations.length) {
-        tableBody.innerHTML = "<tr><td colspan=\"8\">No hay reservaciones registradas.</td></tr>";
+        tableBody.innerHTML = "<tr><td colspan=\"9\">No hay reservaciones registradas.</td></tr>";
         return;
       }
 
@@ -153,11 +163,13 @@
         const statusClass = getStatusClass(reservation);
         const occupiedValue = reservation?.roomOccupied ?? (reservation?.paymentStatus === "paid");
         const occupiedLabel = occupiedValue ? "Sí" : "No";
+        const stayTypeLabel = formatStayType(reservation?.stayType);
 
         row.innerHTML = `
           <td>${reservation?.id || "—"}</td>
           <td>${guestName}</td>
           <td>${roomName}</td>
+          <td>${stayTypeLabel}</td>
           <td>${formatDate(reservation.checkin)}</td>
           <td>${formatDate(reservation.checkout)}</td>
           <td>${occupiedLabel}</td>

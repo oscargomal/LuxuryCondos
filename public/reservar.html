@@ -26,6 +26,7 @@
 
       <div class="summary-card">
         <img id="summaryImg" src="" alt="Departamento" class="summary-img">
+        <div class="summary-thumbs" id="summaryThumbs"></div>
 
         <h3 class="summary-title" id="summaryTitle">
           Departamento seleccionado
@@ -51,6 +52,16 @@
           <span>Total estimado</span>
           <strong id="summaryTotal">—</strong>
         </div>
+
+        <div class="summary-row" id="summaryCardFeeRow">
+          <span>Comisión por pago con tarjeta (4%)</span>
+          <strong id="summaryCardFee">—</strong>
+        </div>
+
+        <div class="summary-total summary-total--card" id="summaryCardTotalRow">
+          <span>Total con tarjeta</span>
+          <strong id="summaryCardTotal">—</strong>
+        </div>
       </div>
     </aside>
 
@@ -72,6 +83,18 @@
       <div class="form-group">
         <label>Teléfono / WhatsApp</label>
         <input type="tel" placeholder="+52 33 0000 0000">
+      </div>
+
+      <div class="form-group">
+        <label>Foto de identificación (frente)</label>
+        <input type="file" id="idPhotoFront" accept="image/*" required>
+        <div class="id-preview" id="idPhotoFrontPreview"></div>
+      </div>
+
+      <div class="form-group">
+        <label>Foto de identificación (reverso)</label>
+        <input type="file" id="idPhotoBack" accept="image/*" required>
+        <div class="id-preview" id="idPhotoBackPreview"></div>
       </div>
 
       <!-- ===== TIPO DE ESTANCIA ===== -->
@@ -134,9 +157,21 @@
         </select>
       </div>
 
-      <button class="btn-primary" type="button">
-        Confirmar reservación
-      </button>
+      <div class="payment-actions">
+        <button class="btn-primary" type="button" data-payment="card" id="payWithCard">
+          Pagar con tarjeta (+4%)
+        </button>
+        <button class="btn-secondary" type="button" data-payment="transfer" id="payWithTransfer">
+          Quiero descuento (transferencia)
+        </button>
+      </div>
+
+      <div class="transfer-info" id="transferInfo" hidden>
+        <h3>Transferencia bancaria</h3>
+        <p>CLABE: <strong data-transfer-clabe>000000000000000000</strong></p>
+        <p>Banco: <strong data-transfer-bank>Banco por definir</strong></p>
+        <p>Beneficiario: <strong data-transfer-holder>Luxury Condo</strong></p>
+      </div>
 
       <p class="form-note">
         No se realizará ningún cargo hasta confirmar disponibilidad.

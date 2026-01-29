@@ -4,6 +4,14 @@ import dotenv from "dotenv";
 
 dotenv.config();
 const app = express();
+if (!process.env.STRIPE_SECRET_KEY) {
+  throw new Error('STRIPE_SECRET_KEY no configurado.');
+}
+
+if (process.env.NODE_ENV === 'production' && process.env.STRIPE_SECRET_KEY.startsWith('sk_test_')) {
+  throw new Error('STRIPE_SECRET_KEY debe ser live en producción.');
+}
+
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 app.use(express.json());
