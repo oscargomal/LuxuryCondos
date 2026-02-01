@@ -55,22 +55,38 @@
           <tr>
             <th>Cliente</th>
             <th>Departamento</th>
+            <th>Pago</th>
             <th>Entrada</th>
             <th>Salida</th>
             <th>Estado</th>
+            <th>Acciones</th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td colspan="5">No hay reservaciones registradas.</td>
+            <td colspan="7">No hay reservaciones registradas.</td>
           </tr>
         </tbody>
       </table>
     </section>
   </main>
 
+  <div class="modal-overlay" id="reservationModal">
+    <div class="modal">
+      <button class="modal-close" type="button" data-modal-close>×</button>
+      <h3>Detalle de reservación</h3>
+      <div class="modal-grid" id="reservationModalInfo"></div>
+      <div class="modal-actions" id="reservationModalIdActions"></div>
+    </div>
+  </div>
+
   <script>
     const STORAGE_KEY = "luxuryReservations";
+    const modal = document.getElementById("reservationModal");
+    const modalInfo = document.getElementById("reservationModalInfo");
+    const modalIdActions = document.getElementById("reservationModalIdActions");
+    const modalClose = document.querySelector("[data-modal-close]");
+    const reservationMap = new Map();
     const readReservations = () => {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) return [];
@@ -84,15 +100,110 @@
 
     const normalizeReservation = (reservation) => {
       if (reservation?.guest) return reservation;
+      const guestSnapshot = reservation?.guest_snapshot || {};
       return {
         id: reservation?.id,
-        guest: { name: reservation?.guest_name || "—" },
+        guest: {
+          name: reservation?.guest_name || guestSnapshot?.name || "—",
+          email: reservation?.guest_email || guestSnapshot?.email || "—",
+          phone: reservation?.guest_phone || guestSnapshot?.phone || "—",
+          idPhotoFront: guestSnapshot?.idPhotoFront || null,
+          idPhotoBack: guestSnapshot?.idPhotoBack || null
+        },
         room: { name: reservation?.room_name || "—" },
         checkin: reservation?.checkin,
         checkout: reservation?.checkout,
         status: reservation?.status,
-        paymentStatus: reservation?.payment_status
+        paymentStatus: reservation?.payment_status,
+        stayType: reservation?.stay_type,
+        total: reservation?.total
       };
+    };
+
+    const formatStayType = (value) => {
+      if (!value) return "—";
+      const normalized = String(value).toLowerCase();
+      if (normalized === "night") return "Por noche";
+      if (normalized === "month") return "Mensual";
+      if (normalized === "year") return "Anual";
+      if (normalized === "other") return "Otro";
+      return value;
+    };
+
+    const getPaymentMethodLabel = (reservation) => {
+      const stayType = String(reservation?.stayType || "").toLowerCase();
+      if (stayType === "other") return "No aplica";
+      const status = String(reservation?.status || "").toLowerCase();
+      if (status.includes("transfer")) return "Transferencia";
+      return "Tarjeta";
+    };
+
+    const fetchSignedUrl = async (path) => {
+      const response = await fetch("/api/signed-url", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ bucket: "customer-ids", path })
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(result?.error || "No se pudo generar el enlace.");
+      }
+      return result?.signedUrl || "";
+    };
+
+    const openReservationModal = async (reservation) => {
+      if (!modal || !modalInfo) return;
+      const paymentMethod = getPaymentMethodLabel(reservation);
+      modalInfo.innerHTML = `
+        <p><span>Cliente</span>${reservation?.guest?.name || "—"}</p>
+        <p><span>Correo</span>${reservation?.guest?.email || "—"}</p>
+        <p><span>Teléfono</span>${reservation?.guest?.phone || "—"}</p>
+        <p><span>Departamento</span>${reservation?.room?.name || "—"}</p>
+        <p><span>Tipo</span>${formatStayType(reservation?.stayType)}</p>
+        <p><span>Pago</span>${paymentMethod}</p>
+        <p><span>Entrada</span>${reservation?.checkin || "—"}</p>
+        <p><span>Salida</span>${reservation?.checkout || "—"}</p>
+        <p><span>Estado</span>${reservation?.status || "—"}</p>
+      `;
+
+      modalIdActions.innerHTML = "";
+      if (reservation?.guest?.idPhotoFront) {
+        const btn = document.createElement("button");
+        btn.className = "btn btn-info btn-small";
+        btn.textContent = "Ver ID frente";
+        btn.addEventListener("click", async () => {
+          try {
+            const url = await fetchSignedUrl(reservation.guest.idPhotoFront);
+            if (url) window.open(url, "_blank", "noopener");
+          } catch (error) {
+            alert(error.message || "Error obteniendo el ID.");
+          }
+        });
+        modalIdActions.appendChild(btn);
+      }
+
+      if (reservation?.guest?.idPhotoBack) {
+        const btn = document.createElement("button");
+        btn.className = "btn btn-info btn-small";
+        btn.textContent = "Ver ID reverso";
+        btn.addEventListener("click", async () => {
+          try {
+            const url = await fetchSignedUrl(reservation.guest.idPhotoBack);
+            if (url) window.open(url, "_blank", "noopener");
+          } catch (error) {
+            alert(error.message || "Error obteniendo el ID.");
+          }
+        });
+        modalIdActions.appendChild(btn);
+      }
+
+      if (!reservation?.guest?.idPhotoFront && !reservation?.guest?.idPhotoBack) {
+        const empty = document.createElement("span");
+        empty.textContent = "Sin ID registrado.";
+        modalIdActions.appendChild(empty);
+      }
+
+      modal.classList.add("active");
     };
 
     const fetchReservations = async () => {
@@ -141,22 +252,26 @@
           .slice(0, 5);
 
         if (!latest.length) {
-          tableBody.innerHTML = "<tr><td colspan=\"5\">No hay reservaciones registradas.</td></tr>";
+          tableBody.innerHTML = "<tr><td colspan=\"7\">No hay reservaciones registradas.</td></tr>";
         } else {
           latest.forEach((reservation) => {
             const statusText = reservation?.status || "Pendiente de pago";
             const statusClass = statusText.toLowerCase().includes("confirm")
               ? "active"
               : "pending";
+            const paymentMethod = getPaymentMethodLabel(reservation);
             const row = document.createElement("tr");
             row.innerHTML = `
               <td>${reservation?.guest?.name || "—"}</td>
               <td>${reservation?.room?.name || "—"}</td>
+              <td>${paymentMethod}</td>
               <td>${reservation?.checkin || "—"}</td>
               <td>${reservation?.checkout || "—"}</td>
               <td class="status ${statusClass}">${statusText}</td>
+              <td><button class="btn btn-info btn-small" data-action="view" data-id="${reservation.id}">Ver</button></td>
             `;
             tableBody.appendChild(row);
+            reservationMap.set(String(reservation.id), reservation);
           });
         }
       }
@@ -176,6 +291,23 @@
     };
 
     loadDashboard();
+
+    document.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-action='view']");
+      if (!button) return;
+      const id = String(button.dataset.id || "");
+      const reservation = reservationMap.get(id);
+      if (reservation) {
+        openReservationModal(reservation);
+      }
+    });
+
+    if (modalClose && modal) {
+      modalClose.addEventListener("click", () => modal.classList.remove("active"));
+      modal.addEventListener("click", (event) => {
+        if (event.target === modal) modal.classList.remove("active");
+      });
+    }
   </script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/admin/js/auth.js"></script>

@@ -40,15 +40,13 @@
             <th>Correo</th>
             <th>Teléfono</th>
             <th>Reservaciones</th>
-            <th>ID frente</th>
-            <th>ID reverso</th>
             <th>Acciones</th>
           </tr>
         </thead>
 
         <tbody id="clientTableBody">
           <tr>
-            <td colspan="7">No hay clientes registrados.</td>
+            <td colspan="5">No hay clientes registrados.</td>
           </tr>
         </tbody>
       </table>
@@ -56,9 +54,25 @@
 
   </main>
 
+  <div class="modal-overlay" id="clientModal">
+    <div class="modal">
+      <button class="modal-close" type="button" data-modal-close>×</button>
+      <h3>Detalle del cliente</h3>
+      <div class="modal-grid" id="clientModalInfo"></div>
+      <div class="modal-actions" id="clientModalIdActions"></div>
+      <ul class="modal-list" id="clientModalReservations"></ul>
+    </div>
+  </div>
+
   <script>
     const STORAGE_KEY = "luxuryReservations";
     const tableBody = document.getElementById("clientTableBody");
+    const modal = document.getElementById("clientModal");
+    const modalInfo = document.getElementById("clientModalInfo");
+    const modalReservations = document.getElementById("clientModalReservations");
+    const modalIdActions = document.getElementById("clientModalIdActions");
+    const modalClose = document.querySelector("[data-modal-close]");
+    let reservationsCache = [];
 
     const readReservations = () => {
       const raw = localStorage.getItem(STORAGE_KEY);
@@ -75,33 +89,60 @@
       if (reservation?.guest) return reservation;
       const guestSnapshot = reservation?.guest_snapshot || {};
       return {
+        id: reservation?.id,
         guest: {
           name: reservation?.guest_name || guestSnapshot?.name || "—",
           email: reservation?.guest_email || guestSnapshot?.email || "—",
           phone: reservation?.guest_phone || guestSnapshot?.phone || "—",
           idPhotoFront: guestSnapshot?.idPhotoFront || null,
           idPhotoBack: guestSnapshot?.idPhotoBack || null
-        }
+        },
+        stayType: reservation?.stay_type,
+        checkin: reservation?.checkin,
+        checkout: reservation?.checkout,
+        status: reservation?.status,
+        paymentStatus: reservation?.payment_status
       };
+    };
+
+    const formatStayType = (value) => {
+      if (!value) return "—";
+      const normalized = String(value).toLowerCase();
+      if (normalized === "night") return "Por noche";
+      if (normalized === "month") return "Mensual";
+      if (normalized === "year") return "Anual";
+      if (normalized === "other") return "Otro";
+      return value;
+    };
+
+    const getPaymentMethodLabel = (reservation) => {
+      const stayType = String(reservation?.stayType || "").toLowerCase();
+      if (stayType === "other") return "No aplica";
+      const status = String(reservation?.status || "").toLowerCase();
+      if (status.includes("transfer")) return "Transferencia";
+      return "Tarjeta";
     };
 
     const buildClientMap = (reservationsRaw) => {
       const reservations = reservationsRaw.map(normalizeReservation);
+      reservationsCache = reservations;
       const clientMap = new Map();
 
       reservations.forEach((reservation) => {
         const guest = reservation?.guest || {};
-        const key = guest.email || guest.phone || guest.name;
+        const key = guest.email || guest.phone || guest.name || String(reservation?.id || "");
         if (!key) return;
 
         if (!clientMap.has(key)) {
           clientMap.set(key, {
+            key,
             name: guest.name || "—",
             email: guest.email || "—",
             phone: guest.phone || "—",
             idPhotoFront: guest.idPhotoFront || null,
             idPhotoBack: guest.idPhotoBack || null,
-            count: 0
+            count: 0,
+            reservations: []
           });
         } else {
           const current = clientMap.get(key);
@@ -110,6 +151,7 @@
         }
 
         clientMap.get(key).count += 1;
+        clientMap.get(key).reservations.push(reservation);
       });
 
       return Array.from(clientMap.values());
@@ -120,29 +162,19 @@
       tableBody.innerHTML = "";
 
       if (!clients.length) {
-        tableBody.innerHTML = "<tr><td colspan=\"7\">No hay clientes registrados.</td></tr>";
+        tableBody.innerHTML = "<tr><td colspan=\"5\">No hay clientes registrados.</td></tr>";
         return;
       }
 
-      const encodePath = (path) => encodeURIComponent(path || "");
-
       clients.forEach((client) => {
         const row = document.createElement("tr");
-        const frontButton = client.idPhotoFront
-          ? `<button class="btn btn-info btn-small" data-action="view-id" data-path="${encodePath(client.idPhotoFront)}">Ver</button>`
-          : "—";
-        const backButton = client.idPhotoBack
-          ? `<button class="btn btn-info btn-small" data-action="view-id" data-path="${encodePath(client.idPhotoBack)}">Ver</button>`
-          : "—";
         row.innerHTML = `
           <td>${client.name}</td>
           <td>${client.email}</td>
           <td>${client.phone}</td>
           <td>${client.count}</td>
-          <td>${frontButton}</td>
-          <td>${backButton}</td>
           <td>
-            <button class="btn btn-info btn-small" disabled>Ver</button>
+            <button class="btn btn-info btn-small" data-action="view" data-key="${client.key}">Ver</button>
             <button class="btn btn-primary btn-small" disabled>Editar</button>
             <button class="btn btn-danger btn-small" disabled>Eliminar</button>
           </td>
@@ -151,29 +183,100 @@
       });
     };
 
-    tableBody.addEventListener("click", async (event) => {
-      const button = event.target.closest("[data-action='view-id']");
-      if (!button) return;
-      const path = decodeURIComponent(button.dataset.path || "");
-      if (!path) return;
+    const fetchSignedUrl = async (path) => {
+      const response = await fetch("/api/signed-url", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ bucket: "customer-ids", path })
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(result?.error || "No se pudo generar el enlace.");
+      }
+      return result?.signedUrl || "";
+    };
 
-      try {
-        const response = await fetch("/api/signed-url", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ bucket: "customer-ids", path })
+    const openClientModal = async (client) => {
+      if (!modal || !modalInfo || !modalReservations) return;
+      modalInfo.innerHTML = `
+        <p><span>Nombre</span>${client.name}</p>
+        <p><span>Correo</span>${client.email}</p>
+        <p><span>Teléfono</span>${client.phone}</p>
+      `;
+
+      modalIdActions.innerHTML = "";
+      if (client.idPhotoFront) {
+        const btn = document.createElement("button");
+        btn.className = "btn btn-info btn-small";
+        btn.textContent = "Ver ID frente";
+        btn.addEventListener("click", async () => {
+          try {
+            const url = await fetchSignedUrl(client.idPhotoFront);
+            if (url) window.open(url, "_blank", "noopener");
+          } catch (error) {
+            alert(error.message || "Error obteniendo el ID.");
+          }
         });
-        const result = await response.json().catch(() => ({}));
-        if (!response.ok) {
-          throw new Error(result?.error || "No se pudo generar el enlace.");
-        }
-        if (result?.signedUrl) {
-          window.open(result.signedUrl, "_blank", "noopener");
-        }
-      } catch (error) {
-        alert(error.message || "Error obteniendo el ID.");
+        modalIdActions.appendChild(btn);
+      }
+
+      if (client.idPhotoBack) {
+        const btn = document.createElement("button");
+        btn.className = "btn btn-info btn-small";
+        btn.textContent = "Ver ID reverso";
+        btn.addEventListener("click", async () => {
+          try {
+            const url = await fetchSignedUrl(client.idPhotoBack);
+            if (url) window.open(url, "_blank", "noopener");
+          } catch (error) {
+            alert(error.message || "Error obteniendo el ID.");
+          }
+        });
+        modalIdActions.appendChild(btn);
+      }
+
+      if (!client.idPhotoFront && !client.idPhotoBack) {
+        const empty = document.createElement("span");
+        empty.textContent = "Sin ID registrado.";
+        modalIdActions.appendChild(empty);
+      }
+
+      modalReservations.innerHTML = "";
+      const reservations = client.reservations || [];
+      if (!reservations.length) {
+        modalReservations.innerHTML = "<li>Sin reservaciones registradas.</li>";
+      } else {
+        reservations.forEach((reservation) => {
+          const stayTypeLabel = formatStayType(reservation.stayType);
+          const paymentMethod = getPaymentMethodLabel(reservation);
+          const checkin = reservation.checkin || "—";
+          const checkout = reservation.checkout || "—";
+          const status = reservation.status || "—";
+          const item = document.createElement("li");
+          item.textContent = `#${reservation.id} · ${stayTypeLabel} · ${checkin} → ${checkout} · ${paymentMethod} · ${status}`;
+          modalReservations.appendChild(item);
+        });
+      }
+
+      modal.classList.add("active");
+    };
+
+    tableBody.addEventListener("click", async (event) => {
+      const button = event.target.closest("[data-action='view']");
+      if (!button) return;
+      const key = button.dataset.key;
+      const client = buildClientMap(reservationsCache).find((item) => item.key === key);
+      if (client) {
+        await openClientModal(client);
       }
     });
+
+    if (modalClose && modal) {
+      modalClose.addEventListener("click", () => modal.classList.remove("active"));
+      modal.addEventListener("click", (event) => {
+        if (event.target === modal) modal.classList.remove("active");
+      });
+    }
 
     const fetchReservations = async () => {
       try {
