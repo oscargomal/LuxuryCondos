@@ -57,7 +57,19 @@ const strings = {
     : "Enviar solicitud de transferencia",
   sendingTransfer: isEnglish
     ? "Sending request..."
-    : "Enviando solicitud..."
+    : "Enviando solicitud...",
+  roomBlocked: isEnglish
+    ? "This apartment is blocked for those dates."
+    : "Este departamento está bloqueado en esas fechas.",
+  roomOccupied: isEnglish
+    ? "This apartment is already occupied for those dates."
+    : "Este departamento está ocupado en esas fechas.",
+  availabilityError: isEnglish
+    ? "Could not verify availability. Please try again."
+    : "No se pudo verificar disponibilidad. Intenta nuevamente.",
+  confirmTransfer: isEnglish
+    ? "Confirm that you already made the bank transfer. A reservation ID will be generated now."
+    : "Confirma que ya realizaste la transferencia. Se generará el folio ahora."
 };
 
 const TRANSFER_DETAILS = {
@@ -156,6 +168,7 @@ const summaryPeriod = document.getElementById("summaryPeriod");
 const summaryTotal = document.getElementById("summaryTotal");
 const summaryCardFee = document.getElementById("summaryCardFee");
 const summaryCardTotal = document.getElementById("summaryCardTotal");
+const bookingToast = document.getElementById("bookingToast");
 
 const stayRadios = document.querySelectorAll("input[name='stay']");
 const checkinInput = document.getElementById("checkin");
@@ -285,6 +298,38 @@ const renderIdPreview = (container, dataUrl) => {
   container.appendChild(img);
 };
 
+const showToast = (message, variant = "error") => {
+  if (!bookingToast) return;
+  bookingToast.textContent = message;
+  bookingToast.classList.remove("toast--error", "toast--warning", "show");
+  bookingToast.classList.add(`toast--${variant}`);
+  bookingToast.classList.add("show");
+  clearTimeout(showToast._timer);
+  showToast._timer = setTimeout(() => {
+    bookingToast.classList.remove("show");
+  }, 3500);
+};
+
+const setPaymentDisabled = (disabled) => {
+  if (payWithCardBtn) payWithCardBtn.disabled = disabled;
+  if (payWithTransferBtn) payWithTransferBtn.disabled = disabled;
+};
+
+const checkAvailability = async ({ roomId, checkin, checkout }) => {
+  if (!roomId || !checkin || !checkout) return { available: true };
+  try {
+    const params = new URLSearchParams({ roomId, checkin, checkout });
+    const response = await fetch(`/api/availability?${params.toString()}`);
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      return { available: true, error: result?.error || strings.availabilityError };
+    }
+    return result;
+  } catch (error) {
+    return { available: true, error: strings.availabilityError };
+  }
+};
+
 if (room) {
   const roomImages = Array.isArray(room?.images) ? room.images : [];
   const summaryImages = roomImages.length
@@ -407,7 +452,35 @@ function updateStayType() {
   }
   setDateMinimums();
   updateSummary();
+  runAvailabilityCheck();
 }
+
+const runAvailabilityCheck = async () => {
+  const stayType = document.querySelector("input[name='stay']:checked").value;
+  if (stayType === "other") return;
+  if (!room?.id) return;
+  if (!checkinInput.value || !checkoutInput.value) {
+    setPaymentDisabled(false);
+    return;
+  }
+
+  const result = await checkAvailability({
+    roomId: room.id,
+    checkin: checkinInput.value,
+    checkout: checkoutInput.value
+  });
+
+  if (result?.available === false) {
+    const message = result.reason === "occupied"
+      ? strings.roomOccupied
+      : strings.roomBlocked;
+    showToast(message, "warning");
+    setPaymentDisabled(true);
+    return;
+  }
+
+  setPaymentDisabled(false);
+};
 
 // ================= EVENTOS =================
 stayRadios.forEach(radio => {
@@ -423,8 +496,12 @@ checkinInput.addEventListener("change", () => {
     checkoutInput.value = addNights(checkinInput.value, 364);
   }
   updateSummary();
+  runAvailabilityCheck();
 });
-checkoutInput.addEventListener("change", updateSummary);
+checkoutInput.addEventListener("change", () => {
+  updateSummary();
+  runAvailabilityCheck();
+});
 
 updateStayType();
 
@@ -529,6 +606,29 @@ const submitReservation = async (paymentMethod) => {
     return;
   }
 
+  if ((stayType === "month" || stayType === "year") && (!checkinValue || !checkoutValue)) {
+    alert(strings.invalidDates);
+    return;
+  }
+
+  const availabilityResult = await checkAvailability({
+    roomId: room?.id,
+    checkin: checkinValue,
+    checkout: checkoutValue
+  });
+
+  if (availabilityResult?.available === false) {
+    const message = availabilityResult.reason === "occupied"
+      ? strings.roomOccupied
+      : strings.roomBlocked;
+    showToast(message, "warning");
+    return;
+  }
+
+  if (availabilityResult?.error) {
+    showToast(availabilityResult.error, "error");
+  }
+
   let idPhotoFrontPath = "";
   let idPhotoBackPath = "";
   try {
@@ -595,11 +695,18 @@ const submitReservation = async (paymentMethod) => {
 
   setSubmitting(paymentMethod, true);
 
-  if (stayType === "other" || paymentMethod === "transfer") {
+  if (stayType === "other") {
     resetTransferMode();
     window.location.href = isEnglish
       ? `/eng/pending.html?reservationId=${nextReservation.id}`
       : `/pendiente.html?reservationId=${nextReservation.id}`;
+    return;
+  }
+
+  if (paymentMethod === "transfer") {
+    resetTransferMode();
+    const base = isEnglish ? "/eng/thanks.html" : "/gracias.html";
+    window.location.href = `${base}?reservationId=${nextReservation.id}&payment=transfer`;
     return;
   }
 
@@ -640,6 +747,8 @@ if (payWithTransferBtn) {
       payWithTransferBtn.textContent = strings.payTransferConfirm;
       return;
     }
+    const shouldContinue = confirm(strings.confirmTransfer);
+    if (!shouldContinue) return;
     submitReservation("transfer");
   });
 }

@@ -198,6 +198,8 @@
       if (!button) return;
 
       if (button.dataset.action === "delete") {
+        const shouldDelete = confirm("¿Seguro que deseas eliminar este aviso?");
+        if (!shouldDelete) return;
         localStorage.removeItem(STORAGE_KEY);
         tableBody.innerHTML = "<tr><td colspan=\"5\">No hay avisos publicados.</td></tr>";
         form.reset();

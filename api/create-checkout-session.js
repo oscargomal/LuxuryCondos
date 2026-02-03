@@ -117,6 +117,11 @@ export default async function handler(req, res) {
     return;
   }
 
+  if (!checkin || !checkout) {
+    res.status(400).json({ error: 'Faltan fechas de reservación.' });
+    return;
+  }
+
   const { data: room, error: roomError } = await supabaseAdmin
     .from('rooms')
     .select('*')
@@ -125,6 +130,29 @@ export default async function handler(req, res) {
 
   if (roomError || !room) {
     res.status(404).json({ error: 'No se encontro el departamento.' });
+    return;
+  }
+
+  if (room.occupied) {
+    res.status(409).json({ error: 'El departamento está ocupado en esas fechas.' });
+    return;
+  }
+
+  const { data: blocks, error: blocksError } = await supabaseAdmin
+    .from('room_blocks')
+    .select('id')
+    .eq('room_id', roomId)
+    .lte('start_date', checkout)
+    .gte('end_date', checkin)
+    .limit(1);
+
+  if (blocksError) {
+    res.status(500).json({ error: blocksError.message });
+    return;
+  }
+
+  if (blocks && blocks.length) {
+    res.status(409).json({ error: 'El departamento está bloqueado en esas fechas.' });
     return;
   }
 

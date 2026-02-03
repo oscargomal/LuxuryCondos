@@ -4,12 +4,20 @@
   const root = document.querySelector("[data-payment-status]");
   if (!root) return;
 
-  const isSuccess = root.dataset.paymentStatus === "success";
-  const statusLabel = isSuccess ? "Confirmada" : "Pendiente de pago";
-  const paymentStatus = isSuccess ? "paid" : "pending";
-  const roomOccupied = isSuccess ? 1 : 0;
-
   const params = new URLSearchParams(window.location.search);
+  const paymentMode = params.get("payment");
+  const isTransfer = paymentMode === "transfer";
+  const isSuccess = root.dataset.paymentStatus === "success" && !isTransfer;
+  const isEnglish = document.documentElement.lang === "en";
+
+  const statusLabel = isTransfer
+    ? (isEnglish ? "Transfer pending" : "Pendiente de transferencia")
+    : isSuccess
+      ? "Confirmada"
+      : "Pendiente de pago";
+  const paymentStatus = isTransfer ? "pending" : (isSuccess ? "paid" : "pending");
+  const roomOccupied = isTransfer ? 0 : (isSuccess ? 1 : 0);
+
   const reservationId = params.get("reservationId") || localStorage.getItem(STORAGE_LAST_ID);
 
   const readReservations = () => {
@@ -61,6 +69,19 @@
   };
 
   updateReservation(reservationId);
+
+  if (isTransfer) {
+    const noteEl = document.getElementById("paymentNote");
+    const titleEl = document.getElementById("paymentTitle");
+    if (titleEl) {
+      titleEl.textContent = isEnglish ? "Transfer received" : "Transferencia recibida";
+    }
+    if (noteEl) {
+      noteEl.textContent = isEnglish
+        ? "Your transfer will be verified by our team."
+        : "Tu transferencia será verificada por nuestro equipo.";
+    }
+  }
 
   const idEl = document.querySelector("[data-reservation-id]");
   if (idEl) idEl.textContent = reservationId || "—";

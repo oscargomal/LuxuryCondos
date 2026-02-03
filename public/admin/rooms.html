@@ -143,6 +143,39 @@
     </section>
   </main>
 
+  <div class="modal-overlay" id="blockModal">
+    <div class="modal">
+      <button class="modal-close" type="button" data-block-close>×</button>
+      <h3>Bloqueos por fechas</h3>
+      <div class="modal-grid">
+        <p><span>Departamento</span><strong id="blockRoomName">—</strong></p>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Inicio</label>
+          <input type="date" id="blockStartDate">
+        </div>
+        <div class="form-group">
+          <label>Fin</label>
+          <input type="date" id="blockEndDate">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Motivo (opcional)</label>
+        <input type="text" id="blockReason" placeholder="Ej. Airbnb, mantenimiento">
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn btn-primary" type="button" id="blockSave">Bloquear fechas</button>
+      </div>
+
+      <h4>Bloqueos actuales</h4>
+      <ul class="modal-list" id="blockList"></ul>
+    </div>
+  </div>
+
   <script>
     const API_URL = "/api/rooms";
     const form = document.getElementById("roomForm");
@@ -168,11 +201,20 @@
     const stripeConnectEditGroup = document.getElementById("stripeConnectEditGroup");
     const stripeConnectInput = document.getElementById("stripeConnectInput");
     const stripeConnectSave = document.getElementById("stripeConnectSave");
+    const blockModal = document.getElementById("blockModal");
+    const blockRoomName = document.getElementById("blockRoomName");
+    const blockStartDate = document.getElementById("blockStartDate");
+    const blockEndDate = document.getElementById("blockEndDate");
+    const blockReason = document.getElementById("blockReason");
+    const blockSave = document.getElementById("blockSave");
+    const blockList = document.getElementById("blockList");
+    const blockClose = document.querySelector("[data-block-close]");
 
     let editingId = null;
     let urlImages = [];
     let uploadedImages = [];
     let roomsCache = [];
+    let activeBlockRoom = null;
 
     const parseImages = (value) => {
       if (!value) return [];
@@ -288,11 +330,29 @@
       return response.ok;
     };
 
-    const updateRoomOccupancy = async (id, occupied) => {
-      const response = await fetch(API_URL, {
-        method: "PUT",
+    const fetchBlocks = async (roomId) => {
+      const response = await fetch(`/api/room-blocks?roomId=${roomId}`);
+      if (!response.ok) return [];
+      const result = await response.json();
+      return result?.data || [];
+    };
+
+    const createBlock = async (payload) => {
+      const response = await fetch("/api/room-blocks", {
+        method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id, occupied })
+        body: JSON.stringify(payload)
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(result?.error || "No se pudo crear el bloqueo.");
+      return result?.data;
+    };
+
+    const deleteBlock = async (id) => {
+      const response = await fetch("/api/room-blocks", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id })
       });
       return response.ok;
     };
@@ -349,8 +409,8 @@
           <td>${room.is_active ? "Sí" : "No"}</td>
           <td>${room.occupied ? "Sí" : "No"}</td>
           <td>
-            <button class="btn btn-info btn-small" data-action="toggle-occupied" data-id="${room.id}">
-              ${room.occupied ? "Liberar" : "Bloquear"}
+            <button class="btn btn-info btn-small" data-action="block-dates" data-id="${room.id}">
+              Bloquear / Liberar
             </button>
             <button class="btn btn-warning btn-small" data-action="edit" data-id="${room.id}">Editar</button>
             <button class="btn btn-danger btn-small" data-action="delete" data-id="${room.id}">Eliminar</button>
@@ -364,6 +424,36 @@
       const rooms = await fetchRooms();
       roomsCache = rooms;
       renderTable(rooms);
+    };
+
+    const renderBlocks = (blocks) => {
+      if (!blockList) return;
+      blockList.innerHTML = "";
+      if (!blocks.length) {
+        blockList.innerHTML = "<li>Sin bloqueos registrados.</li>";
+        return;
+      }
+
+      blocks.forEach((block) => {
+        const item = document.createElement("li");
+        const reason = block.reason ? ` · ${block.reason}` : "";
+        item.innerHTML = `
+          ${block.start_date} → ${block.end_date}${reason}
+          <button class="btn btn-danger btn-small" data-block-id="${block.id}">Eliminar</button>
+        `;
+        blockList.appendChild(item);
+      });
+    };
+
+    const openBlockModal = async (room) => {
+      activeBlockRoom = room;
+      if (blockRoomName) blockRoomName.textContent = room?.name || "—";
+      if (blockStartDate) blockStartDate.value = "";
+      if (blockEndDate) blockEndDate.value = "";
+      if (blockReason) blockReason.value = "";
+      if (blockModal) blockModal.classList.add("active");
+      const blocks = await fetchBlocks(room.id);
+      renderBlocks(blocks);
     };
 
     form.addEventListener("submit", async (event) => {
@@ -397,6 +487,8 @@
 
       const id = button.dataset.id;
       if (button.dataset.action === "delete") {
+        const shouldDelete = confirm("¿Seguro que deseas eliminar este departamento?");
+        if (!shouldDelete) return;
         const ok = await deleteRoom(id);
         if (ok) {
           loadRooms();
@@ -405,15 +497,9 @@
         }
       }
 
-      if (button.dataset.action === "toggle-occupied") {
+      if (button.dataset.action === "block-dates") {
         const room = roomsCache.find((item) => String(item.id) === String(id));
-        if (!room) return;
-        const ok = await updateRoomOccupancy(id, !room.occupied);
-        if (ok) {
-          loadRooms();
-        } else {
-          alert("No se pudo actualizar la ocupación.");
-        }
+        if (room) openBlockModal(room);
       }
 
       if (button.dataset.action === "edit") {
@@ -422,6 +508,61 @@
         if (room) fillForm(room);
       }
     });
+
+    if (blockSave) {
+      blockSave.addEventListener("click", async () => {
+        if (!activeBlockRoom) return;
+        const startDate = blockStartDate?.value;
+        const endDate = blockEndDate?.value;
+        const reason = blockReason?.value.trim() || null;
+
+        if (!startDate || !endDate) {
+          alert("Selecciona fechas de inicio y fin.");
+          return;
+        }
+
+        blockSave.disabled = true;
+        try {
+          await createBlock({
+            roomId: activeBlockRoom.id,
+            startDate,
+            endDate,
+            reason
+          });
+          const blocks = await fetchBlocks(activeBlockRoom.id);
+          renderBlocks(blocks);
+          blockStartDate.value = "";
+          blockEndDate.value = "";
+          blockReason.value = "";
+        } catch (error) {
+          alert(error.message || "Error creando el bloqueo.");
+        } finally {
+          blockSave.disabled = false;
+        }
+      });
+    }
+
+    if (blockList) {
+      blockList.addEventListener("click", async (event) => {
+        const button = event.target.closest("[data-block-id]");
+        if (!button) return;
+        const id = button.dataset.blockId;
+        const shouldDelete = confirm("¿Eliminar este bloqueo?");
+        if (!shouldDelete) return;
+        const ok = await deleteBlock(id);
+        if (ok && activeBlockRoom) {
+          const blocks = await fetchBlocks(activeBlockRoom.id);
+          renderBlocks(blocks);
+        }
+      });
+    }
+
+    if (blockClose && blockModal) {
+      blockClose.addEventListener("click", () => blockModal.classList.remove("active"));
+      blockModal.addEventListener("click", (event) => {
+        if (event.target === blockModal) blockModal.classList.remove("active");
+      });
+    }
 
     if (imagesInput) {
       imagesInput.addEventListener("input", () => {
