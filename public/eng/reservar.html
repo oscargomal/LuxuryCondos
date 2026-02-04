@@ -166,11 +166,8 @@
         </button>
       </div>
 
-      <div class="transfer-info" id="transferInfo" hidden>
-        <h3>Bank transfer</h3>
-        <p>CLABE: <strong data-transfer-clabe>000000000000000000</strong></p>
-        <p>Bank: <strong data-transfer-bank>Bank TBD</strong></p>
-        <p>Account holder: <strong data-transfer-holder>Luxury Condo</strong></p>
+      <div class="annual-note" id="annualNote" hidden>
+        For annual contracts, please contact us so we can agree on the contract details.
       </div>
 
       <p class="form-note">
@@ -183,6 +180,40 @@
 </section>
 
 <div class="toast" id="bookingToast" role="status" aria-live="polite"></div>
+
+<div class="transfer-modal" id="transferModal" aria-hidden="true">
+  <div class="transfer-modal__overlay" data-transfer-close></div>
+  <div class="transfer-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="transferTitle">
+    <button class="transfer-modal__close" type="button" aria-label="Close" data-transfer-close>×</button>
+    <h3 id="transferTitle">Bank transfer</h3>
+    <p class="transfer-modal__intro">
+      To get the 4% discount, complete your transfer and confirm here.
+    </p>
+    <div class="transfer-details">
+      <p>CLABE: <strong data-transfer-clabe>000000000000000000</strong></p>
+      <p>Bank: <strong data-transfer-bank>Bank TBD</strong></p>
+      <p>Account holder: <strong data-transfer-holder>Luxury Condo</strong></p>
+    </div>
+    <div class="transfer-contact">
+      <a href="tel:+523313695589" class="contact-btn contact-btn--compact" id="transferPhone">
+        📞
+        <span>Call</span>
+        <small>Direct support</small>
+      </a>
+      <a href="https://wa.me/523313695589" target="_blank" class="contact-btn contact-btn--compact" id="transferWhatsapp">
+        💬
+        <span>WhatsApp</span>
+        <small>Quick reply</small>
+      </a>
+    </div>
+    <button class="btn-primary transfer-confirm" type="button" id="confirmTransferBtn">
+      Confirm transfer
+    </button>
+    <p class="transfer-modal__note">
+      A reservation ID will be generated when you confirm.
+    </p>
+  </div>
+</div>
 
 <footer class="footer">
   <p>© 2026 Luxury Condo · Ajijic, Jalisco</p>

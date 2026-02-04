@@ -166,11 +166,8 @@
         </button>
       </div>
 
-      <div class="transfer-info" id="transferInfo" hidden>
-        <h3>Transferencia bancaria</h3>
-        <p>CLABE: <strong data-transfer-clabe>000000000000000000</strong></p>
-        <p>Banco: <strong data-transfer-bank>Banco por definir</strong></p>
-        <p>Beneficiario: <strong data-transfer-holder>Luxury Condo</strong></p>
+      <div class="annual-note" id="annualNote" hidden>
+        Para contrato anual, favor de contactarnos para ponernos de acuerdo con el contrato.
       </div>
 
       <p class="form-note">
@@ -183,6 +180,40 @@
 </section>
 
 <div class="toast" id="bookingToast" role="status" aria-live="polite"></div>
+
+<div class="transfer-modal" id="transferModal" aria-hidden="true">
+  <div class="transfer-modal__overlay" data-transfer-close></div>
+  <div class="transfer-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="transferTitle">
+    <button class="transfer-modal__close" type="button" aria-label="Cerrar" data-transfer-close>×</button>
+    <h3 id="transferTitle">Transferencia bancaria</h3>
+    <p class="transfer-modal__intro">
+      Para obtener el descuento del 4%, realiza tu transferencia y confirma aquí.
+    </p>
+    <div class="transfer-details">
+      <p>CLABE: <strong data-transfer-clabe>000000000000000000</strong></p>
+      <p>Banco: <strong data-transfer-bank>Banco por definir</strong></p>
+      <p>Beneficiario: <strong data-transfer-holder>Luxury Condo</strong></p>
+    </div>
+    <div class="transfer-contact">
+      <a href="tel:+523313695589" class="contact-btn contact-btn--compact" id="transferPhone">
+        📞
+        <span>Llamar</span>
+        <small>Atención directa</small>
+      </a>
+      <a href="https://wa.me/523313695589" target="_blank" class="contact-btn contact-btn--compact" id="transferWhatsapp">
+        💬
+        <span>WhatsApp</span>
+        <small>Respuesta rápida</small>
+      </a>
+    </div>
+    <button class="btn-primary transfer-confirm" type="button" id="confirmTransferBtn">
+      Confirmar transferencia
+    </button>
+    <p class="transfer-modal__note">
+      Se generará el folio de tu reservación al confirmar.
+    </p>
+  </div>
+</div>
 
 <footer class="footer">
   <p>© 2026 Luxury Condo · Ajijic, Jalisco</p>

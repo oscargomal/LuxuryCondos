@@ -69,7 +69,18 @@ const strings = {
     : "No se pudo verificar disponibilidad. Intenta nuevamente.",
   confirmTransfer: isEnglish
     ? "Confirm that you already made the bank transfer. A reservation ID will be generated now."
-    : "Confirma que ya realizaste la transferencia. Se generará el folio ahora."
+    : "Confirma que ya realizaste la transferencia. Se generará el folio ahora.",
+  transferTitle: isEnglish ? "Bank transfer" : "Transferencia bancaria",
+  transferIntro: isEnglish
+    ? "To get the 4% discount, complete your transfer and confirm here."
+    : "Para obtener el descuento del 4%, realiza tu transferencia y confirma aquí.",
+  transferConfirm: isEnglish ? "Confirm transfer" : "Confirmar transferencia",
+  transferNote: isEnglish
+    ? "A reservation ID will be generated when you confirm."
+    : "Se generará el folio de tu reservación al confirmar.",
+  annualNote: isEnglish
+    ? "For annual contracts, please contact us so we can agree on the contract details."
+    : "Para contrato anual, favor de contactarnos para ponernos de acuerdo con el contrato."
 };
 
 const TRANSFER_DETAILS = {
@@ -175,7 +186,14 @@ const checkinInput = document.getElementById("checkin");
 const checkoutInput = document.getElementById("checkout");
 const payWithCardBtn = document.getElementById("payWithCard");
 const payWithTransferBtn = document.getElementById("payWithTransfer");
-const transferInfo = document.getElementById("transferInfo");
+const annualNote = document.getElementById("annualNote");
+const transferModal = document.getElementById("transferModal");
+const transferTitle = document.getElementById("transferTitle");
+const transferIntro = document.querySelector(".transfer-modal__intro");
+const transferNote = document.querySelector(".transfer-modal__note");
+const transferConfirmBtn = document.getElementById("confirmTransferBtn");
+const transferWhatsapp = document.getElementById("transferWhatsapp");
+const transferPhone = document.getElementById("transferPhone");
 const transferClabe = document.querySelector("[data-transfer-clabe]");
 const transferBank = document.querySelector("[data-transfer-bank]");
 const transferHolder = document.querySelector("[data-transfer-holder]");
@@ -197,7 +215,7 @@ let idPhotoBackName = "";
 let currentBaseTotal = 0;
 let currentCardFee = 0;
 let currentCardTotal = 0;
-let transferMode = false;
+let transferModalOpen = false;
 const getRoomNightPrice = () => {
   const raw = room?.price_night ?? room?.price ?? PRICES.night;
   const parsed = Number(raw);
@@ -453,6 +471,14 @@ function updateStayType() {
   setDateMinimums();
   updateSummary();
   runAvailabilityCheck();
+  const isYear = stayType === "year";
+  if (payWithCardBtn) {
+    payWithCardBtn.disabled = isYear;
+  }
+  if (annualNote) {
+    annualNote.hidden = !isYear;
+    annualNote.textContent = strings.annualNote;
+  }
 }
 
 const runAvailabilityCheck = async () => {
@@ -548,15 +574,65 @@ if (idPhotoBackInput) {
 }
 
 // ================= CONFIRMAR RESERVA =================
-const resetTransferMode = () => {
-  transferMode = false;
-  if (transferInfo) transferInfo.hidden = true;
-  if (payWithTransferBtn) payWithTransferBtn.textContent = strings.payTransfer;
+const closeTransferModal = () => {
+  if (!transferModal) return;
+  transferModal.classList.remove("is-open");
+  transferModal.setAttribute("aria-hidden", "true");
+  document.body.style.overflow = "";
+  transferModalOpen = false;
+};
+
+const buildTransferMessage = () => {
+  const name = document.querySelector("input[type='text']").value.trim();
+  const email = document.querySelector("input[type='email']").value.trim();
+  const phone = document.querySelector("input[type='tel']").value.trim();
+  const stayType = document.querySelector("input[name='stay']:checked").value;
+  const stayLabel = stayType === "year"
+    ? (isEnglish ? "Annual contract" : "Contrato anual")
+    : stayType === "month"
+      ? (isEnglish ? "Monthly stay" : "Estancia mensual")
+      : stayType === "night"
+        ? (isEnglish ? "Per night" : "Por noche")
+        : (isEnglish ? "Custom request" : "Solicitud personalizada");
+  const checkinValue = checkinInput.value || "—";
+  const checkoutValue = checkoutInput.value || "—";
+  const roomName = room?.name || (isEnglish ? "Apartment" : "Departamento");
+
+  if (isEnglish) {
+    return `Hello! I want the 4% transfer discount.\n` +
+      `Name: ${name || "—"}\nEmail: ${email || "—"}\nPhone: ${phone || "—"}\n` +
+      `Stay: ${stayLabel}\nRoom: ${roomName}\nCheck-in: ${checkinValue}\nCheck-out: ${checkoutValue}`;
+  }
+
+  return `Hola, quiero el descuento del 4% por transferencia.\n` +
+    `Nombre: ${name || "—"}\nCorreo: ${email || "—"}\nTeléfono: ${phone || "—"}\n` +
+    `Estancia: ${stayLabel}\nDepto: ${roomName}\nCheck-in: ${checkinValue}\nCheck-out: ${checkoutValue}`;
+};
+
+const openTransferModal = () => {
+  if (!transferModal) return;
+  if (transferTitle) transferTitle.textContent = strings.transferTitle;
+  if (transferIntro) transferIntro.textContent = strings.transferIntro;
+  if (transferNote) transferNote.textContent = strings.transferNote;
+  if (transferConfirmBtn) transferConfirmBtn.textContent = strings.transferConfirm;
+  if (transferWhatsapp) {
+    const message = buildTransferMessage();
+    transferWhatsapp.href = `https://wa.me/523313695589?text=${encodeURIComponent(message)}`;
+  }
+  if (transferPhone) {
+    transferPhone.href = "tel:+523313695589";
+  }
+  transferModal.classList.add("is-open");
+  transferModal.setAttribute("aria-hidden", "false");
+  document.body.style.overflow = "hidden";
+  transferModalOpen = true;
 };
 
 const setSubmitting = (paymentMethod, isSubmitting) => {
+  const stayType = document.querySelector("input[name='stay']:checked").value;
+  const isYear = stayType === "year";
   if (payWithCardBtn) {
-    payWithCardBtn.disabled = isSubmitting;
+    payWithCardBtn.disabled = isSubmitting || isYear;
     payWithCardBtn.textContent = isSubmitting && paymentMethod === "card"
       ? strings.redirecting
       : strings.payCard;
@@ -565,9 +641,7 @@ const setSubmitting = (paymentMethod, isSubmitting) => {
     payWithTransferBtn.disabled = isSubmitting;
     payWithTransferBtn.textContent = isSubmitting && paymentMethod === "transfer"
       ? strings.sendingTransfer
-      : transferMode
-        ? strings.payTransferConfirm
-        : strings.payTransfer;
+      : strings.payTransfer;
   }
 };
 
@@ -696,7 +770,7 @@ const submitReservation = async (paymentMethod) => {
   setSubmitting(paymentMethod, true);
 
   if (stayType === "other") {
-    resetTransferMode();
+    closeTransferModal();
     window.location.href = isEnglish
       ? `/eng/pending.html?reservationId=${nextReservation.id}`
       : `/pendiente.html?reservationId=${nextReservation.id}`;
@@ -704,7 +778,7 @@ const submitReservation = async (paymentMethod) => {
   }
 
   if (paymentMethod === "transfer") {
-    resetTransferMode();
+    closeTransferModal();
     const base = isEnglish ? "/eng/thanks.html" : "/gracias.html";
     window.location.href = `${base}?reservationId=${nextReservation.id}&payment=transfer`;
     return;
@@ -733,7 +807,7 @@ const submitReservation = async (paymentMethod) => {
 if (payWithCardBtn) {
   payWithCardBtn.textContent = strings.payCard;
   payWithCardBtn.addEventListener("click", () => {
-    resetTransferMode();
+    closeTransferModal();
     submitReservation("card");
   });
 }
@@ -741,15 +815,24 @@ if (payWithCardBtn) {
 if (payWithTransferBtn) {
   payWithTransferBtn.textContent = strings.payTransfer;
   payWithTransferBtn.addEventListener("click", () => {
-    if (!transferMode) {
-      transferMode = true;
-      if (transferInfo) transferInfo.hidden = false;
-      payWithTransferBtn.textContent = strings.payTransferConfirm;
-      return;
-    }
-    const shouldContinue = confirm(strings.confirmTransfer);
-    if (!shouldContinue) return;
+    openTransferModal();
+  });
+}
+
+if (transferConfirmBtn) {
+  transferConfirmBtn.addEventListener("click", () => {
     submitReservation("transfer");
   });
 }
+
+if (transferModal) {
+  transferModal.addEventListener("click", (event) => {
+    const shouldClose = event.target.closest("[data-transfer-close]");
+    if (shouldClose) closeTransferModal();
+  });
+}
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && transferModalOpen) closeTransferModal();
+});
   
