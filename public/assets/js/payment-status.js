@@ -9,6 +9,15 @@
   const isTransfer = paymentMode === "transfer";
   const isSuccess = root.dataset.paymentStatus === "success" && !isTransfer;
   const isEnglish = document.documentElement.lang === "en";
+  const TRANSFER_DETAILS = {
+    bank: "BBVA Mexico",
+    holder: "Luxury Condo",
+    mxnChecking: "0124385160",
+    mxnClabe: "012320001243851602",
+    usdAccount: "0125883040",
+    usdClabe: "012320001258830401",
+    swift: "BCMRMCMMPYM"
+  };
 
   const statusLabel = isTransfer
     ? (isEnglish ? "Transfer pending" : "Pendiente de transferencia")
@@ -73,6 +82,7 @@
   if (isTransfer) {
     const noteEl = document.getElementById("paymentNote");
     const titleEl = document.getElementById("paymentTitle");
+    const cardEl = document.querySelector(".payment-card");
     if (titleEl) {
       titleEl.textContent = isEnglish ? "Transfer received" : "Transferencia recibida";
     }
@@ -80,6 +90,28 @@
       noteEl.textContent = isEnglish
         ? "Your transfer will be verified by our team."
         : "Tu transferencia será verificada por nuestro equipo.";
+    }
+    if (cardEl) {
+      const detailsEl = document.createElement("section");
+      detailsEl.className = "transfer-info";
+      detailsEl.innerHTML = isEnglish
+        ? `<h3>Bank details</h3>
+          <p>Bank: <strong>${TRANSFER_DETAILS.bank}</strong></p>
+          <p>Account holder: <strong>${TRANSFER_DETAILS.holder}</strong></p>
+          <p>MXN checking account: <strong>${TRANSFER_DETAILS.mxnChecking}</strong></p>
+          <p>MXN CLABE: <strong>${TRANSFER_DETAILS.mxnClabe}</strong></p>
+          <p>USD account: <strong>${TRANSFER_DETAILS.usdAccount}</strong></p>
+          <p>USD CLABE: <strong>${TRANSFER_DETAILS.usdClabe}</strong></p>
+          <p>SWIFT code: <strong>${TRANSFER_DETAILS.swift}</strong></p>`
+        : `<h3>Datos bancarios</h3>
+          <p>Banco: <strong>${TRANSFER_DETAILS.bank}</strong></p>
+          <p>Beneficiario: <strong>${TRANSFER_DETAILS.holder}</strong></p>
+          <p>Cuenta cheques MXN: <strong>${TRANSFER_DETAILS.mxnChecking}</strong></p>
+          <p>CLABE MXN: <strong>${TRANSFER_DETAILS.mxnClabe}</strong></p>
+          <p>Cuenta USD: <strong>${TRANSFER_DETAILS.usdAccount}</strong></p>
+          <p>CLABE USD: <strong>${TRANSFER_DETAILS.usdClabe}</strong></p>
+          <p>Código SWIFT: <strong>${TRANSFER_DETAILS.swift}</strong></p>`;
+      cardEl.appendChild(detailsEl);
     }
   }
 

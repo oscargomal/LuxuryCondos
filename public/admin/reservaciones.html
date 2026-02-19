@@ -218,7 +218,7 @@
         }
         const nextReservations = readReservations().filter(item => String(item.id) !== String(id));
         localStorage.setItem(STORAGE_KEY, JSON.stringify(nextReservations));
-        renderTable(nextReservations);
+        await loadReservations();
       }
 
       if (button.dataset.action === "confirm-transfer") {
@@ -260,7 +260,8 @@
 
     const loadReservations = async () => {
       const apiReservations = await fetchReservations();
-      if (apiReservations && apiReservations.length) {
+      if (apiReservations) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(apiReservations));
         renderTable(apiReservations);
         return;
       }

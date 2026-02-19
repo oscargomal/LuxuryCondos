@@ -3,6 +3,10 @@ import { assertSupabase, parseBody, supabaseAdmin } from './_supabase.js';
 
 const STRIPE_ACCOUNT_REGEX = /^acct_[A-Za-z0-9]+$/;
 const APP_SETTINGS_MISSING_MESSAGE = 'falta ejecutar SQL de app_settings';
+const INVALID_ACCOUNT_LINK_MESSAGES = [
+  'not connected to your platform',
+  'does not exist'
+];
 
 const getFallbackUrl = (baseUrl, roomId, type) => (
   `${baseUrl}/admin/rooms.html?stripe=${type}&roomId=${roomId}`
@@ -19,6 +23,12 @@ const normalizeSettingsError = (error) => {
     return { message: APP_SETTINGS_MISSING_MESSAGE };
   }
   return { message: error.message || 'Error desconocido.' };
+};
+
+const isInvalidAccountLinkError = (error) => {
+  if (!error) return false;
+  const message = String(error.message || '').toLowerCase();
+  return INVALID_ACCOUNT_LINK_MESSAGES.some((fragment) => message.includes(fragment));
 };
 
 const getAppSettings = async () => {
@@ -184,12 +194,40 @@ export default async function handler(req, res) {
     const returnUrl = process.env.STRIPE_CONNECT_RETURN_URL
       || getFallbackUrl(process.env.SITE_URL, roomId, 'return');
 
-    const accountLink = await stripe.accountLinks.create({
-      account: accountId,
+    const createAccountLink = (targetAccountId) => stripe.accountLinks.create({
+      account: targetAccountId,
       refresh_url: refreshUrl,
       return_url: returnUrl,
       type: 'account_onboarding'
     });
+
+    let accountLink;
+    try {
+      accountLink = await createAccountLink(accountId);
+    } catch (error) {
+      if (!isInvalidAccountLinkError(error)) {
+        throw error;
+      }
+
+      const account = await stripe.accounts.create({
+        type: 'express',
+        country,
+        email,
+        capabilities: {
+          card_payments: { requested: true },
+          transfers: { requested: true }
+        }
+      });
+
+      accountId = account.id;
+      const { error: upsertError } = await upsertAppSettings(accountId);
+      if (upsertError) {
+        res.status(500).json({ error: upsertError.message });
+        return;
+      }
+
+      accountLink = await createAccountLink(accountId);
+    }
 
     res.status(200).json({ accountId, url: accountLink.url });
   } catch (error) {

@@ -84,9 +84,13 @@ const strings = {
 };
 
 const TRANSFER_DETAILS = {
-  clabe: "000000000000000000",
-  bank: isEnglish ? "Bank TBD" : "Banco por definir",
-  holder: "Luxury Condo"
+  bank: "BBVA Mexico",
+  holder: "Luxury Condo",
+  mxnChecking: "0124385160",
+  mxnClabe: "012320001243851602",
+  usdAccount: "0125883040",
+  usdClabe: "012320001258830401",
+  swift: "BCMRMCMMPYM"
 };
 
 const getMexicoToday = () => {
@@ -194,17 +198,25 @@ const transferNote = document.querySelector(".transfer-modal__note");
 const transferConfirmBtn = document.getElementById("confirmTransferBtn");
 const transferWhatsapp = document.getElementById("transferWhatsapp");
 const transferPhone = document.getElementById("transferPhone");
-const transferClabe = document.querySelector("[data-transfer-clabe]");
 const transferBank = document.querySelector("[data-transfer-bank]");
 const transferHolder = document.querySelector("[data-transfer-holder]");
+const transferMxnChecking = document.querySelector("[data-transfer-mxn-checking]");
+const transferMxnClabe = document.querySelector("[data-transfer-mxn-clabe]");
+const transferUsdAccount = document.querySelector("[data-transfer-usd-account]");
+const transferUsdClabe = document.querySelector("[data-transfer-usd-clabe]");
+const transferSwift = document.querySelector("[data-transfer-swift]");
 const idPhotoFrontInput = document.getElementById("idPhotoFront");
 const idPhotoBackInput = document.getElementById("idPhotoBack");
 const idPhotoFrontPreview = document.getElementById("idPhotoFrontPreview");
 const idPhotoBackPreview = document.getElementById("idPhotoBackPreview");
 
-if (transferClabe) transferClabe.textContent = TRANSFER_DETAILS.clabe;
 if (transferBank) transferBank.textContent = TRANSFER_DETAILS.bank;
 if (transferHolder) transferHolder.textContent = TRANSFER_DETAILS.holder;
+if (transferMxnChecking) transferMxnChecking.textContent = TRANSFER_DETAILS.mxnChecking;
+if (transferMxnClabe) transferMxnClabe.textContent = TRANSFER_DETAILS.mxnClabe;
+if (transferUsdAccount) transferUsdAccount.textContent = TRANSFER_DETAILS.usdAccount;
+if (transferUsdClabe) transferUsdClabe.textContent = TRANSFER_DETAILS.usdClabe;
+if (transferSwift) transferSwift.textContent = TRANSFER_DETAILS.swift;
 
 // ================= CARGAR HABITACIÓN =================
 const room = JSON.parse(localStorage.getItem("selectedRoom"));
