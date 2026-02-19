@@ -291,7 +291,8 @@
 
     const loadClients = async () => {
       const apiReservations = await fetchReservations();
-      if (apiReservations && apiReservations.length) {
+      if (apiReservations) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(apiReservations));
         renderClients(buildClientMap(apiReservations));
         return;
       }

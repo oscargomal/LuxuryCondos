@@ -283,9 +283,11 @@
         fetchRooms()
       ]);
 
-      const reservations = apiReservations && apiReservations.length
-        ? apiReservations
-        : readReservations();
+      let reservations = readReservations();
+      if (apiReservations) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(apiReservations));
+        reservations = apiReservations;
+      }
 
       renderDashboard(reservations, apiRooms || []);
     };
