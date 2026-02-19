@@ -7,6 +7,7 @@ const INVALID_ACCOUNT_LINK_MESSAGES = [
   'not connected to your platform',
   'does not exist'
 ];
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const getFallbackUrl = (baseUrl, roomId, type) => (
   `${baseUrl}/admin/rooms.html?stripe=${type}&roomId=${roomId}`
@@ -29,6 +30,11 @@ const isInvalidAccountLinkError = (error) => {
   if (!error) return false;
   const message = String(error.message || '').toLowerCase();
   return INVALID_ACCOUNT_LINK_MESSAGES.some((fragment) => message.includes(fragment));
+};
+
+const normalizeEmail = (value) => {
+  if (typeof value !== 'string') return '';
+  return value.trim();
 };
 
 const getAppSettings = async () => {
@@ -145,8 +151,22 @@ export default async function handler(req, res) {
   }
 
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2023-10-16' });
-  const country = body.country || 'MX';
-  const email = body.email || null;
+  const country = String(body.country || 'MX').trim().toUpperCase();
+  const email = normalizeEmail(body.email);
+  if (email && !EMAIL_REGEX.test(email)) {
+    res.status(400).json({ error: 'Email inválido para Stripe Connect.' });
+    return;
+  }
+
+  const buildAccountPayload = () => ({
+    type: 'express',
+    country,
+    ...(email ? { email } : {}),
+    capabilities: {
+      card_payments: { requested: true },
+      transfers: { requested: true }
+    }
+  });
 
   const { settings, error } = await getAppSettings();
   if (error) {
@@ -171,15 +191,7 @@ export default async function handler(req, res) {
 
     if (!accountId) {
       // Stripe Connect Express: la cuenta conectada pertenece al hotel.
-      const account = await stripe.accounts.create({
-        type: 'express',
-        country,
-        email,
-        capabilities: {
-          card_payments: { requested: true },
-          transfers: { requested: true }
-        }
-      });
+      const account = await stripe.accounts.create(buildAccountPayload());
 
       accountId = account.id;
       const { error: upsertError } = await upsertAppSettings(accountId);
@@ -209,15 +221,7 @@ export default async function handler(req, res) {
         throw error;
       }
 
-      const account = await stripe.accounts.create({
-        type: 'express',
-        country,
-        email,
-        capabilities: {
-          card_payments: { requested: true },
-          transfers: { requested: true }
-        }
-      });
+      const account = await stripe.accounts.create(buildAccountPayload());
 
       accountId = account.id;
       const { error: upsertError } = await upsertAppSettings(accountId);
