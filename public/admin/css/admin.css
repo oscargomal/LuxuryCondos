@@ -99,6 +99,7 @@ table thead th {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
+  justify-content: center;
 }
 
 .modal-list {
@@ -191,6 +192,71 @@ table thead th {
   display: flex;
   flex-direction: column;
   gap: 6px;
+}
+
+/* ===== BUTTONS ===== */
+button {
+  border: none;
+  cursor: pointer;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 0 14px;
+  border-radius: 11px;
+  border: 1px solid transparent;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
+  color: #fff;
+  text-decoration: none;
+  transition: transform 0.18s ease, box-shadow 0.2s ease, filter 0.2s ease;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.16);
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.03);
+}
+
+.btn:active {
+  transform: translateY(0);
+}
+
+.btn:focus-visible {
+  outline: 2px solid #1f7a1f;
+  outline-offset: 2px;
+}
+
+.btn-small {
+  min-height: 34px;
+  padding: 0 11px;
+  font-size: 12px;
+  border-radius: 10px;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary), #404040);
+}
+
+.btn-success {
+  background: linear-gradient(135deg, var(--success), #2a7d46);
+}
+
+.btn-warning {
+  background: linear-gradient(135deg, var(--warning), #e0a03c);
+  color: #1f1f1f;
+}
+
+.btn-danger {
+  background: linear-gradient(135deg, var(--danger), #a82d2d);
+}
+
+.btn-info {
+  background: linear-gradient(135deg, var(--info), #4f8d91);
 }
 
 /* CARDS */
@@ -346,6 +412,14 @@ th {
   font-weight: 500;
 }
 
+.table-section td .btn {
+  margin: 4px 3px;
+}
+
+.table-section td:last-child {
+  text-align: center;
+}
+
 .status.active {
   color: var(--success);
   font-weight: 500;
@@ -414,5 +488,12 @@ th {
   .form-card,
   .table-section {
     padding: 18px;
+  }
+
+  .table-section td:last-child .btn {
+    display: block;
+    width: 100%;
+    max-width: 150px;
+    margin: 6px auto;
   }
 }

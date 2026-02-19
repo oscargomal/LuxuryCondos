@@ -20,6 +20,8 @@ const PAYMENT_STATUS = {
   failed: "failed",
   none: "none"
 };
+const CONTACT_PHONE = "+523313695589";
+const CONTACT_WHATSAPP = "523313695589";
 // Stripe Checkout se crea en backend para recalcular montos y usar Stripe Connect.
 const isEnglish = document.documentElement.lang === "en";
 const strings = {
@@ -38,6 +40,12 @@ const strings = {
   missingIdPhotos: isEnglish
     ? "⚠️ Please upload both ID photos."
     : "⚠️ Por favor sube las dos fotos del ID.",
+  pastedIdPhoto: isEnglish
+    ? "ID image pasted successfully."
+    : "Imagen de identificación pegada correctamente.",
+  pasteNoImage: isEnglish
+    ? "Clipboard does not contain an image."
+    : "El portapapeles no contiene una imagen.",
   invalidDates: isEnglish
     ? "⚠️ Select valid dates."
     : "⚠️ Selecciona fechas válidas.",
@@ -209,6 +217,8 @@ const idPhotoFrontInput = document.getElementById("idPhotoFront");
 const idPhotoBackInput = document.getElementById("idPhotoBack");
 const idPhotoFrontPreview = document.getElementById("idPhotoFrontPreview");
 const idPhotoBackPreview = document.getElementById("idPhotoBackPreview");
+const idPhotoFrontPaste = document.getElementById("idPhotoFrontPaste");
+const idPhotoBackPaste = document.getElementById("idPhotoBackPaste");
 
 if (transferBank) transferBank.textContent = TRANSFER_DETAILS.bank;
 if (transferHolder) transferHolder.textContent = TRANSFER_DETAILS.holder;
@@ -326,6 +336,67 @@ const renderIdPreview = (container, dataUrl) => {
   img.src = dataUrl;
   img.alt = isEnglish ? "ID photo" : "Identificación";
   container.appendChild(img);
+};
+
+const setPasteVisualState = (target, hasImage) => {
+  if (!target) return;
+  target.classList.toggle("has-image", hasImage);
+};
+
+const setIdPhotoValue = ({ side, dataUrl, fileName, fromPaste = false }) => {
+  if (side === "front") {
+    idPhotoFrontData = dataUrl;
+    idPhotoFrontName = fileName;
+    renderIdPreview(idPhotoFrontPreview, dataUrl);
+    if (fromPaste && idPhotoFrontInput) idPhotoFrontInput.value = "";
+    setPasteVisualState(idPhotoFrontPaste, Boolean(dataUrl));
+    return;
+  }
+
+  idPhotoBackData = dataUrl;
+  idPhotoBackName = fileName;
+  renderIdPreview(idPhotoBackPreview, dataUrl);
+  if (fromPaste && idPhotoBackInput) idPhotoBackInput.value = "";
+  setPasteVisualState(idPhotoBackPaste, Boolean(dataUrl));
+};
+
+const setIdPhotoFromFile = async ({ side, file, fromPaste = false }) => {
+  if (!file) {
+    setIdPhotoValue({
+      side,
+      dataUrl: "",
+      fileName: side === "front" ? "id-front" : "id-back",
+      fromPaste
+    });
+    return;
+  }
+
+  const fallbackName = fromPaste
+    ? `${side}-pasted-${Date.now()}.png`
+    : `id-${side}`;
+  const dataUrl = await readFileAsDataUrl(file);
+  setIdPhotoValue({
+    side,
+    dataUrl,
+    fileName: file.name || fallbackName,
+    fromPaste
+  });
+};
+
+const getClipboardImage = (event) => {
+  const files = Array.from(event.clipboardData?.files || []);
+  const fileMatch = files.find((file) => String(file.type || "").startsWith("image/"));
+  if (fileMatch) return fileMatch;
+
+  const items = Array.from(event.clipboardData?.items || []);
+  for (const item of items) {
+    if (String(item.type || "").startsWith("image/")) {
+      const file = item.getAsFile();
+      if (file) return file;
+    }
+  }
+
+  return null;
 };
 
 const showToast = (message, variant = "error") => {
@@ -546,20 +617,14 @@ updateStayType();
 if (idPhotoFrontInput) {
   idPhotoFrontInput.addEventListener("change", async (event) => {
     const file = event.target.files?.[0];
-    if (!file) {
-      idPhotoFrontData = "";
-      idPhotoFrontName = "";
-      renderIdPreview(idPhotoFrontPreview, "");
-      return;
-    }
     try {
-      idPhotoFrontName = file.name || "id-front";
-      idPhotoFrontData = await readFileAsDataUrl(file);
-      renderIdPreview(idPhotoFrontPreview, idPhotoFrontData);
+      await setIdPhotoFromFile({ side: "front", file });
     } catch (error) {
-      idPhotoFrontData = "";
-      idPhotoFrontName = "";
-      renderIdPreview(idPhotoFrontPreview, "");
+      setIdPhotoValue({
+        side: "front",
+        dataUrl: "",
+        fileName: "id-front"
+      });
     }
   });
 }
@@ -567,20 +632,52 @@ if (idPhotoFrontInput) {
 if (idPhotoBackInput) {
   idPhotoBackInput.addEventListener("change", async (event) => {
     const file = event.target.files?.[0];
+    try {
+      await setIdPhotoFromFile({ side: "back", file });
+    } catch (error) {
+      setIdPhotoValue({
+        side: "back",
+        dataUrl: "",
+        fileName: "id-back"
+      });
+    }
+  });
+}
+
+if (idPhotoFrontPaste) {
+  idPhotoFrontPaste.addEventListener("click", () => idPhotoFrontPaste.focus());
+  idPhotoFrontPaste.addEventListener("paste", async (event) => {
+    event.preventDefault();
+    const file = getClipboardImage(event);
     if (!file) {
-      idPhotoBackData = "";
-      idPhotoBackName = "";
-      renderIdPreview(idPhotoBackPreview, "");
+      showToast(strings.pasteNoImage, "warning");
       return;
     }
+
     try {
-      idPhotoBackName = file.name || "id-back";
-      idPhotoBackData = await readFileAsDataUrl(file);
-      renderIdPreview(idPhotoBackPreview, idPhotoBackData);
+      await setIdPhotoFromFile({ side: "front", file, fromPaste: true });
+      showToast(strings.pastedIdPhoto, "warning");
     } catch (error) {
-      idPhotoBackData = "";
-      idPhotoBackName = "";
-      renderIdPreview(idPhotoBackPreview, "");
+      showToast(error.message || strings.pasteNoImage, "error");
+    }
+  });
+}
+
+if (idPhotoBackPaste) {
+  idPhotoBackPaste.addEventListener("click", () => idPhotoBackPaste.focus());
+  idPhotoBackPaste.addEventListener("paste", async (event) => {
+    event.preventDefault();
+    const file = getClipboardImage(event);
+    if (!file) {
+      showToast(strings.pasteNoImage, "warning");
+      return;
+    }
+
+    try {
+      await setIdPhotoFromFile({ side: "back", file, fromPaste: true });
+      showToast(strings.pastedIdPhoto, "warning");
+    } catch (error) {
+      showToast(error.message || strings.pasteNoImage, "error");
     }
   });
 }
@@ -629,10 +726,10 @@ const openTransferModal = () => {
   if (transferConfirmBtn) transferConfirmBtn.textContent = strings.transferConfirm;
   if (transferWhatsapp) {
     const message = buildTransferMessage();
-    transferWhatsapp.href = `https://wa.me/523313695589?text=${encodeURIComponent(message)}`;
+    transferWhatsapp.href = `https://wa.me/${CONTACT_WHATSAPP}?text=${encodeURIComponent(message)}`;
   }
   if (transferPhone) {
-    transferPhone.href = "tel:+523313695589";
+    transferPhone.href = `tel:${CONTACT_PHONE}`;
   }
   transferModal.classList.add("is-open");
   transferModal.setAttribute("aria-hidden", "false");
