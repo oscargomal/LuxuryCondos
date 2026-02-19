@@ -85,14 +85,17 @@
         </div>
 
         <div class="form-group">
-          <label>Imágenes (URLs separadas por coma)</label>
-          <textarea id="roomImages" rows="3" placeholder="https://.../1.jpg, https://.../2.jpg"></textarea>
-        </div>
-
-        <div class="form-group">
           <label>Subir imágenes</label>
           <input type="file" id="roomImageFiles" accept="image/*" multiple>
           <small class="form-hint">Se suben a Supabase Storage automáticamente.</small>
+        </div>
+
+        <div class="form-group">
+          <label>Pegar imágenes</label>
+          <div class="paste-field" id="roomImagePaste" tabindex="0" aria-label="Pegar imágenes del departamento">
+            Pega aquí tus imágenes (Ctrl/Cmd + V)
+          </div>
+          <small class="form-hint">Puedes pegar capturas o imágenes copiadas del portapapeles.</small>
         </div>
 
         <div class="form-group">
@@ -185,8 +188,8 @@
     const priceInput = document.getElementById("roomPrice");
     const priceMonthInput = document.getElementById("roomPriceMonth");
     const priceYearInput = document.getElementById("roomPriceYear");
-    const imagesInput = document.getElementById("roomImages");
     const imageFilesInput = document.getElementById("roomImageFiles");
+    const imagePasteTarget = document.getElementById("roomImagePaste");
     const imagePreview = document.getElementById("roomImagePreview");
     const activeInput = document.getElementById("roomActive");
     const occupiedInput = document.getElementById("roomOccupied");
@@ -211,18 +214,10 @@
     const blockClose = document.querySelector("[data-block-close]");
 
     let editingId = null;
-    let urlImages = [];
+    let existingImages = [];
     let uploadedImages = [];
     let roomsCache = [];
     let activeBlockRoom = null;
-
-    const parseImages = (value) => {
-      if (!value) return [];
-      return value
-        .split(",")
-        .map((item) => item.trim())
-        .filter(Boolean);
-    };
 
     const formatMoney = (value) => {
       const numberValue = Number(value || 0);
@@ -239,24 +234,10 @@
       toggleButton.setAttribute("aria-expanded", String(visible));
     };
 
-    const splitImages = (images) => {
-      const urls = [];
-      const uploads = [];
-      (images || []).forEach((img) => {
-        if (!img) return;
-        if (img.startsWith("data:")) {
-          uploads.push(img);
-        } else {
-          urls.push(img);
-        }
-      });
-      return { urls, uploads };
-    };
-
     const renderPreview = () => {
       if (!imagePreview) return;
       const items = [
-        ...urlImages.map((src, index) => ({ src, source: "url", index })),
+        ...existingImages.map((src, index) => ({ src, source: "existing", index })),
         ...uploadedImages.map((src, index) => ({ src, source: "upload", index }))
       ];
 
@@ -297,6 +278,36 @@
         throw new Error(result?.error || "No se pudo subir la imagen.");
       }
       return result?.publicUrl || result?.path || "";
+    };
+
+    const setPasteVisualState = (hasImages) => {
+      if (!imagePasteTarget) return;
+      imagePasteTarget.classList.toggle("has-image", hasImages);
+    };
+
+    const uploadFilesToStorage = async (files) => {
+      if (!files.length) return [];
+      const uploads = await Promise.all(files.map(async (file, index) => {
+        const dataUrl = await readFileAsDataUrl(file);
+        const fallbackName = `room-image-${Date.now()}-${index + 1}.png`;
+        return await uploadRoomImage(dataUrl, file.name || fallbackName);
+      }));
+      return uploads.filter(Boolean);
+    };
+
+    const getClipboardImages = (event) => {
+      const fileImages = Array.from(event.clipboardData?.files || [])
+        .filter((file) => String(file.type || "").startsWith("image/"));
+      if (fileImages.length) return fileImages;
+
+      const itemImages = [];
+      const items = Array.from(event.clipboardData?.items || []);
+      items.forEach((item) => {
+        if (!String(item.type || "").startsWith("image/")) return;
+        const file = item.getAsFile();
+        if (file) itemImages.push(file);
+      });
+      return itemImages;
     };
 
     const fetchRooms = async () => {
@@ -365,15 +376,14 @@
       priceInput.value = room.price_night || "";
       priceMonthInput.value = room.price_month || "";
       priceYearInput.value = room.price_year || "";
-      const split = splitImages(room.images || []);
-      urlImages = split.urls;
-      uploadedImages = split.uploads;
-      imagesInput.value = urlImages.join(", ");
+      existingImages = Array.isArray(room.images) ? room.images.filter(Boolean) : [];
+      uploadedImages = [];
       activeInput.value = String(room.is_active);
       occupiedInput.value = String(room.occupied);
       submitButton.textContent = "Actualizar";
       if (formTitle) formTitle.textContent = "Editar departamento";
       if (imageFilesInput) imageFilesInput.value = "";
+      setPasteVisualState(existingImages.length > 0);
       renderPreview();
       setFormVisible(true);
       form.scrollIntoView({ behavior: "smooth" });
@@ -383,10 +393,11 @@
       editingId = null;
       form.reset();
       submitButton.textContent = "Guardar";
-      urlImages = [];
+      existingImages = [];
       uploadedImages = [];
       if (formTitle) formTitle.textContent = "Nuevo departamento";
       if (imageFilesInput) imageFilesInput.value = "";
+      setPasteVisualState(false);
       renderPreview();
     };
 
@@ -458,8 +469,7 @@
 
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
-      urlImages = parseImages(imagesInput.value);
-      const images = [...new Set([...urlImages, ...uploadedImages])];
+      const images = [...new Set([...existingImages, ...uploadedImages])];
       const payload = {
         name: nameInput.value.trim(),
         summary: summaryInput.value.trim(),
@@ -564,24 +574,15 @@
       });
     }
 
-    if (imagesInput) {
-      imagesInput.addEventListener("input", () => {
-        urlImages = parseImages(imagesInput.value);
-        renderPreview();
-      });
-    }
-
     if (imageFilesInput) {
       imageFilesInput.addEventListener("change", async (event) => {
         const files = Array.from(event.target.files || []);
         if (!files.length) return;
         imageFilesInput.disabled = true;
         try {
-          const uploads = await Promise.all(files.map(async (file) => {
-            const dataUrl = await readFileAsDataUrl(file);
-            return await uploadRoomImage(dataUrl, file.name || "room-image");
-          }));
+          const uploads = await uploadFilesToStorage(files);
           uploadedImages = [...uploadedImages, ...uploads].filter(Boolean);
+          setPasteVisualState(existingImages.length + uploadedImages.length > 0);
           renderPreview();
         } catch (error) {
           alert(error.message || "Error subiendo imágenes.");
@@ -592,18 +593,42 @@
       });
     }
 
+    if (imagePasteTarget) {
+      imagePasteTarget.addEventListener("click", () => imagePasteTarget.focus());
+      imagePasteTarget.addEventListener("paste", async (event) => {
+        event.preventDefault();
+        const files = getClipboardImages(event);
+        if (!files.length) {
+          alert("El portapapeles no contiene imágenes.");
+          return;
+        }
+
+        imagePasteTarget.classList.add("is-loading");
+        try {
+          const uploads = await uploadFilesToStorage(files);
+          uploadedImages = [...uploadedImages, ...uploads].filter(Boolean);
+          setPasteVisualState(existingImages.length + uploadedImages.length > 0);
+          renderPreview();
+        } catch (error) {
+          alert(error.message || "Error pegando imágenes.");
+        } finally {
+          imagePasteTarget.classList.remove("is-loading");
+        }
+      });
+    }
+
     if (imagePreview) {
       imagePreview.addEventListener("click", (event) => {
         const button = event.target.closest("[data-remove]");
         if (!button) return;
         const source = button.dataset.source;
         const index = Number(button.dataset.index);
-        if (source === "url") {
-          urlImages.splice(index, 1);
-          imagesInput.value = urlImages.join(", ");
+        if (source === "existing") {
+          existingImages.splice(index, 1);
         } else {
           uploadedImages.splice(index, 1);
         }
+        setPasteVisualState(existingImages.length + uploadedImages.length > 0);
         renderPreview();
       });
     }
