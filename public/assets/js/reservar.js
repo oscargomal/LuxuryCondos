@@ -183,7 +183,10 @@ const createCheckoutSession = async (payload) => {
 
 // ================= ELEMENTOS =================
 const summaryImg = document.getElementById("summaryImg");
+const summaryThumbsRow = document.getElementById("summaryThumbsRow");
 const summaryThumbs = document.getElementById("summaryThumbs");
+const summaryThumbsPrev = document.getElementById("summaryThumbsPrev");
+const summaryThumbsNext = document.getElementById("summaryThumbsNext");
 const summaryTitle = document.getElementById("summaryTitle");
 const summaryDesc = document.getElementById("summaryDesc");
 const summaryPrice = document.getElementById("summaryPrice");
@@ -265,6 +268,24 @@ const normalizeImage = (img) => {
   return `/${img}`;
 };
 
+const updateSummaryThumbButtons = () => {
+  if (!summaryThumbs || !summaryThumbsPrev || !summaryThumbsNext) return;
+  const maxLeft = Math.max(summaryThumbs.scrollWidth - summaryThumbs.clientWidth, 0);
+  const left = summaryThumbs.scrollLeft;
+  summaryThumbsPrev.disabled = left <= 2;
+  summaryThumbsNext.disabled = left >= maxLeft - 2;
+};
+
+const scrollSummaryThumbs = (direction) => {
+  if (!summaryThumbs) return;
+  const firstThumb = summaryThumbs.querySelector("img");
+  const step = (firstThumb ? firstThumb.clientWidth : 78) + 8;
+  summaryThumbs.scrollBy({
+    left: direction * step * 3,
+    behavior: "smooth"
+  });
+};
+
 const renderSummaryGallery = (images) => {
   if (!summaryImg) return;
   const safeImages = (images || []).map(normalizeImage).filter(Boolean);
@@ -272,8 +293,10 @@ const renderSummaryGallery = (images) => {
     summaryImg.removeAttribute("src");
     if (summaryThumbs) {
       summaryThumbs.innerHTML = "";
-      summaryThumbs.style.display = "none";
+      summaryThumbs.scrollLeft = 0;
     }
+    if (summaryThumbsRow) summaryThumbsRow.hidden = true;
+    updateSummaryThumbButtons();
     return;
   }
 
@@ -281,7 +304,8 @@ const renderSummaryGallery = (images) => {
 
   if (!summaryThumbs) return;
   summaryThumbs.innerHTML = "";
-  summaryThumbs.style.display = safeImages.length > 1 ? "grid" : "none";
+  summaryThumbs.scrollLeft = 0;
+  if (summaryThumbsRow) summaryThumbsRow.hidden = safeImages.length <= 1;
 
   if (safeImages.length <= 1) return;
 
@@ -294,10 +318,28 @@ const renderSummaryGallery = (images) => {
       summaryImg.src = src;
       summaryThumbs.querySelectorAll("img").forEach((item) => item.classList.remove("active"));
       thumb.classList.add("active");
+      thumb.scrollIntoView({ inline: "center", block: "nearest", behavior: "smooth" });
+      updateSummaryThumbButtons();
     });
     summaryThumbs.appendChild(thumb);
   });
+
+  requestAnimationFrame(updateSummaryThumbButtons);
 };
+
+if (summaryThumbsPrev) {
+  summaryThumbsPrev.addEventListener("click", () => scrollSummaryThumbs(-1));
+}
+
+if (summaryThumbsNext) {
+  summaryThumbsNext.addEventListener("click", () => scrollSummaryThumbs(1));
+}
+
+if (summaryThumbs) {
+  summaryThumbs.addEventListener("scroll", updateSummaryThumbButtons, { passive: true });
+}
+
+window.addEventListener("resize", updateSummaryThumbButtons);
 
 const readFileAsDataUrl = (file) => (
   new Promise((resolve, reject) => {
