@@ -132,12 +132,30 @@ const preloadNeighbors = (index) => {
   });
 };
 
+const setModalImageSource = (src) => {
+  if (!modalImg) return;
+  modalImg.classList.remove("is-visible");
+  modalImg.src = src;
+
+  const revealImage = () => {
+    modalImg.classList.add("is-visible");
+  };
+
+  if (modalImg.complete) {
+    requestAnimationFrame(revealImage);
+    return;
+  }
+
+  modalImg.addEventListener("load", revealImage, { once: true });
+  modalImg.addEventListener("error", revealImage, { once: true });
+};
+
 const setModalImageByIndex = (nextIndex) => {
   if (!modalImg || !currentGalleryImages.length) return;
   const total = currentGalleryImages.length;
   const safeIndex = ((nextIndex % total) + total) % total;
   currentGalleryIndex = safeIndex;
-  modalImg.src = currentGalleryImages[safeIndex];
+  setModalImageSource(currentGalleryImages[safeIndex]);
   ensureThumbRendered(safeIndex);
   setActiveThumb(safeIndex);
   preloadNeighbors(safeIndex);
@@ -171,7 +189,10 @@ const renderModalGallery = (images) => {
   currentGalleryIndex = 0;
 
   if (!currentGalleryImages.length) {
-    if (modalImg) modalImg.removeAttribute("src");
+    if (modalImg) {
+      modalImg.classList.remove("is-visible");
+      modalImg.removeAttribute("src");
+    }
     if (modalThumbs) modalThumbs.innerHTML = "";
     if (modalThumbsWrap) modalThumbsWrap.hidden = true;
     if (modalThumbsMore) modalThumbsMore.hidden = true;

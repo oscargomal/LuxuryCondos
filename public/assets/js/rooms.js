@@ -9,6 +9,9 @@
     ? "2 guests · Wi-Fi · King bed"
     : "2 huéspedes · Wi-Fi · Cama King";
   const fallbackImage = "/assets/img/1.jpeg";
+  const detailsFallback = isEnglish
+    ? ["2 guests", "King bed", "Wi-Fi", "Balcony"]
+    : ["2 huéspedes", "Cama King", "Wi-Fi", "Balcón"];
 
   const normalizeImage = (src) => {
     if (!src) return "";
@@ -41,6 +44,47 @@
     const numberValue = Number(value || 0);
     if (!numberValue) return `— ${priceLabel}`;
     return `$${numberValue.toLocaleString()} ${priceLabel}`;
+  };
+
+  const pickLocalizedSummary = (value) => {
+    const summary = String(value || "").trim();
+    if (!summary) return fallbackSummary;
+    if (!summary.includes("/")) return summary;
+    const parts = summary.split("/").map((part) => part.trim()).filter(Boolean);
+    if (parts.length < 2) return summary;
+    return isEnglish ? parts[parts.length - 1] : parts[0];
+  };
+
+  const extractAttributes = (rawSummary) => {
+    const summary = pickLocalizedSummary(rawSummary);
+    const attributes = [];
+
+    const guestsMatch = summary.match(/\d+\s*(?:hu[eé]spedes?|guests?)/i);
+    const bedsMatch = summary.match(/\d+\s*(?:camas?|beds?)/i);
+    const bedTypeMatch = summary.match(/(?:cama|bed)\s*(?:king|queen)|(?:king|queen)\s*(?:size|bed)/i);
+    const balconyMatch = summary.match(/balc[oó]n|balcony/i);
+    const wifiMatch = summary.match(/wi-?fi|internet/i);
+
+    if (guestsMatch) attributes.push(guestsMatch[0]);
+    if (bedsMatch) attributes.push(bedsMatch[0]);
+    if (bedTypeMatch) attributes.push(bedTypeMatch[0]);
+    if (balconyMatch) attributes.push(isEnglish ? "Balcony" : "Balcón");
+    if (wifiMatch) attributes.push("Wi-Fi");
+
+    if (attributes.length >= 3) {
+      return [...new Set(attributes)].slice(0, 4);
+    }
+
+    const splitFallback = summary
+      .split(/(?:\s*[·|,]\s*|\s+-\s+)/)
+      .map((item) => item.trim())
+      .filter(Boolean);
+
+    if (splitFallback.length) {
+      return [...new Set(splitFallback)].slice(0, 4);
+    }
+
+    return detailsFallback.slice(0, 4);
   };
 
   const buildRoomStore = (rooms) => {
@@ -87,8 +131,14 @@
         return `<img src="${img}" class="${activeClass}" alt="${room.name || ""}" loading="${loadingMode}" decoding="async"${fetchPriority}>`;
       }).join("");
 
+      const attributes = extractAttributes(room.summary || fallbackSummary);
+      const attributesHtml = attributes
+        .map((item) => `<li>${item}</li>`)
+        .join("");
+
       const card = document.createElement("div");
-      card.className = "room-card";
+      card.className = "room-card is-reveal";
+      card.style.animationDelay = `${Math.min(roomIndex * 60, 360)}ms`;
       card.innerHTML = `
         <div class="room-carousel" data-index="0">
           ${imagesHtml}
@@ -97,7 +147,7 @@
         </div>
         <div class="room-info">
           <h3>${room.name || "—"}</h3>
-          <p>${room.summary || fallbackSummary}</p>
+          <ul class="room-attrs">${attributesHtml}</ul>
           <div class="room-footer">
             <span class="price">${formatPrice(room.price_night)}</span>
             <a
@@ -110,6 +160,17 @@
           </div>
         </div>
       `;
+
+      card.querySelectorAll("img").forEach((image) => {
+        const markAsLoaded = () => image.classList.add("is-loaded");
+        if (image.complete) {
+          markAsLoaded();
+        } else {
+          image.addEventListener("load", markAsLoaded, { once: true });
+          image.addEventListener("error", markAsLoaded, { once: true });
+        }
+      });
+
       container.appendChild(card);
     });
 

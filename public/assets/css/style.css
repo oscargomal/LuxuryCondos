@@ -1759,6 +1759,12 @@ a {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.32s ease;
+}
+
+.modal-gallery img.is-visible {
+  opacity: 1;
 }
 
 .modal-gallery-nav {
@@ -1959,5 +1965,401 @@ a {
 
   .room-carousel {
     aspect-ratio: 5 / 4;
+  }
+}
+
+/* ===== Boutique Global Refresh ===== */
+:root {
+  --lc-bg: #f7f5f1;
+  --lc-surface: #ffffff;
+  --lc-surface-soft: #f1eee8;
+  --lc-text: #252422;
+  --lc-text-soft: #5b5852;
+  --lc-border: #e2ddd4;
+  --lc-accent: #5b6444;
+  --lc-shadow: 0 18px 34px rgba(30, 24, 18, 0.08);
+}
+
+html,
+body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+body {
+  font-family: "Inter", "Montserrat", sans-serif;
+  background: var(--lc-bg);
+  color: var(--lc-text);
+  line-height: 1.7;
+  letter-spacing: 0.005em;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: "Playfair Display", Georgia, serif;
+  color: #1e1d1a;
+  letter-spacing: 0.01em;
+}
+
+.container {
+  width: min(92%, 1160px);
+}
+
+.header {
+  background: rgba(255, 255, 255, 0.86);
+  border-bottom: 1px solid rgba(216, 210, 198, 0.75);
+  backdrop-filter: blur(7px);
+  box-shadow: 0 4px 20px rgba(21, 18, 16, 0.04);
+}
+
+.nav {
+  min-height: 82px;
+  padding: 10px 4px;
+}
+
+.logo {
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: clamp(1.75rem, 2.2vw, 2.2rem);
+  font-weight: 600;
+  letter-spacing: 0.015em;
+}
+
+.menu {
+  gap: clamp(16px, 2.2vw, 34px);
+}
+
+.menu a {
+  font-family: "Inter", sans-serif;
+  font-size: 0.98rem;
+  font-weight: 500;
+  color: #2e2c28;
+  opacity: 0.9;
+  transition: color 0.2s ease, opacity 0.2s ease;
+}
+
+.menu a:hover {
+  color: var(--lc-accent);
+  opacity: 1;
+}
+
+.hero {
+  height: clamp(220px, 30vh, 300px);
+  background-position: center;
+}
+
+.hero-small {
+  height: clamp(180px, 24vh, 250px);
+}
+
+.hero-content {
+  background: rgba(30, 29, 26, 0.5);
+  padding: 16px 28px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(2px);
+}
+
+.hero h2 {
+  font-size: clamp(1.7rem, 3vw, 2.45rem);
+  margin-bottom: 2px;
+}
+
+.hero p {
+  font-size: 0.98rem;
+  font-family: "Inter", sans-serif;
+}
+
+.intro,
+.gallery,
+.booking,
+.contact-buttons,
+.location {
+  padding-top: clamp(56px, 7vw, 92px);
+  padding-bottom: clamp(56px, 7vw, 92px);
+}
+
+.intro-text {
+  font-size: clamp(1rem, 1.3vw, 1.12rem);
+  color: var(--lc-text-soft);
+}
+
+.home-editorial {
+  padding-top: clamp(42px, 5.5vw, 76px);
+  padding-bottom: clamp(10px, 2.2vw, 26px);
+  text-align: center;
+}
+
+.home-editorial__kicker {
+  font-family: "Inter", sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 0.74rem;
+  color: #6d665b;
+  margin-bottom: 10px;
+}
+
+.home-editorial h2 {
+  font-size: clamp(1.8rem, 4vw, 3rem);
+  line-height: 1.15;
+  max-width: 900px;
+  margin: 0 auto 14px;
+}
+
+.home-editorial p {
+  max-width: 800px;
+  margin: 0 auto;
+  color: var(--lc-text-soft);
+}
+
+.home-cta {
+  padding: 26px 0 56px;
+}
+
+.home-cta__actions {
+  display: inline-flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.cta-button,
+.btn {
+  font-family: "Inter", sans-serif;
+  border-radius: 999px;
+  border: 1px solid #1f1f1e;
+  background: #1f1f1e;
+  color: #fff;
+  padding: 11px 22px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: transform 0.25s ease, background 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+}
+
+.cta-button:hover,
+.btn:hover {
+  transform: translateY(-1px);
+  background: #121212;
+}
+
+.cta-button--ghost {
+  background: transparent;
+  color: #1f1f1e;
+  border-color: #1f1f1e;
+}
+
+.cta-button--ghost:hover {
+  background: #1f1f1e;
+  color: #fff;
+}
+
+.cta-sub {
+  margin-top: 12px;
+  color: #6a665d;
+}
+
+.audio-overlay {
+  right: 18px;
+  bottom: 18px;
+}
+
+.audio-overlay__content {
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.93);
+  border: 1px solid rgba(214, 208, 197, 0.82);
+  box-shadow: 0 10px 24px rgba(26, 23, 20, 0.12);
+}
+
+.audio-overlay__content h1 {
+  font-family: "Inter", sans-serif;
+  font-size: 0.88rem;
+  margin-bottom: 2px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.audio-overlay__content p {
+  color: #5d5951;
+}
+
+.rooms {
+  padding-top: clamp(52px, 7vw, 92px);
+  padding-bottom: clamp(64px, 7vw, 104px);
+  gap: 28px;
+}
+
+.room-card {
+  background: var(--lc-surface);
+  border: 1px solid var(--lc-border);
+  box-shadow: var(--lc-shadow);
+}
+
+.room-card.is-reveal {
+  opacity: 0;
+  transform: translateY(16px);
+  animation: room-card-in 520ms ease forwards;
+}
+
+@keyframes room-card-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.room-info {
+  padding: 18px 18px 20px;
+}
+
+.room-info h3 {
+  font-family: "Inter", sans-serif;
+  font-size: clamp(1.2rem, 1.5vw, 1.45rem);
+  line-height: 1.12;
+  font-weight: 700;
+  margin-bottom: 10px;
+  letter-spacing: -0.015em;
+}
+
+.room-attrs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0 0 14px;
+  padding: 0;
+  list-style: none;
+}
+
+.room-attrs li {
+  font-family: "Inter", sans-serif;
+  font-size: 0.84rem;
+  color: #4e4b45;
+  background: var(--lc-surface-soft);
+  border: 1px solid #e7e1d7;
+  border-radius: 10px;
+  padding: 6px 10px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.room-footer {
+  gap: 12px;
+}
+
+.price {
+  font-family: "Inter", sans-serif;
+  font-size: 1.06rem;
+  font-weight: 700;
+}
+
+.room-carousel {
+  border-radius: 14px 14px 0 0;
+}
+
+.room-carousel img {
+  opacity: 0;
+  transform: scale(1.015);
+  transition: opacity 0.35s ease, transform 0.45s ease;
+}
+
+.room-carousel img.active {
+  opacity: 0;
+}
+
+.room-carousel img.active.is-loaded {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.room-modal {
+  align-items: center;
+  justify-content: center;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.room-modal .modal-content {
+  overflow-x: hidden;
+  max-width: min(94vw, 980px);
+}
+
+.room-modal .modal-info,
+.room-modal .modal-desc--full {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+
+.room-modal .modal-desc--full {
+  font-family: "Inter", sans-serif;
+}
+
+.room-modal .modal-thumbs-wrap {
+  overflow-x: hidden;
+}
+
+.room-modal .modal-thumbs {
+  max-width: 100%;
+}
+
+.room-modal .modal-footer {
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 980px) {
+  .rooms {
+    gap: 22px;
+  }
+
+  .room-info h3 {
+    font-size: 1.28rem;
+  }
+
+  .room-attrs {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .nav {
+    min-height: 74px;
+    padding: 8px 2px;
+  }
+
+  .menu {
+    top: 74px;
+    border-top: 1px solid #ece5d8;
+  }
+
+  .hero-small {
+    height: clamp(160px, 22vh, 210px);
+  }
+
+  .home-cta__actions {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .cta-button {
+    width: 100%;
+    text-align: center;
+  }
+
+  .room-attrs {
+    grid-template-columns: 1fr;
+  }
+
+  .audio-overlay {
+    right: 14px;
+    left: 14px;
+    width: auto;
   }
 }
