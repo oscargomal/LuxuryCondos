@@ -1,6 +1,8 @@
 const modal = document.getElementById("roomModal");
 const closeModal = document.getElementById("closeModal");
 const modalImg = document.getElementById("modalMainImg");
+const modalPrevBtn = document.getElementById("modalPrevBtn");
+const modalNextBtn = document.getElementById("modalNextBtn");
 const modalThumbsWrap = document.getElementById("modalThumbsWrap");
 const modalThumbs = document.getElementById("modalThumbs");
 const modalThumbsMore = document.getElementById("modalThumbsMore");
@@ -18,6 +20,7 @@ const previewChunkSize = 5;
 
 let currentGalleryImages = [];
 let renderedThumbCount = 0;
+let currentGalleryIndex = 0;
 
 const parseImagesData = (value) => {
   if (!value) return [];
@@ -60,6 +63,12 @@ const setActiveThumb = (index) => {
   });
 };
 
+const setModalNavVisibility = () => {
+  const showNav = currentGalleryImages.length > 1;
+  if (modalPrevBtn) modalPrevBtn.hidden = !showNav;
+  if (modalNextBtn) modalNextBtn.hidden = !showNav;
+};
+
 const createFallbackThumb = () => {
   const fallback = document.createElement("span");
   fallback.className = "modal-thumb__fallback";
@@ -90,8 +99,7 @@ const createThumb = (src, index) => {
 
   button.appendChild(image);
   button.addEventListener("click", () => {
-    if (modalImg) modalImg.src = src;
-    setActiveThumb(index);
+    setModalImageByIndex(index);
   });
   return button;
 };
@@ -105,6 +113,36 @@ const appendThumbs = (start, end) => {
   }
 };
 
+const ensureThumbRendered = (index) => {
+  if (!modalThumbs || index < renderedThumbCount) return;
+  const nextCount = Math.min(index + 1, currentGalleryImages.length);
+  appendThumbs(renderedThumbCount, nextCount);
+  renderedThumbCount = nextCount;
+  if (modalThumbsMore) {
+    modalThumbsMore.hidden = renderedThumbCount >= currentGalleryImages.length;
+  }
+};
+
+const preloadNeighbors = (index) => {
+  [1, 2, -1, -2].forEach((offset) => {
+    const src = currentGalleryImages[index + offset];
+    if (!src) return;
+    const image = new Image();
+    image.src = src;
+  });
+};
+
+const setModalImageByIndex = (nextIndex) => {
+  if (!modalImg || !currentGalleryImages.length) return;
+  const total = currentGalleryImages.length;
+  const safeIndex = ((nextIndex % total) + total) % total;
+  currentGalleryIndex = safeIndex;
+  modalImg.src = currentGalleryImages[safeIndex];
+  ensureThumbRendered(safeIndex);
+  setActiveThumb(safeIndex);
+  preloadNeighbors(safeIndex);
+};
+
 const renderModalThumbs = () => {
   if (!modalThumbs || !modalThumbsWrap) return;
   modalThumbs.innerHTML = "";
@@ -113,6 +151,7 @@ const renderModalThumbs = () => {
   if (currentGalleryImages.length <= 1) {
     modalThumbsWrap.hidden = true;
     if (modalThumbsMore) modalThumbsMore.hidden = true;
+    setModalNavVisibility();
     return;
   }
 
@@ -124,26 +163,29 @@ const renderModalThumbs = () => {
   if (modalThumbsMore) {
     modalThumbsMore.hidden = renderedThumbCount >= currentGalleryImages.length;
   }
+  setModalNavVisibility();
 };
 
 const renderModalGallery = (images) => {
   currentGalleryImages = (images || []).map(normalizeImage).filter(Boolean);
+  currentGalleryIndex = 0;
 
   if (!currentGalleryImages.length) {
     if (modalImg) modalImg.removeAttribute("src");
     if (modalThumbs) modalThumbs.innerHTML = "";
     if (modalThumbsWrap) modalThumbsWrap.hidden = true;
     if (modalThumbsMore) modalThumbsMore.hidden = true;
+    setModalNavVisibility();
     return;
   }
 
   if (modalImg) {
-    modalImg.src = currentGalleryImages[0];
     modalImg.loading = "eager";
     modalImg.decoding = "async";
   }
 
   renderModalThumbs();
+  setModalImageByIndex(0);
 };
 
 const parseMoney = (value) => {
@@ -192,6 +234,19 @@ if (modalThumbsMore) {
     appendThumbs(renderedThumbCount, currentGalleryImages.length);
     renderedThumbCount = currentGalleryImages.length;
     modalThumbsMore.hidden = true;
+    setActiveThumb(currentGalleryIndex);
+  });
+}
+
+if (modalPrevBtn) {
+  modalPrevBtn.addEventListener("click", () => {
+    setModalImageByIndex(currentGalleryIndex - 1);
+  });
+}
+
+if (modalNextBtn) {
+  modalNextBtn.addEventListener("click", () => {
+    setModalImageByIndex(currentGalleryIndex + 1);
   });
 }
 
@@ -240,6 +295,19 @@ if (modal) {
     if (event.target === modal) modal.classList.remove("active");
   });
 }
+
+document.addEventListener("keydown", (event) => {
+  if (!modal || !modal.classList.contains("active")) return;
+  if (event.key === "ArrowLeft") {
+    event.preventDefault();
+    setModalImageByIndex(currentGalleryIndex - 1);
+  } else if (event.key === "ArrowRight") {
+    event.preventDefault();
+    setModalImageByIndex(currentGalleryIndex + 1);
+  } else if (event.key === "Escape") {
+    modal.classList.remove("active");
+  }
+});
 
 const initCarousels = (root = document) => {
   root.querySelectorAll(".room-carousel").forEach((carousel) => {

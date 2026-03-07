@@ -72,16 +72,26 @@
 
     buildRoomStore(rooms);
 
-    rooms.forEach((room) => {
+    rooms.forEach((room, roomIndex) => {
       const roomId = String(room.id || "");
       const roomStore = window.__roomsCatalog?.[roomId];
-      const firstImage = roomStore?.images?.[0] || fallbackImage;
+      const carouselImages = roomStore?.images?.length
+        ? roomStore.images.slice(0, 5)
+        : [fallbackImage];
+
+      const imagesHtml = carouselImages.map((img, imageIndex) => {
+        const isFirstVisibleCard = roomIndex < 2 && imageIndex === 0;
+        const loadingMode = isFirstVisibleCard ? "eager" : "lazy";
+        const fetchPriority = isFirstVisibleCard ? ' fetchpriority="high"' : "";
+        const activeClass = imageIndex === 0 ? "active" : "";
+        return `<img src="${img}" class="${activeClass}" alt="${room.name || ""}" loading="${loadingMode}" decoding="async"${fetchPriority}>`;
+      }).join("");
 
       const card = document.createElement("div");
       card.className = "room-card";
       card.innerHTML = `
         <div class="room-carousel" data-index="0">
-          <img src="${firstImage}" class="active" alt="${room.name || ""}" loading="lazy" decoding="async">
+          ${imagesHtml}
           <button class="carousel-btn prev" type="button">‹</button>
           <button class="carousel-btn next" type="button">›</button>
         </div>
