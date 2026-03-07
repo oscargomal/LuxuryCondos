@@ -53,18 +53,18 @@
     <div class="modal-gallery">
       <img id="modalMainImg" src="" alt="Departamento">
     </div>
-    <div class="modal-thumbs" id="modalThumbs"></div>
+    <div class="modal-thumbs-wrap" id="modalThumbsWrap" hidden>
+      <div class="modal-thumbs-header">
+        <span>Vista previa</span>
+        <button class="modal-thumbs-more" id="modalThumbsMore" type="button" hidden>Ver más</button>
+      </div>
+      <div class="modal-thumbs" id="modalThumbs"></div>
+    </div>
 
     <!-- INFO -->
     <div class="modal-info">
       <h3 id="modalTitle"></h3>
-
-      <ul class="modal-list">
-        <li>✔ 2 huéspedes</li>
-        <li>✔ Cama King</li>
-        <li>✔ Wi-Fi</li>
-        <li>✔ Limpieza diaria</li>
-      </ul>
+      <p class="modal-desc modal-desc--full" id="modalDescription"></p>
 
       <div class="modal-footer">
         <span class="modal-price" id="modalPrice"></span>

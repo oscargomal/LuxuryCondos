@@ -1,18 +1,34 @@
 (() => {
-  const container = document.querySelector('[data-rooms-list]');
+  const container = document.querySelector("[data-rooms-list]");
   if (!container) return;
 
-  const isEnglish = document.documentElement.lang === 'en';
-  const detailsLabel = isEnglish ? 'View details' : 'Ver detalles';
-  const priceLabel = isEnglish ? 'MXN / night' : 'MXN / noche';
+  const isEnglish = document.documentElement.lang === "en";
+  const detailsLabel = isEnglish ? "View details" : "Ver detalles";
+  const priceLabel = isEnglish ? "MXN / night" : "MXN / noche";
   const fallbackSummary = isEnglish
-    ? '2 guests · Wi-Fi · King bed'
-    : '2 huéspedes · Wi-Fi · Cama King';
-  const fallbackImage = '/assets/img/1.jpeg';
+    ? "2 guests · Wi-Fi · King bed"
+    : "2 huéspedes · Wi-Fi · Cama King";
+  const fallbackImage = "/assets/img/1.jpeg";
+
+  const normalizeImage = (src) => {
+    if (!src) return "";
+    const value = String(src).trim();
+    if (!value) return "";
+    if (
+      value.startsWith("http://")
+      || value.startsWith("https://")
+      || value.startsWith("/")
+      || value.startsWith("data:")
+      || value.startsWith("blob:")
+    ) {
+      return value;
+    }
+    return `/${value.replace(/^\/+/, "")}`;
+  };
 
   const fetchRooms = async () => {
     try {
-      const response = await fetch('/api/rooms?public=1');
+      const response = await fetch("/api/rooms?public=1");
       if (!response.ok) return [];
       const result = await response.json();
       return result?.data || [];
@@ -27,39 +43,58 @@
     return `$${numberValue.toLocaleString()} ${priceLabel}`;
   };
 
+  const buildRoomStore = (rooms) => {
+    const store = {};
+    rooms.forEach((room) => {
+      const roomId = String(room.id || "");
+      if (!roomId) return;
+      const images = (Array.isArray(room.images) ? room.images : [])
+        .map(normalizeImage)
+        .filter(Boolean);
+
+      store[roomId] = {
+        id: room.id,
+        name: room.name || "",
+        summary: room.summary || "",
+        description: room.description || "",
+        price_night: Number(room.price_night || 0),
+        price_month: room.price_month,
+        price_year: room.price_year,
+        images: images.length ? images : [fallbackImage]
+      };
+    });
+    window.__roomsCatalog = store;
+  };
+
   const renderRooms = (rooms) => {
+    container.innerHTML = "";
     if (!rooms.length) return;
-    container.innerHTML = '';
+
+    buildRoomStore(rooms);
 
     rooms.forEach((room) => {
-      const rawImages = Array.isArray(room.images) ? room.images : [];
-      const images = rawImages
-        .map((img) => {
-          if (!img) return '';
-          if (img.startsWith('http') || img.startsWith('/') || img.startsWith('data:')) return img;
-          return `/${img}`;
-        })
-        .filter(Boolean);
-      const carouselImages = images.length ? images : [fallbackImage];
-      const firstImage = carouselImages[0];
-      const imagesData = encodeURIComponent(JSON.stringify(carouselImages));
+      const roomId = String(room.id || "");
+      const roomStore = window.__roomsCatalog?.[roomId];
+      const firstImage = roomStore?.images?.[0] || fallbackImage;
 
-      const card = document.createElement('div');
-      card.className = 'room-card';
+      const card = document.createElement("div");
+      card.className = "room-card";
       card.innerHTML = `
         <div class="room-carousel" data-index="0">
-          ${carouselImages.map((img, index) => (
-            `<img src="${img}" class="${index === 0 ? 'active' : ''}" alt="${room.name || ''}" loading="lazy" decoding="async">`
-          )).join('')}
-          <button class="carousel-btn prev">‹</button>
-          <button class="carousel-btn next">›</button>
+          <img src="${firstImage}" class="active" alt="${room.name || ""}" loading="lazy" decoding="async">
+          <button class="carousel-btn prev" type="button">‹</button>
+          <button class="carousel-btn next" type="button">›</button>
         </div>
         <div class="room-info">
-          <h3>${room.name || '—'}</h3>
+          <h3>${room.name || "—"}</h3>
           <p>${room.summary || fallbackSummary}</p>
           <div class="room-footer">
             <span class="price">${formatPrice(room.price_night)}</span>
-            <a href="#" class="btn open-modal" data-id="${room.id || ''}" data-name="${room.name || ''}" data-summary="${room.summary || ''}" data-price="${room.price_night || 0}" data-price-month="${room.price_month || 0}" data-price-year="${room.price_year || 0}" data-img="${firstImage}" data-images="${imagesData}">
+            <a
+              href="#"
+              class="btn open-modal"
+              data-id="${roomId}"
+            >
               ${detailsLabel}
             </a>
           </div>
