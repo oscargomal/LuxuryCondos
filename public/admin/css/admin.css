@@ -259,6 +259,11 @@ button {
   background: linear-gradient(135deg, var(--info), #4f8d91);
 }
 
+.btn-light {
+  background: linear-gradient(135deg, #f0f0f0, #dedede);
+  color: #1f1f1f;
+}
+
 /* CARDS */
 .cards {
   display: grid;
@@ -525,6 +530,32 @@ button {
 .admin-toast.is-error {
   border-color: rgba(139, 31, 31, 0.48);
   background: rgba(119, 27, 27, 0.95);
+}
+
+.admin-confirm {
+  position: fixed;
+  right: 18px;
+  bottom: 84px;
+  width: min(92vw, 420px);
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(26, 26, 26, 0.18);
+  background: rgba(255, 255, 255, 0.98);
+  color: #1f1f1f;
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.18);
+  z-index: 1410;
+}
+
+.admin-confirm p {
+  margin: 0 0 10px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.admin-confirm__actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
 }
 
 .table-section h2 {

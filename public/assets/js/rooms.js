@@ -3,15 +3,12 @@
   if (!container) return;
 
   const isEnglish = document.documentElement.lang === "en";
-  const detailsLabel = isEnglish ? "View details" : "Ver detalles";
+  const detailsLabel = isEnglish ? "View" : "Ver";
   const priceLabel = isEnglish ? "MXN / night" : "MXN / noche";
   const fallbackSummary = isEnglish
     ? "2 guests · Wi-Fi · King bed"
     : "2 huéspedes · Wi-Fi · Cama King";
   const fallbackImage = "/assets/img/1.jpeg";
-  const detailsFallback = isEnglish
-    ? ["2 guests", "King bed", "Wi-Fi", "Balcony"]
-    : ["2 huéspedes", "Cama King", "Wi-Fi", "Balcón"];
 
   const normalizeImage = (src) => {
     if (!src) return "";
@@ -46,45 +43,21 @@
     return `$${numberValue.toLocaleString()} ${priceLabel}`;
   };
 
-  const pickLocalizedSummary = (value) => {
-    const summary = String(value || "").trim();
-    if (!summary) return fallbackSummary;
-    if (!summary.includes("/")) return summary;
-    const parts = summary.split("/").map((part) => part.trim()).filter(Boolean);
-    if (parts.length < 2) return summary;
-    return isEnglish ? parts[parts.length - 1] : parts[0];
-  };
+  const pickLocalizedText = (value, fallback) => {
+    const text = String(value || "").trim();
+    if (!text) return fallback;
 
-  const extractAttributes = (rawSummary) => {
-    const summary = pickLocalizedSummary(rawSummary);
-    const attributes = [];
-
-    const guestsMatch = summary.match(/\d+\s*(?:hu[eé]spedes?|guests?)/i);
-    const bedsMatch = summary.match(/\d+\s*(?:camas?|beds?)/i);
-    const bedTypeMatch = summary.match(/(?:cama|bed)\s*(?:king|queen)|(?:king|queen)\s*(?:size|bed)/i);
-    const balconyMatch = summary.match(/balc[oó]n|balcony/i);
-    const wifiMatch = summary.match(/wi-?fi|internet/i);
-
-    if (guestsMatch) attributes.push(guestsMatch[0]);
-    if (bedsMatch) attributes.push(bedsMatch[0]);
-    if (bedTypeMatch) attributes.push(bedTypeMatch[0]);
-    if (balconyMatch) attributes.push(isEnglish ? "Balcony" : "Balcón");
-    if (wifiMatch) attributes.push("Wi-Fi");
-
-    if (attributes.length >= 3) {
-      return [...new Set(attributes)].slice(0, 4);
+    if (text.includes("//")) {
+      const parts = text.split("//").map((part) => part.trim()).filter(Boolean);
+      if (parts.length >= 2) return isEnglish ? parts[parts.length - 1] : parts[0];
     }
 
-    const splitFallback = summary
-      .split(/(?:\s*[·|,]\s*|\s+-\s+)/)
-      .map((item) => item.trim())
-      .filter(Boolean);
-
-    if (splitFallback.length) {
-      return [...new Set(splitFallback)].slice(0, 4);
+    if (text.includes(" / ")) {
+      const parts = text.split(" / ").map((part) => part.trim()).filter(Boolean);
+      if (parts.length >= 2) return isEnglish ? parts[parts.length - 1] : parts[0];
     }
 
-    return detailsFallback.slice(0, 4);
+    return text;
   };
 
   const buildRoomStore = (rooms) => {
@@ -131,10 +104,7 @@
         return `<img src="${img}" class="${activeClass}" alt="${room.name || ""}" loading="${loadingMode}" decoding="async"${fetchPriority}>`;
       }).join("");
 
-      const attributes = extractAttributes(room.summary || fallbackSummary);
-      const attributesHtml = attributes
-        .map((item) => `<li>${item}</li>`)
-        .join("");
+      const description = pickLocalizedText(room.description || room.summary, fallbackSummary);
 
       const card = document.createElement("div");
       card.className = "room-card is-reveal";
@@ -147,7 +117,7 @@
         </div>
         <div class="room-info">
           <h3>${room.name || "—"}</h3>
-          <ul class="room-attrs">${attributesHtml}</ul>
+          <p class="room-summary">${description}</p>
           <div class="room-footer">
             <span class="price">${formatPrice(room.price_night)}</span>
             <a

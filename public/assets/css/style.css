@@ -1968,7 +1968,7 @@ a {
   }
 }
 
-/* ===== Boutique Global Refresh ===== */
+/* ===== Global Visual Refresh ===== */
 :root {
   --lc-bg: #f7f5f1;
   --lc-surface: #ffffff;
@@ -2071,6 +2071,13 @@ h6 {
 .hero p {
   font-size: 0.98rem;
   font-family: "Inter", sans-serif;
+}
+
+.hero-content h2,
+.hero-content p,
+.hero-caption h2,
+.hero-caption p {
+  color: #fff;
 }
 
 .intro,
@@ -2227,30 +2234,27 @@ h6 {
   letter-spacing: -0.015em;
 }
 
-.room-attrs {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
-  margin: 0 0 14px;
-  padding: 0;
-  list-style: none;
-}
-
-.room-attrs li {
+.room-summary {
   font-family: "Inter", sans-serif;
-  font-size: 0.84rem;
+  font-size: 0.93rem;
+  line-height: 1.58;
   color: #4e4b45;
-  background: var(--lc-surface-soft);
-  border: 1px solid #e7e1d7;
-  border-radius: 10px;
-  padding: 6px 10px;
+  margin: 0 0 14px;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .room-footer {
   gap: 12px;
+}
+
+.room-footer .btn {
+  min-width: 88px;
+  text-align: center;
+  padding: 8px 16px;
+  font-size: 0.83rem;
 }
 
 .price {
@@ -2323,9 +2327,6 @@ h6 {
     font-size: 1.28rem;
   }
 
-  .room-attrs {
-    grid-template-columns: 1fr 1fr;
-  }
 }
 
 @media (max-width: 768px) {
@@ -2351,10 +2352,6 @@ h6 {
   .cta-button {
     width: 100%;
     text-align: center;
-  }
-
-  .room-attrs {
-    grid-template-columns: 1fr;
   }
 
   .audio-overlay {

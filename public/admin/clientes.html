@@ -18,7 +18,6 @@
       <a href="rooms.html">Departamentos</a>
       <a href="avisos.html">Avisos</a>
       <a href="clientes.html">Clientes</a>
-      <a href="reportes.html">Reportes</a>
 
       <a href="index.html" class="logout" data-logout>Cerrar sesión</a>
     </nav>
@@ -63,6 +62,14 @@
       <ul class="modal-list" id="clientModalReservations"></ul>
     </div>
   </div>
+  <div class="admin-toast" id="clientToast" role="status" aria-live="polite"></div>
+  <div class="admin-confirm" id="clientConfirm" hidden>
+    <p id="clientConfirmMessage">¿Confirmar acción?</p>
+    <div class="admin-confirm__actions">
+      <button class="btn btn-danger btn-small" type="button" id="clientConfirmYes">Eliminar</button>
+      <button class="btn btn-light btn-small" type="button" id="clientConfirmNo">Cancelar</button>
+    </div>
+  </div>
 
   <script>
     const STORAGE_KEY = "luxuryReservations";
@@ -72,7 +79,17 @@
     const modalReservations = document.getElementById("clientModalReservations");
     const modalIdActions = document.getElementById("clientModalIdActions");
     const modalClose = document.querySelector("[data-modal-close]");
+    const clientToast = document.getElementById("clientToast");
+    const clientConfirm = document.getElementById("clientConfirm");
+    const clientConfirmMessage = document.getElementById("clientConfirmMessage");
+    const clientConfirmYes = document.getElementById("clientConfirmYes");
+    const clientConfirmNo = document.getElementById("clientConfirmNo");
+
     let reservationsCache = [];
+    let reservationsSourceCache = [];
+    let clientsCache = [];
+    let clientToastTimer = null;
+    let confirmResolver = null;
 
     const readReservations = () => {
       const raw = localStorage.getItem(STORAGE_KEY);
@@ -86,7 +103,14 @@
     };
 
     const normalizeReservation = (reservation) => {
-      if (reservation?.guest) return reservation;
+      if (reservation?.guest) {
+        return {
+          ...reservation,
+          stayType: reservation?.stayType || reservation?.stay_type,
+          paymentStatus: reservation?.paymentStatus || reservation?.payment_status
+        };
+      }
+
       const guestSnapshot = reservation?.guest_snapshot || {};
       return {
         id: reservation?.id,
@@ -104,6 +128,51 @@
         paymentStatus: reservation?.payment_status
       };
     };
+
+    const getClientKey = (guest, reservationId = "") => {
+      const email = String(guest?.email || "").trim();
+      const phone = String(guest?.phone || "").trim();
+      const name = String(guest?.name || "").trim();
+      return email || phone || name || String(reservationId || "");
+    };
+
+    const showClientToast = (message, variant = "success") => {
+      if (!clientToast) return;
+      clientToast.textContent = message;
+      clientToast.classList.remove("show", "is-error");
+      if (variant === "error") clientToast.classList.add("is-error");
+      clientToast.classList.add("show");
+      clearTimeout(clientToastTimer);
+      clientToastTimer = setTimeout(() => {
+        clientToast.classList.remove("show");
+      }, 2800);
+    };
+
+    const askClientConfirm = (message) => new Promise((resolve) => {
+      if (!clientConfirm || !clientConfirmMessage || !clientConfirmYes || !clientConfirmNo) {
+        resolve(confirm(message));
+        return;
+      }
+      clientConfirmMessage.textContent = message;
+      clientConfirm.hidden = false;
+      confirmResolver = resolve;
+    });
+
+    const closeClientConfirm = (value) => {
+      if (!clientConfirm) return;
+      clientConfirm.hidden = true;
+      if (confirmResolver) {
+        confirmResolver(value);
+        confirmResolver = null;
+      }
+    };
+
+    if (clientConfirmYes) {
+      clientConfirmYes.addEventListener("click", () => closeClientConfirm(true));
+    }
+    if (clientConfirmNo) {
+      clientConfirmNo.addEventListener("click", () => closeClientConfirm(false));
+    }
 
     const formatStayType = (value) => {
       if (!value) return "—";
@@ -124,13 +193,17 @@
     };
 
     const buildClientMap = (reservationsRaw) => {
-      const reservations = reservationsRaw.map(normalizeReservation);
+      reservationsSourceCache = Array.isArray(reservationsRaw) ? reservationsRaw : [];
+      const reservations = reservationsSourceCache.map((reservation, index) => ({
+        ...normalizeReservation(reservation),
+        _sourceIndex: index
+      }));
       reservationsCache = reservations;
       const clientMap = new Map();
 
       reservations.forEach((reservation) => {
         const guest = reservation?.guest || {};
-        const key = guest.email || guest.phone || guest.name || String(reservation?.id || "");
+        const key = getClientKey(guest, reservation?.id);
         if (!key) return;
 
         if (!clientMap.has(key)) {
@@ -154,7 +227,8 @@
         clientMap.get(key).reservations.push(reservation);
       });
 
-      return Array.from(clientMap.values());
+      clientsCache = Array.from(clientMap.values());
+      return clientsCache;
     };
 
     const renderClients = (clients) => {
@@ -175,12 +249,42 @@
           <td>${client.count}</td>
           <td>
             <button class="btn btn-info btn-small" data-action="view" data-key="${client.key}">Ver</button>
-            <button class="btn btn-primary btn-small" disabled>Editar</button>
-            <button class="btn btn-danger btn-small" disabled>Eliminar</button>
+            <button class="btn btn-primary btn-small" data-action="edit" data-key="${client.key}">Editar</button>
+            <button class="btn btn-danger btn-small" data-action="delete" data-key="${client.key}">Eliminar</button>
           </td>
         `;
         tableBody.appendChild(row);
       });
+    };
+
+    const applyGuestToRaw = (rawReservation, guest) => {
+      if (!rawReservation || typeof rawReservation !== "object") return;
+
+      if (rawReservation.guest && typeof rawReservation.guest === "object") {
+        rawReservation.guest = {
+          ...rawReservation.guest,
+          name: guest.name,
+          email: guest.email,
+          phone: guest.phone
+        };
+      }
+
+      if (rawReservation.guest_snapshot && typeof rawReservation.guest_snapshot === "object") {
+        rawReservation.guest_snapshot = {
+          ...rawReservation.guest_snapshot,
+          name: guest.name,
+          email: guest.email,
+          phone: guest.phone
+        };
+      }
+
+      rawReservation.guest_name = guest.name;
+      rawReservation.guest_email = guest.email;
+      rawReservation.guest_phone = guest.phone;
+    };
+
+    const persistReservations = () => {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(reservationsSourceCache));
     };
 
     const fetchSignedUrl = async (path) => {
@@ -261,13 +365,106 @@
       modal.classList.add("active");
     };
 
+    const findClientByKey = (key) => clientsCache.find((item) => item.key === key);
+
+    const editClient = (client) => {
+      if (!client) return;
+      const nextName = prompt("Nombre del cliente:", client.name || "");
+      if (nextName === null) return;
+      const nextEmail = prompt("Correo del cliente:", client.email || "");
+      if (nextEmail === null) return;
+      const nextPhone = prompt("Teléfono del cliente:", client.phone || "");
+      if (nextPhone === null) return;
+
+      const guest = {
+        name: nextName.trim() || "—",
+        email: nextEmail.trim() || "—",
+        phone: nextPhone.trim() || "—"
+      };
+
+      const currentKey = client.key;
+      reservationsCache.forEach((reservation) => {
+        const guestData = reservation?.guest || {};
+        const key = getClientKey(guestData, reservation?.id);
+        if (key !== currentKey) return;
+
+        reservation.guest = { ...guestData, ...guest };
+        const sourceIndex = reservation._sourceIndex;
+        if (Number.isInteger(sourceIndex)) {
+          applyGuestToRaw(reservationsSourceCache[sourceIndex], guest);
+        }
+      });
+
+      persistReservations();
+      renderClients(buildClientMap(reservationsSourceCache));
+      showClientToast("Cliente actualizado.");
+      if (modal?.classList.contains("active")) {
+        const updated = findClientByKey(getClientKey(guest));
+        if (updated) openClientModal(updated);
+      }
+    };
+
+    const deleteClient = async (client) => {
+      if (!client) return;
+      const shouldDelete = await askClientConfirm(`¿Eliminar cliente "${client.name}" y sus reservaciones?`);
+      if (!shouldDelete) return;
+
+      const sourceIndexes = new Set();
+      const reservationIds = [];
+
+      reservationsCache.forEach((reservation) => {
+        const guestData = reservation?.guest || {};
+        const key = getClientKey(guestData, reservation?.id);
+        if (key !== client.key) return;
+        if (Number.isInteger(reservation._sourceIndex)) sourceIndexes.add(reservation._sourceIndex);
+        if (reservation?.id) reservationIds.push(reservation.id);
+      });
+
+      let remoteErrors = 0;
+      for (const id of reservationIds) {
+        try {
+          await fetch("/api/reservations", {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id })
+          });
+        } catch (error) {
+          remoteErrors += 1;
+        }
+      }
+
+      reservationsSourceCache = reservationsSourceCache.filter((_, index) => !sourceIndexes.has(index));
+      persistReservations();
+      renderClients(buildClientMap(reservationsSourceCache));
+      if (modal) modal.classList.remove("active");
+
+      if (remoteErrors) {
+        showClientToast("Cliente eliminado localmente. Algunas reservaciones no se pudieron borrar en servidor.", "error");
+      } else {
+        showClientToast("Cliente eliminado correctamente.");
+      }
+    };
+
     tableBody.addEventListener("click", async (event) => {
-      const button = event.target.closest("[data-action='view']");
+      const button = event.target.closest("[data-action]");
       if (!button) return;
+      const action = button.dataset.action;
       const key = button.dataset.key;
-      const client = buildClientMap(reservationsCache).find((item) => item.key === key);
-      if (client) {
+      const client = findClientByKey(key);
+      if (!client) return;
+
+      if (action === "view") {
         await openClientModal(client);
+        return;
+      }
+
+      if (action === "edit") {
+        editClient(client);
+        return;
+      }
+
+      if (action === "delete") {
+        await deleteClient(client);
       }
     });
 
