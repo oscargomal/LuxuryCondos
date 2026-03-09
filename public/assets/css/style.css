@@ -2048,11 +2048,28 @@ h6 {
 
 .menu a {
   font-family: "Inter", sans-serif;
-  font-size: 0.98rem;
-  font-weight: 500;
-  color: #2e2c28;
-  opacity: 0.9;
-  transition: color 0.2s ease, opacity 0.2s ease;
+  font-size: clamp(0.78rem, 0.92vw, 0.92rem);
+  font-weight: 600;
+  letter-spacing: 0.085em;
+  text-transform: uppercase;
+  color: #2f2d29;
+  opacity: 0.92;
+  position: relative;
+  transition: color 0.22s ease, opacity 0.22s ease;
+}
+
+.menu a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -7px;
+  width: 100%;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left;
+  opacity: 0.55;
+  transition: transform 0.35s ease;
 }
 
 body.is-home .header:not(.is-scrolled) {
@@ -2079,6 +2096,10 @@ body.is-home .header:not(.is-scrolled) .menu-icon {
 .menu a:hover {
   color: var(--lc-accent);
   opacity: 1;
+}
+
+.menu a:hover::after {
+  transform: scaleX(1);
 }
 
 .hero {
@@ -2136,13 +2157,18 @@ body.is-home .hero-carousel {
 
 .reveal-on-scroll {
   opacity: 0;
-  transform: translateY(22px);
-  transition: opacity 0.65s ease, transform 0.65s ease;
+  transform: translateY(26px);
+  transition: opacity 2s cubic-bezier(0.22, 1, 0.36, 1), transform 2s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: opacity, transform;
 }
 
 .reveal-on-scroll.is-visible {
   opacity: 1;
   transform: translateY(0);
+}
+
+.reveal-delay-2500 {
+  transition-delay: 2.5s;
 }
 
 .intro,
@@ -2185,6 +2211,43 @@ body.is-home .hero-carousel {
   max-width: 800px;
   margin: 0 auto;
   color: var(--lc-text-soft);
+}
+
+.home-scroll-cue {
+  margin: 16px auto 0;
+  width: 28px;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+}
+
+.home-scroll-cue span {
+  width: 11px;
+  height: 11px;
+  border-right: 2px solid #8e8779;
+  border-bottom: 2px solid #8e8779;
+  transform: rotate(45deg);
+  opacity: 0.45;
+  animation: cue-drop 1.8s ease-in-out infinite;
+}
+
+.home-scroll-cue span:nth-child(2) {
+  animation-delay: 0.24s;
+}
+
+@keyframes cue-drop {
+  0% {
+    opacity: 0.12;
+    transform: translateY(-3px) rotate(45deg);
+  }
+  50% {
+    opacity: 0.85;
+  }
+  100% {
+    opacity: 0.12;
+    transform: translateY(6px) rotate(45deg);
+  }
 }
 
 .home-cta {
@@ -2266,8 +2329,10 @@ body.is-home .hero-carousel {
   right: auto;
   bottom: 94px;
   width: min(420px, calc(100% - 28px));
-  transform: translateX(-50%);
+  transform: translateX(-50%) translateY(12px) scale(0.97);
   justify-content: center;
+  opacity: 0;
+  transition: opacity 0.9s ease, transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .audio-overlay__content {
@@ -2278,7 +2343,13 @@ body.is-home .hero-carousel {
 }
 
 .audio-overlay:not(.hidden) {
-  animation: overlay-pop 0.34s ease;
+  opacity: 1;
+  transform: translateX(-50%) translateY(0) scale(1);
+}
+
+.audio-overlay.is-fading-out {
+  opacity: 0;
+  transform: translateX(-50%) translateY(18px) scale(0.96);
 }
 
 @keyframes overlay-pop {
@@ -2308,7 +2379,11 @@ body.is-home .hero-carousel {
   left: 50%;
   right: auto;
   bottom: 18px;
-  transform: translate(-50%, 18px) scale(0.96);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transform: translate(-50%, 24px) scale(0.94);
+  transition: opacity 0.85s ease, transform 0.85s cubic-bezier(0.22, 1, 0.36, 1), width 0.45s ease, height 0.45s ease, padding 0.45s ease;
 }
 
 .lang-switch.is-visible {
@@ -2325,9 +2400,15 @@ body.is-home .hero-carousel {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 1.2em;
-  height: 1.2em;
+  width: 1.25em;
+  height: 1.25em;
   line-height: 1;
+  font-size: 1.15rem;
+  margin: 0;
+}
+
+.lang-switch.is-collapsed .lang-switch__emoji {
+  margin: 0 auto;
 }
 
 .rooms {
@@ -2344,19 +2425,16 @@ body.is-home .hero-carousel {
 
 .room-card.is-reveal {
   opacity: 0;
-  transform: translateY(16px);
-  animation: room-card-in 520ms ease forwards;
+  transform: translateY(24px) scale(0.992);
+  filter: blur(2px);
+  transition: opacity 2.5s cubic-bezier(0.22, 1, 0.36, 1), transform 2.5s cubic-bezier(0.22, 1, 0.36, 1), filter 2.5s ease;
+  transition-delay: var(--room-reveal-delay, 0ms);
 }
 
-@keyframes room-card-in {
-  from {
-    opacity: 0;
-    transform: translateY(16px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.room-card.is-reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  filter: blur(0);
 }
 
 .room-info {

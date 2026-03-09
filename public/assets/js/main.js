@@ -167,6 +167,7 @@ const audioOverlay = document.getElementById('audioOverlay');
 if (bgm && audioOverlay) {
   const audioTriggers = Array.from(document.querySelectorAll('video'));
   let overlayTimer = null;
+  let hideTimer = null;
 
   if (!audioTriggers.length) {
     audioTriggers.push(...document.querySelectorAll('.video-main, .video-side'));
@@ -176,20 +177,39 @@ if (bgm && audioOverlay) {
   let audioStarted = false;
 
   const hideOverlay = () => {
-    audioOverlay.classList.add('hidden');
     if (overlayTimer) {
       clearTimeout(overlayTimer);
       overlayTimer = null;
     }
-    window.dispatchEvent(new Event('audio-overlay-hidden'));
+    if (hideTimer) {
+      clearTimeout(hideTimer);
+      hideTimer = null;
+    }
+
+    if (audioOverlay.classList.contains('hidden')) {
+      window.dispatchEvent(new Event('audio-overlay-hidden'));
+      return;
+    }
+
+    audioOverlay.classList.add('is-fading-out');
+    hideTimer = setTimeout(() => {
+      audioOverlay.classList.add('hidden');
+      audioOverlay.classList.remove('is-fading-out');
+      hideTimer = null;
+      window.dispatchEvent(new Event('audio-overlay-hidden'));
+    }, 850);
   };
 
   const showOverlay = () => {
-    audioOverlay.classList.remove('hidden');
+    if (hideTimer) {
+      clearTimeout(hideTimer);
+      hideTimer = null;
+    }
+    audioOverlay.classList.remove('hidden', 'is-fading-out');
     if (overlayTimer) clearTimeout(overlayTimer);
     overlayTimer = setTimeout(() => {
       hideOverlay();
-    }, 4000);
+    }, 4300);
   };
 
   const removeListeners = () => {
@@ -243,9 +263,13 @@ if (bgm && audioOverlay) {
 /* ================= CAMBIO DE IDIOMA ================= */
 const langSwitch = document.querySelector('[data-lang-switch]');
 if (langSwitch) {
+  const scrollThreshold = 76;
   const emojiEl = langSwitch.querySelector('[data-lang-emoji]');
   const globeEmoji = langSwitch.dataset.emojiGlobe || '🌐';
   const flagEmoji = langSwitch.dataset.emojiFlag || '🇺🇸';
+  const hasAudioOverlay = typeof audioOverlay !== 'undefined' && Boolean(audioOverlay);
+  let isAudioReady = !hasAudioOverlay || audioOverlay.classList.contains('hidden');
+  let isScrollReady = window.scrollY > scrollThreshold;
 
   const revealSwitch = () => {
     if (langSwitch.classList.contains('is-visible')) return;
@@ -255,17 +279,35 @@ if (langSwitch) {
     setTimeout(() => {
       langSwitch.classList.add('is-collapsed');
       if (emojiEl) emojiEl.textContent = flagEmoji;
-    }, 3000);
+    }, 3200);
   };
 
-  if (typeof audioOverlay !== 'undefined' && audioOverlay) {
-    if (audioOverlay.classList.contains('hidden')) {
-      revealSwitch();
-    } else {
-      window.addEventListener('audio-overlay-hidden', revealSwitch, { once: true });
-    }
-  } else {
+  const tryRevealSwitch = () => {
+    if (!isAudioReady || !isScrollReady) return;
     revealSwitch();
+  };
+
+  const onScrollReveal = () => {
+    if (isScrollReady) return;
+    if (window.scrollY > scrollThreshold) {
+      isScrollReady = true;
+      tryRevealSwitch();
+    }
+  };
+
+  window.addEventListener('scroll', onScrollReveal, { passive: true });
+
+  if (hasAudioOverlay && !isAudioReady) {
+    window.addEventListener('audio-overlay-hidden', () => {
+      isAudioReady = true;
+      tryRevealSwitch();
+    }, { once: true });
+  } else {
+    isAudioReady = true;
+  }
+
+  if (isScrollReady) {
+    tryRevealSwitch();
   }
 }
 

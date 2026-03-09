@@ -83,6 +83,25 @@
     window.__roomsCatalog = store;
   };
 
+  const revealObserver = "IntersectionObserver" in window
+    ? new IntersectionObserver((entries, observer) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add("is-visible");
+        observer.unobserve(entry.target);
+      });
+    }, { threshold: 0.14, rootMargin: "0px 0px -8% 0px" })
+    : null;
+
+  const bindCardReveal = (card) => {
+    if (!card.classList.contains("is-reveal")) return;
+    if (!revealObserver) {
+      card.classList.add("is-visible");
+      return;
+    }
+    revealObserver.observe(card);
+  };
+
   const renderRooms = (rooms) => {
     container.innerHTML = "";
     if (!rooms.length) return;
@@ -108,7 +127,7 @@
 
       const card = document.createElement("div");
       card.className = "room-card is-reveal";
-      card.style.animationDelay = `${Math.min(roomIndex * 60, 360)}ms`;
+      card.style.setProperty("--room-reveal-delay", `${Math.min(240 + roomIndex * 140, 1040)}ms`);
       card.innerHTML = `
         <div class="room-carousel" data-index="0">
           ${imagesHtml}
@@ -142,6 +161,7 @@
       });
 
       container.appendChild(card);
+      bindCardReveal(card);
     });
 
     if (window.initRoomsUI) {
