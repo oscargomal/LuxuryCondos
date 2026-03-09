@@ -2073,10 +2073,10 @@ h6 {
 }
 
 body.is-home .header:not(.is-scrolled) {
-  background: linear-gradient(180deg, rgba(8, 10, 15, 0.46) 0%, rgba(8, 10, 15, 0.08) 65%, rgba(8, 10, 15, 0) 100%);
-  border-bottom-color: transparent;
-  box-shadow: none;
-  backdrop-filter: blur(2px);
+  background: linear-gradient(180deg, rgba(15, 18, 20, 0.66) 0%, rgba(15, 18, 20, 0.38) 68%, rgba(15, 18, 20, 0.1) 100%);
+  border-bottom-color: rgba(255, 255, 255, 0.14);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.16);
+  backdrop-filter: blur(4px);
 }
 
 body.is-home .header:not(.is-scrolled) .logo,
@@ -2687,6 +2687,50 @@ body.is-home .hero-carousel {
   .menu {
     top: 74px;
     border-top: 1px solid #ece5d8;
+    display: flex;
+    flex-direction: column;
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-8px);
+    padding: 0;
+    background: rgba(250, 248, 244, 0.97);
+    box-shadow: 0 14px 24px rgba(20, 18, 16, 0.14);
+    transition: max-height 0.24s ease, opacity 0.2s ease, transform 0.24s ease, padding 0.24s ease;
+  }
+
+  #menu-toggle:checked + .menu-icon + .menu {
+    max-height: 460px;
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+    padding: 12px 0 18px;
+  }
+
+  .menu a {
+    color: #1f1e1b;
+    text-shadow: none;
+    opacity: 1;
+  }
+
+  .menu a::after {
+    display: none;
+  }
+
+  body.is-home .header:not(.is-scrolled) .menu {
+    background: rgba(250, 248, 244, 0.985);
+    border-top-color: rgba(31, 30, 27, 0.08);
+  }
+
+  body.is-home .header:not(.is-scrolled) .menu a {
+    color: #1f1e1b;
+    text-shadow: none;
+  }
+
+  body.is-home .header:not(.is-scrolled) #menu-toggle:checked + .menu-icon {
+    color: #1f1e1b;
+    text-shadow: none;
   }
 
   body {
