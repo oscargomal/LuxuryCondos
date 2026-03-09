@@ -25,6 +25,24 @@ if (images.length && lightbox && lightboxImg && closeBtn) {
 
 /* ================= HERO CAROUSEL ================= */
 const heroCarousel = document.querySelector('[data-hero-carousel]');
+const headerEl = document.querySelector('.header');
+
+if (heroCarousel) {
+  document.body.classList.add('is-home');
+}
+
+if (headerEl) {
+  const updateHeaderState = () => {
+    if (window.scrollY > 24) {
+      headerEl.classList.add('is-scrolled');
+    } else {
+      headerEl.classList.remove('is-scrolled');
+    }
+  };
+
+  updateHeaderState();
+  window.addEventListener('scroll', updateHeaderState, { passive: true });
+}
 
 if (heroCarousel) {
   const slides = heroCarousel.querySelectorAll('.hero-slide');
@@ -73,6 +91,26 @@ if (heroCarousel) {
   });
 
   startTimer();
+}
+
+/* ================= HOME VIDEOS ================= */
+const homeVideos = document.querySelectorAll('.home-video');
+if (homeVideos.length) {
+  homeVideos.forEach((video) => {
+    if (!(video instanceof HTMLVideoElement)) return;
+    video.muted = true;
+    video.playsInline = true;
+    video.addEventListener('loadeddata', () => {
+      video.classList.add('is-loaded');
+    }, { once: true });
+
+    const playPromise = video.play();
+    if (playPromise && typeof playPromise.catch === 'function') {
+      playPromise.catch(() => {
+        // Ignore autoplay restrictions; poster remains visible.
+      });
+    }
+  });
 }
 
 /* ================= AVISOS ================= */
@@ -228,5 +266,23 @@ if (langSwitch) {
     }
   } else {
     revealSwitch();
+  }
+}
+
+/* ================= REVEAL EFFECT ================= */
+const revealItems = document.querySelectorAll('.reveal-on-scroll');
+if (revealItems.length) {
+  if ('IntersectionObserver' in window) {
+    const observer = new IntersectionObserver((entries, currentObserver) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add('is-visible');
+        currentObserver.unobserve(entry.target);
+      });
+    }, { threshold: 0.18, rootMargin: '0px 0px -6% 0px' });
+
+    revealItems.forEach((item) => observer.observe(item));
+  } else {
+    revealItems.forEach((item) => item.classList.add('is-visible'));
   }
 }
