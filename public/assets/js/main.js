@@ -330,12 +330,14 @@ if (langSwitch) {
 }
 
 /* ================= REVEAL EFFECT ================= */
-document.querySelectorAll('.home-cta .cta-button, .service-card, .contact-btn, .location-info, .location-map').forEach((node, index) => {
+document.querySelectorAll('.home-cta .cta-button, .service-card, .contact-btn, .location-info, .location-map, .gallery-grid img, .home-gallery img').forEach((node, index) => {
   if (!node.classList.contains('reveal-on-scroll')) {
     node.classList.add('reveal-on-scroll');
   }
   if (node.matches('.service-card, .contact-btn')) {
     node.style.transitionDelay = `${Math.min(index * 70, 560)}ms`;
+  } else if (node.matches('.gallery-grid img, .home-gallery img')) {
+    node.style.transitionDelay = `${Math.min(index * 110, 980)}ms`;
   }
 });
 
