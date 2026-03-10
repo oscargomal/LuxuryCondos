@@ -791,6 +791,18 @@ a {
   margin-top: 10px;
 }
 
+.booking-final-note {
+  margin: 6px 0 2px;
+  text-align: center;
+  font-size: 0.92rem;
+  font-style: italic;
+  color: #3f3b34;
+}
+
+.booking-final-note--modal {
+  margin: 14px 0 10px;
+}
+
 @media (min-width: 700px) {
   .payment-actions {
     grid-template-columns: 1fr 1fr;
