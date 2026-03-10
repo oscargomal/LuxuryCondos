@@ -261,57 +261,84 @@ if (bgm && audioOverlay) {
 }
 
 /* ================= CAMBIO DE IDIOMA ================= */
-const langSwitch = document.querySelector('[data-lang-switch]');
+const resolveLangTarget = () => {
+  const path = window.location.pathname || '/';
+  const isEnglishPage = document.documentElement.lang === 'en' || path.startsWith('/eng/');
+
+  if (isEnglishPage) {
+    if (path === '/eng/' || path === '/eng/index.html') {
+      return { href: '/', shortLabel: 'ES', aria: 'Cambiar a español' };
+    }
+    if (path.startsWith('/eng/')) {
+      return { href: path.replace(/^\/eng/, '') || '/', shortLabel: 'ES', aria: 'Cambiar a español' };
+    }
+    return { href: '/', shortLabel: 'ES', aria: 'Cambiar a español' };
+  }
+
+  if (path === '/' || path === '/index.html') {
+    return { href: '/eng/', shortLabel: 'EN', aria: 'Change to English' };
+  }
+
+  return { href: `/eng${path.startsWith('/') ? path : `/${path}`}`, shortLabel: 'EN', aria: 'Change to English' };
+};
+
+const getOrCreateLangSwitch = () => {
+  const existing = document.querySelector('[data-lang-switch]');
+  if (existing) return existing;
+
+  const link = document.createElement('a');
+  link.className = 'lang-switch';
+  link.setAttribute('data-lang-switch', '');
+  const label = document.createElement('span');
+  label.className = 'lang-switch__label';
+  link.appendChild(label);
+  document.body.appendChild(link);
+  return link;
+};
+
+const langSwitch = getOrCreateLangSwitch();
 if (langSwitch) {
-  const scrollThreshold = 76;
-  const emojiEl = langSwitch.querySelector('[data-lang-emoji]');
-  const globeEmoji = langSwitch.dataset.emojiGlobe || '🌐';
-  const flagEmoji = langSwitch.dataset.emojiFlag || '🇺🇸';
+  const { href, shortLabel, aria } = resolveLangTarget();
   const hasAudioOverlay = typeof audioOverlay !== 'undefined' && Boolean(audioOverlay);
-  let isAudioReady = !hasAudioOverlay || audioOverlay.classList.contains('hidden');
-  let isScrollReady = window.scrollY > scrollThreshold;
+
+  langSwitch.href = href;
+  langSwitch.setAttribute('aria-label', aria);
+  langSwitch.querySelectorAll('[data-lang-emoji], .lang-switch__emoji').forEach((node) => node.remove());
+
+  let labelEl = langSwitch.querySelector('.lang-switch__label');
+  if (!labelEl) {
+    labelEl = document.createElement('span');
+    labelEl.className = 'lang-switch__label';
+    langSwitch.appendChild(labelEl);
+  }
+  labelEl.textContent = shortLabel;
 
   const revealSwitch = () => {
     if (langSwitch.classList.contains('is-visible')) return;
     langSwitch.classList.add('is-visible');
-    if (emojiEl) emojiEl.textContent = globeEmoji;
-
-    setTimeout(() => {
-      langSwitch.classList.add('is-collapsed');
-      if (emojiEl) emojiEl.textContent = flagEmoji;
-    }, 3200);
   };
 
-  const tryRevealSwitch = () => {
-    if (!isAudioReady || !isScrollReady) return;
-    revealSwitch();
+  const scheduleReveal = () => {
+    window.setTimeout(revealSwitch, 700);
   };
 
-  const onScrollReveal = () => {
-    if (isScrollReady) return;
-    if (window.scrollY > scrollThreshold) {
-      isScrollReady = true;
-      tryRevealSwitch();
-    }
-  };
-
-  window.addEventListener('scroll', onScrollReveal, { passive: true });
-
-  if (hasAudioOverlay && !isAudioReady) {
-    window.addEventListener('audio-overlay-hidden', () => {
-      isAudioReady = true;
-      tryRevealSwitch();
-    }, { once: true });
+  if (hasAudioOverlay && !audioOverlay.classList.contains('hidden')) {
+    window.addEventListener('audio-overlay-hidden', scheduleReveal, { once: true });
   } else {
-    isAudioReady = true;
-  }
-
-  if (isScrollReady) {
-    tryRevealSwitch();
+    scheduleReveal();
   }
 }
 
 /* ================= REVEAL EFFECT ================= */
+document.querySelectorAll('.home-cta .cta-button, .service-card, .contact-btn, .location-info, .location-map').forEach((node, index) => {
+  if (!node.classList.contains('reveal-on-scroll')) {
+    node.classList.add('reveal-on-scroll');
+  }
+  if (node.matches('.service-card, .contact-btn')) {
+    node.style.transitionDelay = `${Math.min(index * 70, 560)}ms`;
+  }
+});
+
 const revealItems = document.querySelectorAll('.reveal-on-scroll');
 if (revealItems.length) {
   if ('IntersectionObserver' in window) {
