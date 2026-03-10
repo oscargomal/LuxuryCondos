@@ -2198,6 +2198,7 @@ body.is-home .hero-carousel {
 }
 
 .home-editorial {
+  position: relative;
   padding-top: clamp(42px, 5.5vw, 76px);
   padding-bottom: clamp(10px, 2.2vw, 26px);
   text-align: center;
@@ -2226,14 +2227,13 @@ body.is-home .hero-carousel {
 }
 
 .home-scroll-cue {
-  margin: 0 auto 14px;
+  margin: -30px auto 18px;
   width: 28px;
   display: inline-flex;
   flex-direction: column;
   align-items: center;
   gap: 1px;
   opacity: 0.88;
-  transition: opacity 0.35s ease, transform 0.35s ease;
 }
 
 .home-scroll-cue span {
@@ -2242,26 +2242,7 @@ body.is-home .hero-carousel {
   border-right: 2px solid #8e8779;
   border-bottom: 2px solid #8e8779;
   transform: rotate(45deg);
-  opacity: 0.45;
-  animation: cue-drop 1.8s ease-in-out infinite;
-}
-
-.home-scroll-cue span:nth-child(2) {
-  animation-delay: 0.24s;
-}
-
-@keyframes cue-drop {
-  0% {
-    opacity: 0.12;
-    transform: translateY(-3px) rotate(45deg);
-  }
-  50% {
-    opacity: 0.85;
-  }
-  100% {
-    opacity: 0.12;
-    transform: translateY(6px) rotate(45deg);
-  }
+  opacity: 0.55;
 }
 
 .home-cta {
