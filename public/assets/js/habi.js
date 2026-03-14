@@ -244,6 +244,7 @@ const getRoomDataFromButton = (button) => {
     price: roomFromStore?.price_night ?? button.dataset.price ?? 0,
     price_month: roomFromStore?.price_month ?? button.dataset.priceMonth ?? null,
     price_year: roomFromStore?.price_year ?? button.dataset.priceYear ?? null,
+    minimum_months: Number(roomFromStore?.minimum_months ?? button.dataset.minimumMonths ?? 0),
     img: galleryImages[0] || normalizeImage(button.dataset.img),
     images: galleryImages
   };

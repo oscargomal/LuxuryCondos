@@ -9,6 +9,7 @@ const mapRoom = (room, currentStatus = null) => ({
   price_night: room?.price_night,
   price_month: room?.price_month,
   price_year: room?.price_year,
+  minimum_months: room?.minimum_months ?? 0,
   images: room?.images || [],
   stripe_account_id: room?.stripe_account_id || null,
   is_active: room?.is_active,
@@ -74,6 +75,7 @@ export default async function handler(req, res) {
       price_night: Number(body.price_night || 0),
       price_month: body.price_month !== undefined ? Number(body.price_month) : null,
       price_year: body.price_year !== undefined ? Number(body.price_year) : null,
+      minimum_months: body.minimum_months !== undefined ? Number(body.minimum_months) : 0,
       images: Array.isArray(body.images) ? body.images : [],
       stripe_account_id: body.stripe_account_id || body.stripeAccountId || null,
       is_active: body.is_active !== undefined ? Boolean(body.is_active) : true,
@@ -112,6 +114,7 @@ export default async function handler(req, res) {
       price_night: body.price_night !== undefined ? Number(body.price_night) : undefined,
       price_month: body.price_month !== undefined ? Number(body.price_month) : undefined,
       price_year: body.price_year !== undefined ? Number(body.price_year) : undefined,
+      minimum_months: body.minimum_months !== undefined ? Number(body.minimum_months) : undefined,
       images: Array.isArray(body.images) ? body.images : undefined,
       stripe_account_id: body.stripe_account_id !== undefined
         ? body.stripe_account_id || null

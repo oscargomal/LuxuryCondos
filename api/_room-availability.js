@@ -9,6 +9,13 @@ const DATE_FORMATTER = new Intl.DateTimeFormat('en-CA', {
 
 const normalizeDate = (value) => String(value || '').slice(0, 10);
 
+const getDateDiffInDays = (startDate, endDate) => {
+  if (!startDate || !endDate) return 0;
+  const start = new Date(`${normalizeDate(startDate)}T00:00:00`);
+  const end = new Date(`${normalizeDate(endDate)}T00:00:00`);
+  return Math.max(Math.round((end - start) / (1000 * 60 * 60 * 24)), 0);
+};
+
 const addDays = (dateValue, days) => {
   const base = new Date(`${normalizeDate(dateValue)}T00:00:00`);
   base.setDate(base.getDate() + days);
@@ -16,6 +23,18 @@ const addDays = (dateValue, days) => {
 };
 
 export const getMexicoToday = () => DATE_FORMATTER.format(new Date());
+
+export const getMinimumStayError = ({ room, checkin, checkout, stayType }) => {
+  const minimumMonths = Number(room?.minimum_months || 0);
+  if (!minimumMonths || stayType === 'other') return null;
+
+  const stayDays = getDateDiffInDays(checkin, checkout);
+  const minimumDays = minimumMonths * 30;
+
+  if (stayDays >= minimumDays) return null;
+
+  return `Este departamento solo se puede reservar por ${minimumMonths} mes${minimumMonths === 1 ? '' : 'es'} o más.`;
+};
 
 const applyRoomFilters = (query, { roomId, roomIds } = {}) => {
   if (roomId) return query.eq('room_id', roomId);

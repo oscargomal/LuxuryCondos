@@ -1,5 +1,5 @@
 import { assertSupabase, parseBody, supabaseAdmin } from './_supabase.js';
-import { fetchOccupiedReservations, fetchRoomBlocks } from './_room-availability.js';
+import { fetchOccupiedReservations, fetchRoomBlocks, getMinimumStayError } from './_room-availability.js';
 
 const mapReservation = (reservation) => ({
   id: reservation?.id,
@@ -89,6 +89,27 @@ const validateReservationConflicts = async ({
   return null;
 };
 
+const validateRoomRules = async ({ roomId, checkin, checkout, stayType }) => {
+  if (!roomId) return null;
+
+  const { data: room, error } = await supabaseAdmin
+    .from('rooms')
+    .select('id, name, minimum_months')
+    .eq('id', roomId)
+    .single();
+
+  if (error || !room) {
+    return { error: 'No se encontró el departamento.', code: 404 };
+  }
+
+  const minimumStayError = getMinimumStayError({ room, checkin, checkout, stayType });
+  if (minimumStayError) {
+    return { error: minimumStayError, code: 400 };
+  }
+
+  return null;
+};
+
 const upsertCustomerIfNeeded = async ({ payload, guestSnapshot }) => {
   if (!payload.guest_email && !payload.guest_phone) return;
 
@@ -148,6 +169,12 @@ export default async function handler(req, res) {
     const dateError = validateDateOrder({ checkin, checkout });
     if (dateError) {
       res.status(400).json({ error: dateError });
+      return;
+    }
+
+    const roomRuleError = await validateRoomRules({ roomId, checkin, checkout, stayType });
+    if (roomRuleError) {
+      res.status(roomRuleError.code || 500).json({ error: roomRuleError.error });
       return;
     }
 
@@ -221,10 +248,22 @@ export default async function handler(req, res) {
     const nextCheckin = body.checkin || currentReservation.checkin;
     const nextCheckout = body.checkout || currentReservation.checkout;
     const nextRoomId = body.room_id || currentReservation.room_id;
+    const nextStayType = body.stayType || body.stay_type || currentReservation.stay_type;
 
     const dateError = validateDateOrder({ checkin: nextCheckin, checkout: nextCheckout });
     if (dateError) {
       res.status(400).json({ error: dateError });
+      return;
+    }
+
+    const roomRuleError = await validateRoomRules({
+      roomId: nextRoomId,
+      checkin: nextCheckin,
+      checkout: nextCheckout,
+      stayType: nextStayType
+    });
+    if (roomRuleError) {
+      res.status(roomRuleError.code || 500).json({ error: roomRuleError.error });
       return;
     }
 

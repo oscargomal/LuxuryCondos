@@ -79,6 +79,15 @@ const strings = {
   roomCalendarFree: isEnglish
     ? "Selected dates look available."
     : "Las fechas seleccionadas parecen disponibles.",
+  roomRestrictionTemplate: isEnglish
+    ? "This apartment can only be reserved for stays of {months} months or more."
+    : "Este departamento solo se puede reservar por {months} meses o más.",
+  roomRestrictionOther: isEnglish
+    ? "If you need a custom long stay, choose Custom request."
+    : "Si necesitas una estancia larga personalizada, usa Solicitud personalizada.",
+  minimumStayError: isEnglish
+    ? "This apartment requires a stay of {months} months or more."
+    : "Este departamento requiere una estancia de {months} meses o más.",
   availabilityError: isEnglish
     ? "Could not verify availability. Please try again."
     : "No se pudo verificar disponibilidad. Intenta nuevamente.",
@@ -155,6 +164,18 @@ const readReservations = () => {
   }
 };
 
+const getSelectedStayType = () => document.querySelector("input[name='stay']:checked")?.value || "night";
+
+const meetsRoomMinimumStay = ({ checkin, checkout, stayType }) => {
+  const minimumStayDays = getMinimumStayDays();
+  if (!minimumStayDays || stayType === "other") return true;
+  if (!checkin || !checkout) return false;
+  const start = new Date(`${checkin}T00:00:00`);
+  const end = new Date(`${checkout}T00:00:00`);
+  const stayDays = Math.max(Math.round((end - start) / (1000 * 60 * 60 * 24)), 0);
+  return stayDays >= minimumStayDays;
+};
+
 const saveReservationToApi = async (payload) => {
   try {
     const response = await fetch(RESERVATIONS_API, {
@@ -204,10 +225,12 @@ const summaryCardTotal = document.getElementById("summaryCardTotal");
 const bookingToast = document.getElementById("bookingToast");
 
 const stayRadios = document.querySelectorAll("input[name='stay']");
+const stayCards = document.querySelectorAll(".stay-card");
 const checkinInput = document.getElementById("checkin");
 const checkoutInput = document.getElementById("checkout");
 const bookingCalendar = document.getElementById("bookingCalendar");
 const bookingAvailabilityNote = document.getElementById("bookingAvailabilityNote");
+const roomRestrictionNote = document.getElementById("roomRestrictionNote");
 const payWithCardBtn = document.getElementById("payWithCard");
 const payWithTransferBtn = document.getElementById("payWithTransfer");
 const annualNote = document.getElementById("annualNote");
@@ -252,6 +275,17 @@ let currentCardTotal = 0;
 let transferModalOpen = false;
 let roomCalendarWidget = null;
 let roomCalendarData = { blocked: [], occupied: [] };
+
+const getRoomMinimumMonths = () => {
+  const parsed = Number(room?.minimum_months || 0);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
+};
+
+const getMinimumStayDays = () => getRoomMinimumMonths() * 30;
+
+const buildMinimumStayText = (template) => (
+  template.replace("{months}", String(getRoomMinimumMonths() || 0))
+);
 const getRoomNightPrice = () => {
   const raw = room?.price_night ?? room?.price ?? PRICES.night;
   const parsed = Number(raw);
@@ -513,6 +547,34 @@ const fetchRoomCalendar = async (roomId) => {
   }
 };
 
+const applyRoomRestrictions = () => {
+  const minimumMonths = getRoomMinimumMonths();
+  const hasRestriction = minimumMonths > 0;
+
+  if (roomRestrictionNote) {
+    roomRestrictionNote.hidden = !hasRestriction;
+    roomRestrictionNote.textContent = hasRestriction
+      ? `${buildMinimumStayText(strings.roomRestrictionTemplate)} ${strings.roomRestrictionOther}`
+      : "";
+  }
+
+  stayCards.forEach((card) => {
+    const radio = card.querySelector("input[name='stay']");
+    if (!radio) return;
+
+    const shouldDisable = hasRestriction && (radio.value === "night" || radio.value === "month");
+    radio.disabled = shouldDisable;
+    card.classList.toggle("is-disabled", shouldDisable);
+  });
+
+  const checked = document.querySelector("input[name='stay']:checked");
+  if (checked?.disabled) {
+    const fallback = document.querySelector("input[name='stay'][value='year']")
+      || document.querySelector("input[name='stay'][value='other']");
+    if (fallback) fallback.checked = true;
+  }
+};
+
 if (room) {
   const roomImages = Array.isArray(room?.images) ? room.images : [];
   const summaryImages = roomImages.length
@@ -543,6 +605,8 @@ if (bookingCalendar && window.RoomCalendar) {
   });
   setAvailabilityNote(strings.roomCalendarIntro);
 }
+
+applyRoomRestrictions();
 
 // ================= CALCULAR NOCHES =================
 function getNights() {
@@ -671,6 +735,16 @@ const runAvailabilityCheck = async () => {
   if (!checkinInput.value || !checkoutInput.value) {
     setPaymentDisabled(false);
     setAvailabilityNote(strings.roomCalendarIntro);
+    return;
+  }
+
+  if (!meetsRoomMinimumStay({
+    checkin: checkinInput.value,
+    checkout: checkoutInput.value,
+    stayType
+  })) {
+    setPaymentDisabled(true);
+    setAvailabilityNote(buildMinimumStayText(strings.minimumStayError));
     return;
   }
 
@@ -914,6 +988,15 @@ const submitReservation = async (paymentMethod) => {
 
   if ((stayType === "month" || stayType === "year") && (!checkinValue || !checkoutValue)) {
     alert(strings.invalidDates);
+    return;
+  }
+
+  if (!meetsRoomMinimumStay({
+    checkin: checkinValue,
+    checkout: checkoutValue,
+    stayType
+  })) {
+    alert(buildMinimumStayText(strings.minimumStayError));
     return;
   }
 

@@ -8,6 +8,7 @@ create table if not exists rooms (
   price_night numeric,
   price_month numeric,
   price_year numeric,
+  minimum_months integer default 0,
   images text[] default '{}',
   is_active boolean default true,
   occupied boolean default false,
@@ -56,6 +57,7 @@ $$ language plpgsql;
 alter table customers add column if not exists updated_at timestamptz default now();
 alter table rooms add column if not exists price_month numeric;
 alter table rooms add column if not exists price_year numeric;
+alter table rooms add column if not exists minimum_months integer default 0;
 
 drop trigger if exists rooms_updated_at on rooms;
 drop trigger if exists reservations_updated_at on reservations;

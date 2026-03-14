@@ -77,6 +77,7 @@
         price_night: Number(room.price_night || 0),
         price_month: room.price_month,
         price_year: room.price_year,
+        minimum_months: Number(room.minimum_months || 0),
         images: images.length ? images : [fallbackImage]
       };
     });

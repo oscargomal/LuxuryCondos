@@ -878,6 +878,17 @@ a {
   accent-color: #000;
 }
 
+.stay-card.is-disabled {
+  opacity: 0.48;
+  pointer-events: none;
+  background: #f3f3f3;
+  border-color: #ddd;
+}
+
+.booking-restriction-note {
+  margin: -8px 0 18px;
+}
+
 /* ============================= */
 /* 🔘 BOTÓN */
 /* ============================= */

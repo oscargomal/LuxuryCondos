@@ -1,6 +1,6 @@
 import Stripe from 'stripe';
 import { assertSupabase, parseBody, supabaseAdmin } from './_supabase.js';
-import { getRoomAvailability } from './_room-availability.js';
+import { getMinimumStayError, getRoomAvailability } from './_room-availability.js';
 
 const DEFAULT_PRICES = {
   month: 33000,
@@ -131,6 +131,12 @@ export default async function handler(req, res) {
 
   if (roomError || !room) {
     res.status(404).json({ error: 'No se encontro el departamento.' });
+    return;
+  }
+
+  const minimumStayError = getMinimumStayError({ room, checkin, checkout, stayType });
+  if (minimumStayError) {
+    res.status(400).json({ error: minimumStayError });
     return;
   }
 

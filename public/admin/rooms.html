@@ -68,6 +68,12 @@
         </div>
 
         <div class="form-group">
+          <label>Mínimo de meses para reservar</label>
+          <input type="number" id="roomMinimumMonths" placeholder="0" min="0">
+          <small class="form-hint">Usa `0` para reservación normal. Ejemplo: `6` para un departamento que sólo admite estancias largas.</small>
+        </div>
+
+        <div class="form-group">
           <label>Subir imágenes</label>
           <input type="file" id="roomImageFiles" accept="image/*" multiple>
           <small class="form-hint">Se suben a Supabase Storage automáticamente.</small>
@@ -185,6 +191,7 @@
     const priceInput = document.getElementById("roomPrice");
     const priceMonthInput = document.getElementById("roomPriceMonth");
     const priceYearInput = document.getElementById("roomPriceYear");
+    const minimumMonthsInput = document.getElementById("roomMinimumMonths");
     const imageFilesInput = document.getElementById("roomImageFiles");
     const imagePasteTarget = document.getElementById("roomImagePaste");
     const imagePreview = document.getElementById("roomImagePreview");
@@ -523,6 +530,7 @@
       priceInput.value = room.price_night || "";
       priceMonthInput.value = room.price_month || "";
       priceYearInput.value = room.price_year || "";
+      minimumMonthsInput.value = room.minimum_months || "";
       imageItems = Array.isArray(room.images)
         ? room.images.filter(Boolean).map((src) => createImageItem(src))
         : [];
@@ -607,6 +615,7 @@
         price_night: Number(priceInput.value || 0),
         price_month: priceMonthInput.value ? Number(priceMonthInput.value) : null,
         price_year: priceYearInput.value ? Number(priceYearInput.value) : null,
+        minimum_months: minimumMonthsInput.value ? Number(minimumMonthsInput.value) : 0,
         images,
         is_active: activeInput.value === "true"
       };
