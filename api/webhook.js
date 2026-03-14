@@ -47,7 +47,6 @@ export default async function handler(req, res) {
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object;
     const reservationId = session?.metadata?.reservationId;
-    const roomId = session?.metadata?.roomId;
 
     if (reservationId) {
       await supabaseAdmin
@@ -59,13 +58,6 @@ export default async function handler(req, res) {
           updated_at: new Date().toISOString()
         })
         .eq('id', reservationId);
-    }
-
-    if (roomId) {
-      await supabaseAdmin
-        .from('rooms')
-        .update({ occupied: true })
-        .eq('id', roomId);
     }
   }
 

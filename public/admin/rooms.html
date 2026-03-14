@@ -17,7 +17,6 @@
       <a href="rooms.html" class="active">Departamentos</a>
       <a href="avisos.html">Avisos</a>
       <a href="clientes.html">Clientes</a>
-
       <a href="index.html" class="logout" data-logout>Cerrar sesión</a>
     </nav>
   </aside>
@@ -26,7 +25,7 @@
     <header class="header">
       <div class="header-meta">
         <h1>Departamentos</h1>
-        <span>Gestiona lo que se muestra en Departamentos</span>
+        <span>Edita datos y disponibilidad por fechas desde una sola pantalla.</span>
       </div>
       <button class="btn btn-primary" type="button" id="toggleRoomForm" aria-expanded="false">
         Nuevo departamento
@@ -35,7 +34,8 @@
 
     <section class="form-card is-hidden" data-form-card>
       <h2 data-form-title>Nuevo departamento</h2>
-      <p class="edit-mode-note" id="editModeNote" hidden>Modo edición activo: este departamento tiene cambios pendientes.</p>
+      <p class="edit-mode-note" id="editModeNote" hidden>Modo edición activo: aquí también administras la disponibilidad y los bloqueos.</p>
+
       <form id="roomForm">
         <div class="form-group">
           <label>Nombre</label>
@@ -95,16 +95,58 @@
           </select>
         </div>
 
-        <div class="form-group">
-          <label>Ocupado</label>
-          <select id="roomOccupied">
-            <option value="false" selected>No</option>
-            <option value="true">Sí</option>
-          </select>
-        </div>
-
         <button class="btn btn-primary" type="submit" id="roomSubmit">Guardar</button>
       </form>
+
+      <section class="availability-editor" id="availabilityEditor" hidden>
+        <div class="availability-editor__header">
+          <div>
+            <h3>Disponibilidad por fechas</h3>
+            <p>Ocupado se calcula por reservaciones confirmadas. Bloqueado se administra manualmente desde aquí.</p>
+          </div>
+          <span class="availability-badge is-available" id="roomStatusBadge">Disponible hoy</span>
+        </div>
+
+        <div class="availability-editor__grid">
+          <div class="availability-calendar-card">
+            <div id="roomEditCalendar"></div>
+          </div>
+
+          <div class="availability-side">
+            <div class="form-row">
+              <div class="form-group">
+                <label>Inicio de bloqueo</label>
+                <input type="date" id="blockStartDate">
+              </div>
+              <div class="form-group">
+                <label>Fin de bloqueo</label>
+                <input type="date" id="blockEndDate">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Motivo (opcional)</label>
+              <input type="text" id="blockReason" placeholder="Ej. mantenimiento, Airbnb, uso interno">
+            </div>
+
+            <div class="modal-actions availability-side__actions">
+              <button class="btn btn-primary" type="button" id="blockSave">Bloquear fechas</button>
+            </div>
+
+            <div class="availability-lists">
+              <div>
+                <h4>Reservaciones que ocupan calendario</h4>
+                <ul class="availability-list" id="occupiedList"></ul>
+              </div>
+
+              <div>
+                <h4>Bloqueos manuales</h4>
+                <ul class="availability-list" id="blockList"></ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
     </section>
 
     <section class="table-section">
@@ -117,7 +159,7 @@
             <th>Mensual</th>
             <th>Anual</th>
             <th>Activo</th>
-            <th>Ocupado</th>
+            <th>Estado hoy</th>
             <th>Acciones</th>
           </tr>
         </thead>
@@ -130,43 +172,12 @@
     </section>
   </main>
 
-  <div class="modal-overlay" id="blockModal">
-    <div class="modal">
-      <button class="modal-close" type="button" data-block-close>×</button>
-      <h3>Bloqueos por fechas</h3>
-      <div class="modal-grid">
-        <p><span>Departamento</span><strong id="blockRoomName">—</strong></p>
-      </div>
-
-      <div class="form-row">
-        <div class="form-group">
-          <label>Inicio</label>
-          <input type="date" id="blockStartDate">
-        </div>
-        <div class="form-group">
-          <label>Fin</label>
-          <input type="date" id="blockEndDate">
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label>Motivo (opcional)</label>
-        <input type="text" id="blockReason" placeholder="Ej. Airbnb, mantenimiento">
-      </div>
-
-      <div class="modal-actions">
-        <button class="btn btn-primary" type="button" id="blockSave">Bloquear fechas</button>
-      </div>
-
-      <h4>Bloqueos actuales</h4>
-      <ul class="modal-list" id="blockList"></ul>
-    </div>
-  </div>
-
   <div class="admin-toast" id="roomToast" role="status" aria-live="polite"></div>
 
+  <script src="/assets/js/room-calendar.js"></script>
   <script>
     const API_URL = "/api/rooms";
+    const ROOM_CALENDAR_API = "/api/room-calendar";
     const form = document.getElementById("roomForm");
     const nameInput = document.getElementById("roomName");
     const summaryInput = document.getElementById("roomSummary");
@@ -178,7 +189,6 @@
     const imagePasteTarget = document.getElementById("roomImagePaste");
     const imagePreview = document.getElementById("roomImagePreview");
     const activeInput = document.getElementById("roomActive");
-    const occupiedInput = document.getElementById("roomOccupied");
     const submitButton = document.getElementById("roomSubmit");
     const tableBody = document.getElementById("roomTableBody");
     const toggleButton = document.getElementById("toggleRoomForm");
@@ -186,25 +196,62 @@
     const formTitle = document.querySelector("[data-form-title]");
     const editModeNote = document.getElementById("editModeNote");
     const roomToast = document.getElementById("roomToast");
-    const blockModal = document.getElementById("blockModal");
-    const blockRoomName = document.getElementById("blockRoomName");
+    const availabilityEditor = document.getElementById("availabilityEditor");
+    const roomStatusBadge = document.getElementById("roomStatusBadge");
     const blockStartDate = document.getElementById("blockStartDate");
     const blockEndDate = document.getElementById("blockEndDate");
     const blockReason = document.getElementById("blockReason");
     const blockSave = document.getElementById("blockSave");
     const blockList = document.getElementById("blockList");
-    const blockClose = document.querySelector("[data-block-close]");
+    const occupiedList = document.getElementById("occupiedList");
+    const roomEditCalendar = document.getElementById("roomEditCalendar");
 
     let editingId = null;
     let imageItems = [];
     let roomsCache = [];
-    let activeBlockRoom = null;
     let roomToastTimer = null;
+    let roomCalendar = null;
+    let activeCalendarData = { blocked: [], occupied: [], today_status: "available" };
+
+    const statusCopy = {
+      available: "Disponible hoy",
+      occupied: "Ocupado hoy",
+      blocked: "Bloqueado hoy"
+    };
+
+    const statusClassMap = {
+      available: "is-available",
+      occupied: "is-occupied",
+      blocked: "is-blocked"
+    };
 
     const formatMoney = (value) => {
       const numberValue = Number(value || 0);
       if (!numberValue) return "—";
       return `$${numberValue.toLocaleString()} MXN`;
+    };
+
+    const formatDisplayDate = (value) => value || "—";
+
+    const getRoomStatus = (room) => room?.current_status || "available";
+
+    const getStatusBadge = (status) => {
+      const label = statusCopy[status] || "Disponible hoy";
+      const className = statusClassMap[status] || "is-available";
+      return `<span class="availability-badge ${className}">${label}</span>`;
+    };
+
+    const sortRooms = (rooms) => {
+      const rank = { available: 0, occupied: 1, blocked: 2 };
+      return [...rooms].sort((a, b) => {
+        const activeDiff = Number(Boolean(b?.is_active)) - Number(Boolean(a?.is_active));
+        if (activeDiff !== 0) return activeDiff;
+
+        const statusDiff = (rank[getRoomStatus(a)] ?? 9) - (rank[getRoomStatus(b)] ?? 9);
+        if (statusDiff !== 0) return statusDiff;
+
+        return String(a?.name || "").localeCompare(String(b?.name || ""), "es");
+      });
     };
 
     const setFormVisible = (visible) => {
@@ -235,6 +282,7 @@
       const isEditing = Boolean(editingId);
       if (formCard) formCard.classList.toggle("is-editing", isEditing);
       if (editModeNote) editModeNote.hidden = !isEditing;
+      if (availabilityEditor) availabilityEditor.hidden = !isEditing;
     };
 
     const renderPreview = () => {
@@ -338,6 +386,15 @@
       }
     };
 
+    const fetchRoomCalendar = async (roomId) => {
+      const response = await fetch(`${ROOM_CALENDAR_API}?roomId=${encodeURIComponent(roomId)}`);
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(result?.error || "No se pudo cargar el calendario.");
+      }
+      return result?.data || { blocked: [], occupied: [], today_status: "available" };
+    };
+
     const saveRoom = async (payload) => {
       const method = editingId ? "PUT" : "POST";
       const body = editingId ? { ...payload, id: editingId } : payload;
@@ -349,7 +406,8 @@
       const result = await response.json().catch(() => ({}));
       return {
         ok: response.ok,
-        error: result?.error || null
+        error: result?.error || null,
+        data: result?.data || null
       };
     };
 
@@ -360,13 +418,6 @@
         body: JSON.stringify({ id })
       });
       return response.ok;
-    };
-
-    const fetchBlocks = async (roomId) => {
-      const response = await fetch(`/api/room-blocks?roomId=${roomId}`);
-      if (!response.ok) return [];
-      const result = await response.json();
-      return result?.data || [];
     };
 
     const createBlock = async (payload) => {
@@ -389,7 +440,82 @@
       return response.ok;
     };
 
-    const fillForm = (room) => {
+    const syncCalendarSelection = () => {
+      if (!roomCalendar) return;
+      roomCalendar.setSelection({
+        start: blockStartDate?.value || "",
+        end: blockEndDate?.value || blockStartDate?.value || ""
+      });
+    };
+
+    const renderOccupiedList = (occupied) => {
+      if (!occupiedList) return;
+      occupiedList.innerHTML = "";
+
+      if (!occupied.length) {
+        occupiedList.innerHTML = "<li>Sin reservaciones confirmadas en calendario.</li>";
+        return;
+      }
+
+      occupied.forEach((reservation) => {
+        const item = document.createElement("li");
+        const guest = reservation.guest_name ? ` · ${reservation.guest_name}` : "";
+        item.innerHTML = `
+          <span>${formatDisplayDate(reservation.checkin)} → ${formatDisplayDate(reservation.checkout)}${guest}</span>
+          <strong>${reservation.status || "Confirmada"}</strong>
+        `;
+        occupiedList.appendChild(item);
+      });
+    };
+
+    const renderBlocks = (blocks) => {
+      if (!blockList) return;
+      blockList.innerHTML = "";
+
+      if (!blocks.length) {
+        blockList.innerHTML = "<li>Sin bloqueos registrados.</li>";
+        return;
+      }
+
+      blocks.forEach((block) => {
+        const item = document.createElement("li");
+        const reason = block.reason ? ` · ${block.reason}` : "";
+        item.innerHTML = `
+          <span>${formatDisplayDate(block.start_date)} → ${formatDisplayDate(block.end_date)}${reason}</span>
+          <button class="btn btn-danger btn-small" data-block-id="${block.id}">Eliminar</button>
+        `;
+        blockList.appendChild(item);
+      });
+    };
+
+    const updateStatusBadge = (status) => {
+      if (!roomStatusBadge) return;
+      roomStatusBadge.className = `availability-badge ${statusClassMap[status] || "is-available"}`;
+      roomStatusBadge.textContent = statusCopy[status] || "Disponible hoy";
+    };
+
+    const loadRoomAvailability = async (room) => {
+      if (!room?.id || !editingId) return;
+
+      try {
+        const data = await fetchRoomCalendar(room.id);
+        activeCalendarData = data;
+        updateStatusBadge(data.today_status || "available");
+        renderBlocks(data.blocked || []);
+        renderOccupiedList(data.occupied || []);
+        if (roomCalendar) {
+          roomCalendar.setData({
+            blocked: data.blocked || [],
+            occupied: data.occupied || []
+          });
+          syncCalendarSelection();
+        }
+      } catch (error) {
+        showRoomToast(error.message || "No se pudo cargar la disponibilidad.", "error");
+      }
+    };
+
+    const fillForm = async (room) => {
       editingId = room.id;
       nameInput.value = room.name || "";
       summaryInput.value = room.summary || "";
@@ -401,14 +527,16 @@
         ? room.images.filter(Boolean).map((src) => createImageItem(src))
         : [];
       activeInput.value = String(room.is_active);
-      occupiedInput.value = String(room.occupied);
       submitButton.textContent = "Actualizar";
       if (formTitle) formTitle.textContent = "Editar departamento";
       if (imageFilesInput) imageFilesInput.value = "";
+      if (blockStartDate) blockStartDate.value = "";
+      if (blockEndDate) blockEndDate.value = "";
+      if (blockReason) blockReason.value = "";
       setEditingVisualState();
-      setPasteVisualState();
       renderPreview();
       setFormVisible(true);
+      await loadRoomAvailability(room);
       form.scrollIntoView({ behavior: "smooth" });
     };
 
@@ -417,11 +545,21 @@
       form.reset();
       submitButton.textContent = "Guardar";
       imageItems = [];
+      activeCalendarData = { blocked: [], occupied: [], today_status: "available" };
       if (formTitle) formTitle.textContent = "Nuevo departamento";
       if (imageFilesInput) imageFilesInput.value = "";
+      if (blockStartDate) blockStartDate.value = "";
+      if (blockEndDate) blockEndDate.value = "";
+      if (blockReason) blockReason.value = "";
+      if (blockList) blockList.innerHTML = "<li>Selecciona un departamento para administrar bloqueos.</li>";
+      if (occupiedList) occupiedList.innerHTML = "<li>Selecciona un departamento para ver ocupación.</li>";
+      updateStatusBadge("available");
       setEditingVisualState();
-      setPasteVisualState();
       renderPreview();
+      if (roomCalendar) {
+        roomCalendar.setData({ blocked: [], occupied: [] });
+        roomCalendar.clearSelection();
+      }
     };
 
     const renderTable = (rooms) => {
@@ -433,7 +571,7 @@
         return;
       }
 
-      rooms.forEach((room) => {
+      sortRooms(rooms).forEach((room) => {
         const row = document.createElement("tr");
         row.innerHTML = `
           <td>${room.name || "—"}</td>
@@ -441,11 +579,9 @@
           <td>${formatMoney(room.price_month)}</td>
           <td>${formatMoney(room.price_year)}</td>
           <td>${room.is_active ? "Sí" : "No"}</td>
-          <td>${room.occupied ? "Sí" : "No"}</td>
+          <td>${getStatusBadge(getRoomStatus(room))}</td>
           <td>
-            <button class="btn btn-info btn-small" data-action="block-dates" data-id="${room.id}">
-              Bloquear / Liberar
-            </button>
+            <button class="btn btn-info btn-small" data-action="availability" data-id="${room.id}">Disponibilidad</button>
             <button class="btn btn-warning btn-small" data-action="edit" data-id="${room.id}">Editar</button>
             <button class="btn btn-danger btn-small" data-action="delete" data-id="${room.id}">Eliminar</button>
           </td>
@@ -460,36 +596,6 @@
       renderTable(rooms);
     };
 
-    const renderBlocks = (blocks) => {
-      if (!blockList) return;
-      blockList.innerHTML = "";
-      if (!blocks.length) {
-        blockList.innerHTML = "<li>Sin bloqueos registrados.</li>";
-        return;
-      }
-
-      blocks.forEach((block) => {
-        const item = document.createElement("li");
-        const reason = block.reason ? ` · ${block.reason}` : "";
-        item.innerHTML = `
-          ${block.start_date} → ${block.end_date}${reason}
-          <button class="btn btn-danger btn-small" data-block-id="${block.id}">Eliminar</button>
-        `;
-        blockList.appendChild(item);
-      });
-    };
-
-    const openBlockModal = async (room) => {
-      activeBlockRoom = room;
-      if (blockRoomName) blockRoomName.textContent = room?.name || "—";
-      if (blockStartDate) blockStartDate.value = "";
-      if (blockEndDate) blockEndDate.value = "";
-      if (blockReason) blockReason.value = "";
-      if (blockModal) blockModal.classList.add("active");
-      const blocks = await fetchBlocks(room.id);
-      renderBlocks(blocks);
-    };
-
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
       const isUpdating = Boolean(editingId);
@@ -502,8 +608,7 @@
         price_month: priceMonthInput.value ? Number(priceMonthInput.value) : null,
         price_year: priceYearInput.value ? Number(priceYearInput.value) : null,
         images,
-        is_active: activeInput.value === "true",
-        occupied: occupiedInput.value === "true"
+        is_active: activeInput.value === "true"
       };
 
       submitButton.disabled = true;
@@ -512,6 +617,7 @@
         if (result.ok) {
           showRoomToast(isUpdating ? "Departamento actualizado correctamente." : "Departamento guardado correctamente.");
           resetForm();
+          setFormVisible(false);
           loadRooms();
         } else {
           showRoomToast(result.error || "No se pudo guardar el departamento.", "error");
@@ -528,56 +634,61 @@
       if (!button) return;
 
       const id = button.dataset.id;
+      const room = roomsCache.find((item) => String(item.id) === String(id));
+
       if (button.dataset.action === "delete") {
         const shouldDelete = confirm("¿Seguro que deseas eliminar este departamento?");
         if (!shouldDelete) return;
         const ok = await deleteRoom(id);
         if (ok) {
+          if (String(editingId) === String(id)) {
+            resetForm();
+            setFormVisible(false);
+          }
           loadRooms();
         } else {
-          alert("No se pudo eliminar.");
+          showRoomToast("No se pudo eliminar.", "error");
         }
       }
 
-      if (button.dataset.action === "block-dates") {
-        const room = roomsCache.find((item) => String(item.id) === String(id));
-        if (room) openBlockModal(room);
-      }
-
-      if (button.dataset.action === "edit") {
-        const rooms = await fetchRooms();
-        const room = rooms.find((item) => String(item.id) === String(id));
-        if (room) fillForm(room);
+      if ((button.dataset.action === "edit" || button.dataset.action === "availability") && room) {
+        await fillForm(room);
+        if (button.dataset.action === "availability") {
+          availabilityEditor?.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
       }
     });
 
     if (blockSave) {
       blockSave.addEventListener("click", async () => {
-        if (!activeBlockRoom) return;
+        if (!editingId) return;
         const startDate = blockStartDate?.value;
         const endDate = blockEndDate?.value;
         const reason = blockReason?.value.trim() || null;
 
         if (!startDate || !endDate) {
-          alert("Selecciona fechas de inicio y fin.");
+          showRoomToast("Selecciona fechas de inicio y fin.", "error");
           return;
         }
 
         blockSave.disabled = true;
         try {
           await createBlock({
-            roomId: activeBlockRoom.id,
+            roomId: editingId,
             startDate,
             endDate,
             reason
           });
-          const blocks = await fetchBlocks(activeBlockRoom.id);
-          renderBlocks(blocks);
           blockStartDate.value = "";
           blockEndDate.value = "";
           blockReason.value = "";
+          syncCalendarSelection();
+          const room = roomsCache.find((item) => String(item.id) === String(editingId));
+          if (room) await loadRoomAvailability(room);
+          await loadRooms();
+          showRoomToast("Bloqueo guardado correctamente.");
         } catch (error) {
-          alert(error.message || "Error creando el bloqueo.");
+          showRoomToast(error.message || "Error creando el bloqueo.", "error");
         } finally {
           blockSave.disabled = false;
         }
@@ -587,24 +698,27 @@
     if (blockList) {
       blockList.addEventListener("click", async (event) => {
         const button = event.target.closest("[data-block-id]");
-        if (!button) return;
+        if (!button || !editingId) return;
         const id = button.dataset.blockId;
         const shouldDelete = confirm("¿Eliminar este bloqueo?");
         if (!shouldDelete) return;
+
         const ok = await deleteBlock(id);
-        if (ok && activeBlockRoom) {
-          const blocks = await fetchBlocks(activeBlockRoom.id);
-          renderBlocks(blocks);
+        if (ok) {
+          const room = roomsCache.find((item) => String(item.id) === String(editingId));
+          if (room) await loadRoomAvailability(room);
+          await loadRooms();
+          showRoomToast("Bloqueo eliminado.");
+        } else {
+          showRoomToast("No se pudo eliminar el bloqueo.", "error");
         }
       });
     }
 
-    if (blockClose && blockModal) {
-      blockClose.addEventListener("click", () => blockModal.classList.remove("active"));
-      blockModal.addEventListener("click", (event) => {
-        if (event.target === blockModal) blockModal.classList.remove("active");
-      });
-    }
+    [blockStartDate, blockEndDate].forEach((input) => {
+      if (!input) return;
+      input.addEventListener("change", syncCalendarSelection);
+    });
 
     if (imageFilesInput) {
       imageFilesInput.addEventListener("change", async (event) => {
@@ -631,7 +745,7 @@
         event.preventDefault();
         const files = getClipboardImages(event);
         if (!files.length) {
-          alert("El portapapeles no contiene imágenes.");
+          showRoomToast("El portapapeles no contiene imágenes.", "error");
           return;
         }
 
@@ -685,9 +799,31 @@
       });
     }
 
+    if (roomEditCalendar && window.RoomCalendar) {
+      roomCalendar = window.RoomCalendar.create({
+        container: roomEditCalendar,
+        locale: "es-MX",
+        interactive: true,
+        minDate: new Date().toISOString().slice(0, 10),
+        labels: {
+          previousMonth: "Mes anterior",
+          nextMonth: "Mes siguiente",
+          available: "Disponible",
+          occupied: "Ocupado",
+          blocked: "Bloqueado",
+          selected: "Selección"
+        },
+        onSelect: ({ start, end }) => {
+          if (blockStartDate) blockStartDate.value = start || "";
+          if (blockEndDate) blockEndDate.value = end || start || "";
+        }
+      });
+    }
+
     setFormVisible(false);
     setEditingVisualState();
     renderPreview();
+    resetForm();
     loadRooms();
   </script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>

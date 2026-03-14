@@ -1,6 +1,7 @@
 import { assertSupabase, parseBody, supabaseAdmin, supabaseAnon } from './_supabase.js';
+import { getMexicoToday, getRoomStatusMapForDate } from './_room-availability.js';
 
-const mapRoom = (room) => ({
+const mapRoom = (room, currentStatus = null) => ({
   id: room?.id,
   name: room?.name,
   summary: room?.summary,
@@ -12,6 +13,7 @@ const mapRoom = (room) => ({
   stripe_account_id: room?.stripe_account_id || null,
   is_active: room?.is_active,
   occupied: room?.occupied,
+  current_status: currentStatus,
   created_at: room?.created_at,
   updated_at: room?.updated_at
 });
@@ -39,7 +41,26 @@ export default async function handler(req, res) {
       return;
     }
 
-    res.status(200).json({ data: data.map(mapRoom) });
+    let statusMap = new Map();
+    const roomIds = (data || []).map((room) => room?.id).filter(Boolean);
+
+    if (roomIds.length) {
+      const statusResult = await getRoomStatusMapForDate({
+        roomIds,
+        date: getMexicoToday()
+      });
+
+      if (statusResult?.error) {
+        res.status(500).json({ error: statusResult.error.message });
+        return;
+      }
+
+      statusMap = statusResult.data;
+    }
+
+    res.status(200).json({
+      data: (data || []).map((room) => mapRoom(room, statusMap.get(String(room?.id)) || 'available'))
+    });
     return;
   }
 

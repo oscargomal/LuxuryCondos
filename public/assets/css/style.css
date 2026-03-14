@@ -716,6 +716,135 @@ a {
   gap: 15px;
 }
 
+.booking-availability {
+  margin-bottom: 18px;
+  padding: 16px;
+  border-radius: 14px;
+  border: 1px solid #e6e0d7;
+  background: linear-gradient(180deg, #fffdf9 0%, #f8f2ea 100%);
+}
+
+.booking-availability__header p {
+  margin-top: -2px;
+  margin-bottom: 12px;
+  font-size: 0.86rem;
+  color: #6a6256;
+}
+
+.room-calendar {
+  display: grid;
+  gap: 12px;
+}
+
+.room-calendar__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.room-calendar__header strong {
+  font-size: 0.98rem;
+  text-transform: capitalize;
+}
+
+.room-calendar__nav {
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  border: 1px solid #ddd2c4;
+  background: #fff;
+  color: #342c22;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.room-calendar__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+  font-size: 0.76rem;
+  color: #6e6458;
+}
+
+.room-calendar__legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.room-calendar__legend i {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  display: inline-block;
+}
+
+.room-calendar__legend .is-available {
+  background: #d4e5d3;
+}
+
+.room-calendar__legend .is-occupied {
+  background: #df7d58;
+}
+
+.room-calendar__legend .is-blocked {
+  background: #d5a73b;
+}
+
+.room-calendar__legend .is-selected {
+  background: #0f766e;
+}
+
+.room-calendar__weekdays,
+.room-calendar__grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.room-calendar__weekdays span {
+  text-align: center;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #7a7064;
+}
+
+.room-calendar__day {
+  min-height: 42px;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  background: #f5efe7;
+  color: #342c22;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: default;
+}
+
+.room-calendar__day--occupied {
+  background: #ffe9df;
+  color: #a4471e;
+}
+
+.room-calendar__day--blocked {
+  background: #fff1cf;
+  color: #946505;
+}
+
+.room-calendar__day--selected {
+  background: #d9ece8;
+  color: #0e5f59;
+  border-color: rgba(15, 118, 110, 0.22);
+}
+
+.room-calendar__day--muted,
+.room-calendar__day--past {
+  opacity: 0.45;
+}
+
 /* ============================= */
 /* 🏷 TIPO DE ESTANCIA */
 /* ============================= */

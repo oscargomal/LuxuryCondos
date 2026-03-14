@@ -1,4 +1,5 @@
-import { assertSupabase, supabaseAdmin } from './_supabase.js';
+import { assertSupabase } from './_supabase.js';
+import { getRoomAvailability } from './_room-availability.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
@@ -22,38 +23,21 @@ export default async function handler(req, res) {
     return;
   }
 
-  const { data: room, error: roomError } = await supabaseAdmin
-    .from('rooms')
-    .select('id, occupied')
-    .eq('id', roomId)
-    .single();
-
-  if (roomError || !room) {
-    res.status(404).json({ error: 'No se encontró el departamento.' });
+  if (new Date(`${checkin}T00:00:00`) >= new Date(`${checkout}T00:00:00`)) {
+    res.status(400).json({ error: 'El check-out debe ser posterior al check-in.' });
     return;
   }
 
-  const { data: blocks, error: blocksError } = await supabaseAdmin
-    .from('room_blocks')
-    .select('id, start_date, end_date')
-    .eq('room_id', roomId)
-    .lte('start_date', checkout)
-    .gte('end_date', checkin)
-    .limit(1);
-
-  if (blocksError) {
-    res.status(500).json({ error: blocksError.message });
+  const result = await getRoomAvailability({ roomId, checkin, checkout });
+  if (result?.error) {
+    res.status(500).json({ error: result.error.message });
     return;
   }
-
-  const blocked = Boolean(blocks && blocks.length);
-  const occupied = Boolean(room.occupied);
-  const available = !blocked && !occupied;
 
   res.status(200).json({
-    available,
-    blocked,
-    occupied,
-    reason: occupied ? 'occupied' : blocked ? 'blocked' : null
+    available: result.available,
+    blocked: result.blocked,
+    occupied: result.occupied,
+    reason: result.reason
   });
 }

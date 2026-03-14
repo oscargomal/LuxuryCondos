@@ -1,5 +1,6 @@
 import Stripe from 'stripe';
 import { assertSupabase, parseBody, supabaseAdmin } from './_supabase.js';
+import { getRoomAvailability } from './_room-availability.js';
 
 const DEFAULT_PRICES = {
   month: 33000,
@@ -133,26 +134,18 @@ export default async function handler(req, res) {
     return;
   }
 
-  if (room.occupied) {
-    res.status(409).json({ error: 'El departamento está ocupado en esas fechas.' });
+  const availability = await getRoomAvailability({ roomId, checkin, checkout });
+  if (availability?.error) {
+    res.status(500).json({ error: availability.error.message });
     return;
   }
 
-  const { data: blocks, error: blocksError } = await supabaseAdmin
-    .from('room_blocks')
-    .select('id')
-    .eq('room_id', roomId)
-    .lte('start_date', checkout)
-    .gte('end_date', checkin)
-    .limit(1);
-
-  if (blocksError) {
-    res.status(500).json({ error: blocksError.message });
-    return;
-  }
-
-  if (blocks && blocks.length) {
-    res.status(409).json({ error: 'El departamento está bloqueado en esas fechas.' });
+  if (availability.available === false) {
+    res.status(409).json({
+      error: availability.reason === 'occupied'
+        ? 'El departamento está ocupado en esas fechas.'
+        : 'El departamento está bloqueado en esas fechas.'
+    });
     return;
   }
 

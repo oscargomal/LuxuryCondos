@@ -11,6 +11,7 @@ const STORAGE_KEY = "luxuryReservations";
 const STORAGE_LAST_ID = "luxuryLastReservationId";
 const RESERVATIONS_API = "/api/reservations";
 const CHECKOUT_API = "/api/create-checkout-session";
+const ROOM_CALENDAR_API = "/api/room-calendar";
 const MEXICO_TZ = "America/Mexico_City";
 const STATUS_PENDING = "Pendiente de pago";
 const STATUS_CONFIRMED = "Confirmada";
@@ -72,6 +73,12 @@ const strings = {
   roomOccupied: isEnglish
     ? "This apartment is already occupied for those dates."
     : "Este departamento está ocupado en esas fechas.",
+  roomCalendarIntro: isEnglish
+    ? "Booked or blocked dates are marked here before you reserve."
+    : "Las fechas ocupadas o bloqueadas se marcan aquí antes de reservar.",
+  roomCalendarFree: isEnglish
+    ? "Selected dates look available."
+    : "Las fechas seleccionadas parecen disponibles.",
   availabilityError: isEnglish
     ? "Could not verify availability. Please try again."
     : "No se pudo verificar disponibilidad. Intenta nuevamente.",
@@ -199,6 +206,8 @@ const bookingToast = document.getElementById("bookingToast");
 const stayRadios = document.querySelectorAll("input[name='stay']");
 const checkinInput = document.getElementById("checkin");
 const checkoutInput = document.getElementById("checkout");
+const bookingCalendar = document.getElementById("bookingCalendar");
+const bookingAvailabilityNote = document.getElementById("bookingAvailabilityNote");
 const payWithCardBtn = document.getElementById("payWithCard");
 const payWithTransferBtn = document.getElementById("payWithTransfer");
 const annualNote = document.getElementById("annualNote");
@@ -241,6 +250,8 @@ let currentBaseTotal = 0;
 let currentCardFee = 0;
 let currentCardTotal = 0;
 let transferModalOpen = false;
+let roomCalendarWidget = null;
+let roomCalendarData = { blocked: [], occupied: [] };
 const getRoomNightPrice = () => {
   const raw = room?.price_night ?? room?.price ?? PRICES.night;
   const parsed = Number(raw);
@@ -473,6 +484,35 @@ const checkAvailability = async ({ roomId, checkin, checkout }) => {
   }
 };
 
+const setAvailabilityNote = (message) => {
+  if (!bookingAvailabilityNote) return;
+  bookingAvailabilityNote.textContent = message || strings.roomCalendarIntro;
+};
+
+const syncBookingCalendarSelection = () => {
+  if (!roomCalendarWidget) return;
+  const selectionEnd = checkoutInput.value
+    ? window.RoomCalendar?.addDays(checkoutInput.value, -1) || ""
+    : "";
+
+  roomCalendarWidget.setSelection({
+    start: checkinInput.value || "",
+    end: selectionEnd && selectionEnd >= (checkinInput.value || "") ? selectionEnd : checkinInput.value || ""
+  });
+};
+
+const fetchRoomCalendar = async (roomId) => {
+  if (!roomId) return null;
+  try {
+    const response = await fetch(`${ROOM_CALENDAR_API}?roomId=${encodeURIComponent(roomId)}`);
+    if (!response.ok) return null;
+    const result = await response.json().catch(() => ({}));
+    return result?.data || null;
+  } catch (error) {
+    return null;
+  }
+};
+
 if (room) {
   const roomImages = Array.isArray(room?.images) ? room.images : [];
   const summaryImages = roomImages.length
@@ -485,6 +525,23 @@ if (room) {
   summaryDesc.textContent = room.summary || strings.summaryDesc;
 } else {
   summaryTitle.textContent = strings.noRoom;
+}
+
+if (bookingCalendar && window.RoomCalendar) {
+  roomCalendarWidget = window.RoomCalendar.create({
+    container: bookingCalendar,
+    locale: isEnglish ? "en-US" : "es-MX",
+    minDate: getMexicoToday(),
+    labels: {
+      previousMonth: isEnglish ? "Previous month" : "Mes anterior",
+      nextMonth: isEnglish ? "Next month" : "Mes siguiente",
+      available: isEnglish ? "Available" : "Disponible",
+      occupied: isEnglish ? "Occupied" : "Ocupado",
+      blocked: isEnglish ? "Blocked" : "Bloqueado",
+      selected: isEnglish ? "Selected" : "Seleccionado"
+    }
+  });
+  setAvailabilityNote(strings.roomCalendarIntro);
 }
 
 // ================= CALCULAR NOCHES =================
@@ -608,10 +665,12 @@ function updateStayType() {
 
 const runAvailabilityCheck = async () => {
   const stayType = document.querySelector("input[name='stay']:checked").value;
+  syncBookingCalendarSelection();
   if (stayType === "other") return;
   if (!room?.id) return;
   if (!checkinInput.value || !checkoutInput.value) {
     setPaymentDisabled(false);
+    setAvailabilityNote(strings.roomCalendarIntro);
     return;
   }
 
@@ -621,16 +680,24 @@ const runAvailabilityCheck = async () => {
     checkout: checkoutInput.value
   });
 
+  if (result?.error) {
+    setAvailabilityNote(result.error);
+  }
+
   if (result?.available === false) {
     const message = result.reason === "occupied"
       ? strings.roomOccupied
       : strings.roomBlocked;
     showToast(message, "warning");
     setPaymentDisabled(true);
+    setAvailabilityNote(message);
     return;
   }
 
   setPaymentDisabled(false);
+  if (!result?.error) {
+    setAvailabilityNote(strings.roomCalendarFree);
+  }
 };
 
 // ================= EVENTOS =================
@@ -655,6 +722,20 @@ checkoutInput.addEventListener("change", () => {
 });
 
 updateStayType();
+
+const initializeRoomCalendar = async () => {
+  if (!room?.id || !roomCalendarWidget) return;
+  const data = await fetchRoomCalendar(room.id);
+  if (!data) return;
+  roomCalendarData = data;
+  roomCalendarWidget.setData({
+    blocked: data.blocked || [],
+    occupied: data.occupied || []
+  });
+  syncBookingCalendarSelection();
+};
+
+initializeRoomCalendar();
 
 if (idPhotoFrontInput) {
   idPhotoFrontInput.addEventListener("change", async (event) => {

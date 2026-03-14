@@ -13,53 +13,105 @@
   <aside class="sidebar">
     <h2>Luxury Condo</h2>
     <nav>
-      <a href="admin.html" class="active">Dashboard</a>
-      <a href="reservaciones.html">Reservaciones</a>
+      <a href="admin.html">Dashboard</a>
+      <a href="reservaciones.html" class="active">Reservaciones</a>
       <a href="rooms.html">Departamentos</a>
       <a href="avisos.html">Avisos</a>
       <a href="clientes.html">Clientes</a>
-
       <a href="index.html" class="logout" data-logout>Cerrar sesión</a>
     </nav>
   </aside>
 
   <main class="main">
-
     <header class="header">
       <h1>Reservaciones</h1>
+      <span>Aquí también puedes capturar reservaciones hechas fuera de la página.</span>
     </header>
 
     <section class="form-card">
-      <h2>Filtros</h2>
+      <h2>Alta manual</h2>
+      <p class="form-hint">Las reservaciones confirmadas o pagadas ocuparán automáticamente el calendario del departamento.</p>
 
-      <div class="filters">
-        <div class="form-group">
-          <label>Estado</label>
-          <select>
-            <option>Todos</option>
-            <option>Pendiente</option>
-            <option>Confirmada</option>
-            <option>Cancelada</option>
-          </select>
+      <form id="manualReservationForm">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Cliente</label>
+            <input type="text" id="manualGuestName" placeholder="Nombre completo" required>
+          </div>
+          <div class="form-group">
+            <label>Correo</label>
+            <input type="email" id="manualGuestEmail" placeholder="correo@ejemplo.com">
+          </div>
         </div>
 
-        <div class="form-group">
-          <label>Fecha entrada</label>
-          <input type="date">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Teléfono</label>
+            <input type="tel" id="manualGuestPhone" placeholder="+52 33 0000 0000">
+          </div>
+          <div class="form-group">
+            <label>Departamento</label>
+            <select id="manualRoomId" required>
+              <option value="">Selecciona un departamento</option>
+            </select>
+          </div>
         </div>
 
-        <div class="form-group">
-          <label>Fecha salida</label>
-          <input type="date">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Entrada</label>
+            <input type="date" id="manualCheckin" required>
+          </div>
+          <div class="form-group">
+            <label>Salida</label>
+            <input type="date" id="manualCheckout" required>
+          </div>
         </div>
 
-        <button class="btn btn-primary">Buscar</button>
-      </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Tipo de estancia</label>
+            <select id="manualStayType">
+              <option value="night">Por noche</option>
+              <option value="month">Mensual</option>
+              <option value="year">Anual</option>
+              <option value="other">Otro</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Total (MXN)</label>
+            <input type="number" id="manualTotal" min="0" placeholder="3000">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Estado</label>
+            <select id="manualStatus">
+              <option value="Confirmada">Confirmada</option>
+              <option value="Pendiente de pago">Pendiente de pago</option>
+              <option value="Pendiente de transferencia">Pendiente de transferencia</option>
+              <option value="Solicitud">Solicitud</option>
+              <option value="Cancelada">Cancelada</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Pago</label>
+            <select id="manualPaymentStatus">
+              <option value="paid">Pagado</option>
+              <option value="pending">Pendiente</option>
+              <option value="none">No aplica</option>
+              <option value="failed">Fallido</option>
+            </select>
+          </div>
+        </div>
+
+        <button class="btn btn-primary" type="submit" id="manualReservationSubmit">Guardar reservación manual</button>
+      </form>
     </section>
 
     <section class="table-section">
       <h2>Listado de reservaciones</h2>
-
       <table>
         <thead>
           <tr>
@@ -70,12 +122,11 @@
             <th>Pago</th>
             <th>Entrada</th>
             <th>Salida</th>
-            <th>Ocupado</th>
+            <th>Ocupa calendario</th>
             <th>Estado</th>
             <th>Acciones</th>
           </tr>
         </thead>
-
         <tbody id="reservationTableBody">
           <tr>
             <td colspan="10">No hay reservaciones registradas.</td>
@@ -83,12 +134,39 @@
         </tbody>
       </table>
     </section>
-
   </main>
+
+  <div class="admin-toast" id="reservationToast" role="status" aria-live="polite"></div>
 
   <script>
     const STORAGE_KEY = "luxuryReservations";
     const tableBody = document.getElementById("reservationTableBody");
+    const manualForm = document.getElementById("manualReservationForm");
+    const manualSubmit = document.getElementById("manualReservationSubmit");
+    const manualGuestName = document.getElementById("manualGuestName");
+    const manualGuestEmail = document.getElementById("manualGuestEmail");
+    const manualGuestPhone = document.getElementById("manualGuestPhone");
+    const manualRoomId = document.getElementById("manualRoomId");
+    const manualCheckin = document.getElementById("manualCheckin");
+    const manualCheckout = document.getElementById("manualCheckout");
+    const manualStayType = document.getElementById("manualStayType");
+    const manualTotal = document.getElementById("manualTotal");
+    const manualStatus = document.getElementById("manualStatus");
+    const manualPaymentStatus = document.getElementById("manualPaymentStatus");
+    const reservationToast = document.getElementById("reservationToast");
+
+    let toastTimer = null;
+    let roomsCache = [];
+
+    const showToast = (message, variant = "success") => {
+      if (!reservationToast) return;
+      reservationToast.textContent = message;
+      reservationToast.classList.remove("show", "is-error");
+      if (variant === "error") reservationToast.classList.add("is-error");
+      reservationToast.classList.add("show");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => reservationToast.classList.remove("show"), 2800);
+    };
 
     const readReservations = () => {
       const raw = localStorage.getItem(STORAGE_KEY);
@@ -111,7 +189,17 @@
       return "pending";
     };
 
+    const shouldOccupyReservation = (reservation) => {
+      const status = String(reservation?.status || "").toLowerCase();
+      const paymentStatus = String(reservation?.paymentStatus || reservation?.payment_status || "").toLowerCase();
+      if (status.includes("cancel")) return false;
+      if (paymentStatus === "paid") return true;
+      if (status.includes("confirm")) return true;
+      return Boolean(Number(reservation?.roomOccupied ?? reservation?.room_occupied ?? 0));
+    };
+
     const formatDate = (value) => (value ? value : "—");
+
     const formatStayType = (value) => {
       if (!value) return "—";
       const normalized = String(value).toLowerCase();
@@ -127,7 +215,7 @@
       if (stayType === "other") return "No aplica";
       const status = String(reservation?.status || "").toLowerCase();
       if (status.includes("transfer")) return "Transferencia";
-      return "Tarjeta";
+      return "Tarjeta / externa";
     };
 
     const normalizeReservation = (reservation) => {
@@ -140,6 +228,7 @@
           phone: reservation?.guest_phone || "—"
         },
         room: {
+          id: reservation?.room_id || "",
           name: reservation?.room_name || "—"
         },
         stayType: reservation?.stay_type,
@@ -165,11 +254,10 @@
         const reservation = normalizeReservation(reservationRaw);
         const row = document.createElement("tr");
         const guestName = reservation?.guest?.name || "—";
-        const roomName = reservation?.room?.name
-          || (reservation?.stayType === "other" ? "Otro" : "—");
+        const roomName = reservation?.room?.name || (reservation?.stayType === "other" ? "Otro" : "—");
         const status = reservation?.status || "Pendiente de pago";
         const statusClass = getStatusClass(reservation);
-        const occupiedValue = reservation?.roomOccupied ?? (reservation?.paymentStatus === "paid");
+        const occupiedValue = shouldOccupyReservation(reservation);
         const occupiedLabel = occupiedValue ? "Sí" : "No";
         const stayTypeLabel = formatStayType(reservation?.stayType);
         const paymentMethodLabel = getPaymentMethodLabel(reservation);
@@ -198,6 +286,71 @@
       });
     };
 
+    const fetchReservations = async () => {
+      try {
+        const response = await fetch("/api/reservations");
+        if (!response.ok) return null;
+        const result = await response.json();
+        return result?.data || null;
+      } catch (error) {
+        return null;
+      }
+    };
+
+    const fetchRooms = async () => {
+      try {
+        const response = await fetch("/api/rooms");
+        if (!response.ok) return [];
+        const result = await response.json();
+        return result?.data || [];
+      } catch (error) {
+        return [];
+      }
+    };
+
+    const populateRooms = (rooms) => {
+      roomsCache = Array.isArray(rooms) ? rooms : [];
+      if (!manualRoomId) return;
+      manualRoomId.innerHTML = "<option value=\"\">Selecciona un departamento</option>";
+      roomsCache
+        .filter((room) => room?.is_active)
+        .forEach((room) => {
+          const option = document.createElement("option");
+          option.value = room.id;
+          option.textContent = room.name || "Sin nombre";
+          manualRoomId.appendChild(option);
+        });
+    };
+
+    const createManualReservation = async (payload) => {
+      const response = await fetch("/api/reservations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(result?.error || "No se pudo guardar la reservación.");
+      }
+      return result?.data || null;
+    };
+
+    const buildTotalLabel = (value) => {
+      const amount = Number(value || 0);
+      if (!amount) return "";
+      return `$${amount.toLocaleString()} MXN`;
+    };
+
+    const loadReservations = async () => {
+      const apiReservations = await fetchReservations();
+      if (apiReservations) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(apiReservations));
+        renderTable(apiReservations);
+        return;
+      }
+      renderTable(readReservations());
+    };
+
     tableBody.addEventListener("click", async (event) => {
       const button = event.target.closest("[data-action]");
       if (!button) return;
@@ -218,6 +371,7 @@
         const nextReservations = readReservations().filter(item => String(item.id) !== String(id));
         localStorage.setItem(STORAGE_KEY, JSON.stringify(nextReservations));
         await loadReservations();
+        showToast("Reservación eliminada.");
       }
 
       if (button.dataset.action === "confirm-transfer") {
@@ -239,35 +393,80 @@
             const result = await response.json().catch(() => ({}));
             throw new Error(result?.error || "No se pudo confirmar.");
           }
-          loadReservations();
+          await loadReservations();
+          showToast("Transferencia confirmada.");
         } catch (error) {
-          alert(error.message || "Error confirmando la transferencia.");
+          showToast(error.message || "Error confirmando la transferencia.", "error");
         }
       }
     });
 
-    const fetchReservations = async () => {
-      try {
-        const response = await fetch("/api/reservations");
-        if (!response.ok) return null;
-        const result = await response.json();
-        return result?.data || null;
-      } catch (error) {
-        return null;
+    if (manualForm) {
+      manualForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        const room = roomsCache.find((item) => String(item.id) === String(manualRoomId.value));
+        if (!room) {
+          showToast("Selecciona un departamento.", "error");
+          return;
+        }
+
+        const status = manualStatus.value;
+        const paymentStatus = manualPaymentStatus.value;
+        const shouldOccupy = (
+          paymentStatus === "paid"
+          || String(status).toLowerCase().includes("confirm")
+        ) ? 1 : 0;
+
+        const payload = {
+          guest: {
+            name: manualGuestName.value.trim(),
+            email: manualGuestEmail.value.trim(),
+            phone: manualGuestPhone.value.trim()
+          },
+          room: {
+            id: room.id,
+            name: room.name || ""
+          },
+          stayType: manualStayType.value,
+          checkin: manualCheckin.value,
+          checkout: manualCheckout.value,
+          total: buildTotalLabel(manualTotal.value),
+          status,
+          paymentStatus,
+          roomOccupied: shouldOccupy,
+          language: "es"
+        };
+
+        manualSubmit.disabled = true;
+        try {
+          await createManualReservation(payload);
+          manualForm.reset();
+          await loadReservations();
+          showToast("Reservación manual guardada correctamente.");
+        } catch (error) {
+          showToast(error.message || "No se pudo guardar la reservación.", "error");
+        } finally {
+          manualSubmit.disabled = false;
+        }
+      });
+    }
+
+    const init = async () => {
+      const today = new Date().toISOString().slice(0, 10);
+      if (manualCheckin) manualCheckin.min = today;
+      if (manualCheckout) manualCheckout.min = today;
+      if (manualCheckin && manualCheckout) {
+        manualCheckin.addEventListener("change", () => {
+          manualCheckout.min = manualCheckin.value || today;
+        });
       }
+      const rooms = await fetchRooms();
+      populateRooms(rooms);
+      await loadReservations();
     };
 
-    const loadReservations = async () => {
-      const apiReservations = await fetchReservations();
-      if (apiReservations) {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(apiReservations));
-        renderTable(apiReservations);
-        return;
-      }
-      renderTable(readReservations());
-    };
-
-    loadReservations();
+    init();
   </script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/admin/js/auth.js"></script>

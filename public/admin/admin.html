@@ -37,8 +37,8 @@
         <p data-metric="available">—</p>
       </div>
       <div class="card">
-        <h3>Departamentos ocupados</h3>
-        <p data-metric="occupied">—</p>
+        <h3>No disponibles hoy</h3>
+        <p data-metric="unavailable">—</p>
       </div>
       <div class="card">
         <h3>Reservas activas</h3>
@@ -231,16 +231,18 @@
       const reservations = rawReservations.map(normalizeReservation);
       const rooms = Array.isArray(rawRooms) ? rawRooms : [];
       const activeRooms = rooms.filter((room) => room?.is_active);
-      const occupiedRooms = activeRooms.filter((room) => room?.occupied).length;
-      const availableRooms = Math.max(activeRooms.length - occupiedRooms, 0);
+      const unavailableRooms = activeRooms.filter((room) => (
+        room?.current_status === "occupied" || room?.current_status === "blocked"
+      )).length;
+      const availableRooms = Math.max(activeRooms.length - unavailableRooms, 0);
       const activeReservations = reservations.length;
 
       const availableEl = document.querySelector('[data-metric="available"]');
-      const occupiedEl = document.querySelector('[data-metric="occupied"]');
+      const occupiedEl = document.querySelector('[data-metric="unavailable"]');
       const activeEl = document.querySelector('[data-metric="active"]');
 
       if (availableEl) availableEl.textContent = String(availableRooms);
-      if (occupiedEl) occupiedEl.textContent = String(occupiedRooms);
+      if (occupiedEl) occupiedEl.textContent = String(unavailableRooms);
       if (activeEl) activeEl.textContent = String(activeReservations);
 
       const tableBody = document.querySelector("tbody");
