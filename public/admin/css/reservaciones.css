@@ -180,10 +180,15 @@ body {
     /* ========================
        TABLE
     ======================== */
+    .table-responsive {
+      width: 100%;
+      overflow-x: auto;
+      margin-top: 15px;
+    }
+
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 15px;
     }
 
     thead {
@@ -192,9 +197,10 @@ body {
     }
 
     th, td {
-      padding: 12px;
+      padding: 10px 12px;
       text-align: left;
-      font-size: 14px;
+      font-size: 13px;
+      vertical-align: top;
     }
 
     tbody tr:nth-child(even) {
@@ -225,4 +231,106 @@ body {
     ======================== */
     td button {
       margin-right: 6px;
+      margin-bottom: 6px;
+    }
+
+    .reservations-table th:nth-child(1),
+    .reservations-table td:nth-child(1) {
+      max-width: 138px;
+      font-size: 12px;
+      word-break: break-word;
+    }
+
+    .reservation-actions {
+      min-width: 150px;
+    }
+
+    @media (max-width: 1100px) {
+      th, td {
+        padding: 9px 10px;
+        font-size: 12px;
+      }
+
+      .btn-small {
+        font-size: 11px;
+        padding: 6px 8px;
+      }
+    }
+
+    @media (max-width: 820px) {
+      .table-responsive {
+        overflow-x: visible;
+      }
+
+      .reservations-table,
+      .reservations-table thead,
+      .reservations-table tbody,
+      .reservations-table tr,
+      .reservations-table th,
+      .reservations-table td {
+        display: block;
+        width: 100%;
+      }
+
+      .reservations-table thead {
+        display: none;
+      }
+
+      .reservations-table tbody {
+        display: grid;
+        gap: 14px;
+      }
+
+      .reservations-table tr {
+        padding: 12px;
+        border: 1px solid #dde3ea;
+        border-radius: 14px;
+        background: #fff;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+      }
+
+      .reservations-table td {
+        display: grid;
+        grid-template-columns: minmax(110px, 130px) 1fr;
+        gap: 8px;
+        padding: 6px 0;
+        border-bottom: 1px solid #edf1f5;
+        font-size: 13px;
+      }
+
+      .reservations-table td:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+      }
+
+      .reservations-table td::before {
+        content: attr(data-label);
+        font-weight: 700;
+        color: #4d5965;
+      }
+
+      .reservations-table td[colspan] {
+        display: block;
+        text-align: center;
+        border-bottom: none;
+      }
+
+      .reservations-table td[colspan]::before {
+        content: none;
+      }
+
+      .reservation-actions {
+        display: flex !important;
+        flex-wrap: wrap;
+        gap: 8px;
+        min-width: 0;
+      }
+
+      .reservation-actions::before {
+        width: 100%;
+      }
+
+      .reservation-actions .btn {
+        margin: 0;
+      }
     }

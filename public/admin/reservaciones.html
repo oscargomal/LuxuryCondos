@@ -112,27 +112,29 @@
 
     <section class="table-section">
       <h2>Listado de reservaciones</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Folio</th>
-            <th>Cliente</th>
-            <th>Departamento</th>
-            <th>Tipo</th>
-            <th>Pago</th>
-            <th>Entrada</th>
-            <th>Salida</th>
-            <th>Ocupa calendario</th>
-            <th>Estado</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody id="reservationTableBody">
-          <tr>
-            <td colspan="10">No hay reservaciones registradas.</td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="table-responsive">
+        <table class="reservations-table">
+          <thead>
+            <tr>
+              <th>Folio</th>
+              <th>Cliente</th>
+              <th>Departamento</th>
+              <th>Tipo</th>
+              <th>Pago</th>
+              <th>Entrada</th>
+              <th>Salida</th>
+              <th>Ocupa calendario</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="reservationTableBody">
+            <tr>
+              <td colspan="10">No hay reservaciones registradas.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </section>
   </main>
 
@@ -266,16 +268,16 @@
           && !String(reservation?.status || "").toLowerCase().includes("confirm");
 
         row.innerHTML = `
-          <td>${reservation?.id || "—"}</td>
-          <td>${guestName}</td>
-          <td>${roomName}</td>
-          <td>${stayTypeLabel}</td>
-          <td>${paymentMethodLabel}</td>
-          <td>${formatDate(reservation.checkin)}</td>
-          <td>${formatDate(reservation.checkout)}</td>
-          <td>${occupiedLabel}</td>
-          <td class="status ${statusClass}">${status}</td>
-          <td>
+          <td data-label="Folio">${reservation?.id || "—"}</td>
+          <td data-label="Cliente">${guestName}</td>
+          <td data-label="Departamento">${roomName}</td>
+          <td data-label="Tipo">${stayTypeLabel}</td>
+          <td data-label="Pago">${paymentMethodLabel}</td>
+          <td data-label="Entrada">${formatDate(reservation.checkin)}</td>
+          <td data-label="Salida">${formatDate(reservation.checkout)}</td>
+          <td data-label="Ocupa calendario">${occupiedLabel}</td>
+          <td data-label="Estado" class="status ${statusClass}">${status}</td>
+          <td data-label="Acciones" class="reservation-actions">
             ${canConfirmTransfer
               ? `<button class="btn btn-success btn-small" data-action="confirm-transfer" data-id="${reservation.id}">Confirmar</button>`
               : ""}
