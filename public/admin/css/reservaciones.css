@@ -238,7 +238,17 @@ body {
     .reservations-table td:nth-child(1) {
       max-width: 138px;
       font-size: 12px;
-      word-break: break-word;
+    }
+
+    .reservation-code {
+      display: inline-block;
+      max-width: 100%;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 11px;
+      line-height: 1.35;
+      color: #39424d;
+      overflow-wrap: break-word;
+      word-break: normal;
     }
 
     .reservation-actions {
@@ -307,6 +317,19 @@ body {
         content: attr(data-label);
         font-weight: 700;
         color: #4d5965;
+      }
+
+      .reservation-id-cell {
+        grid-template-columns: 1fr;
+      }
+
+      .reservation-id-cell::before {
+        margin-bottom: 2px;
+      }
+
+      .reservation-id-cell .reservation-code {
+        font-size: 12px;
+        line-height: 1.45;
       }
 
       .reservations-table td[colspan] {

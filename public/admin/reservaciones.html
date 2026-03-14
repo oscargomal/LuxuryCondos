@@ -243,6 +243,11 @@
       };
     };
 
+    const formatReservationIdForDisplay = (value) => {
+      const text = String(value || "—");
+      return text.replace(/-/g, "-<wbr>");
+    };
+
     const renderTable = (reservations) => {
       if (!tableBody) return;
       tableBody.innerHTML = "";
@@ -268,7 +273,7 @@
           && !String(reservation?.status || "").toLowerCase().includes("confirm");
 
         row.innerHTML = `
-          <td data-label="Folio">${reservation?.id || "—"}</td>
+          <td data-label="Folio" class="reservation-id-cell"><span class="reservation-code">${formatReservationIdForDisplay(reservation?.id || "—")}</span></td>
           <td data-label="Cliente">${guestName}</td>
           <td data-label="Departamento">${roomName}</td>
           <td data-label="Tipo">${stayTypeLabel}</td>
