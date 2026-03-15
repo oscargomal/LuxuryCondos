@@ -46,6 +46,17 @@ create table if not exists customers (
   updated_at timestamptz default now()
 );
 
+create table if not exists app_settings (
+  id int primary key default 1,
+  stripe_account_id text,
+  home_images jsonb not null default '[]'::jsonb,
+  updated_at timestamptz default now()
+);
+
+insert into app_settings (id)
+values (1)
+on conflict (id) do nothing;
+
 create or replace function set_updated_at()
 returns trigger as $$
 begin
@@ -58,6 +69,7 @@ alter table customers add column if not exists updated_at timestamptz default no
 alter table rooms add column if not exists price_month numeric;
 alter table rooms add column if not exists price_year numeric;
 alter table rooms add column if not exists minimum_months integer default 0;
+alter table app_settings add column if not exists home_images jsonb not null default '[]'::jsonb;
 
 drop trigger if exists rooms_updated_at on rooms;
 drop trigger if exists reservations_updated_at on reservations;

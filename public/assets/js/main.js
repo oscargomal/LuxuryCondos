@@ -113,6 +113,21 @@ if (homeVideos.length) {
   });
 }
 
+/* ================= HOME IMAGES ================= */
+const homeFeaturedSection = document.querySelector('[data-home-featured-section]');
+const homeFeaturedMedia = document.querySelector('[data-home-featured-media]');
+const homeGallerySection = document.querySelector('[data-home-gallery-section]');
+const homeGalleryGrid = document.querySelector('[data-home-gallery-grid]');
+
+const fetchHomeImages = async () => {
+  const response = await fetch('/api/home-images');
+  const result = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(result?.error || 'No se pudieron cargar las imágenes del inicio.');
+  }
+  return Array.isArray(result?.data?.images) ? result.data.images : [];
+};
+
 /* ================= AVISOS ================= */
 const notice = document.getElementById('siteNotice');
 
@@ -330,21 +345,42 @@ if (langSwitch) {
 }
 
 /* ================= REVEAL EFFECT ================= */
-document.querySelectorAll('.home-cta .cta-button, .service-card, .contact-btn, .location-info, .location-map, .gallery-grid img, .home-gallery img').forEach((node, index) => {
+let revealObserver = null;
+
+const applyRevealDelay = (node, index = 0) => {
+  if (!(node instanceof Element)) return;
   if (!node.classList.contains('reveal-on-scroll')) {
     node.classList.add('reveal-on-scroll');
   }
+
   if (node.matches('.service-card, .contact-btn')) {
     node.style.transitionDelay = `${Math.min(index * 70, 560)}ms`;
-  } else if (node.matches('.gallery-grid img, .home-gallery img')) {
+  } else if (node.matches('.gallery-grid img, .home-gallery img, .home-gallery__item, .home-featured__image')) {
     node.style.transitionDelay = `${Math.min(index * 110, 980)}ms`;
   }
-});
+};
 
-const revealItems = document.querySelectorAll('.reveal-on-scroll');
-if (revealItems.length) {
+const registerRevealNode = (node, index = 0) => {
+  if (!(node instanceof Element)) return;
+  applyRevealDelay(node, index);
+
+  if (revealObserver) {
+    revealObserver.observe(node);
+  } else if (!('IntersectionObserver' in window)) {
+    node.classList.add('is-visible');
+  }
+};
+
+const setupRevealObserver = () => {
+  document.querySelectorAll('.home-cta .cta-button, .service-card, .contact-btn, .location-info, .location-map, .gallery-grid img, .home-gallery img, .home-gallery__item, .home-featured__image').forEach((node, index) => {
+    applyRevealDelay(node, index);
+  });
+
+  const revealItems = document.querySelectorAll('.reveal-on-scroll');
+  if (!revealItems.length) return;
+
   if ('IntersectionObserver' in window) {
-    const observer = new IntersectionObserver((entries, currentObserver) => {
+    revealObserver = new IntersectionObserver((entries, currentObserver) => {
       entries.forEach((entry) => {
         if (!entry.isIntersecting) return;
         entry.target.classList.add('is-visible');
@@ -352,8 +388,64 @@ if (revealItems.length) {
       });
     }, { threshold: 0.18, rootMargin: '0px 0px -6% 0px' });
 
-    revealItems.forEach((item) => observer.observe(item));
+    revealItems.forEach((item) => revealObserver.observe(item));
   } else {
     revealItems.forEach((item) => item.classList.add('is-visible'));
   }
-}
+};
+
+const loadHomeImages = async () => {
+  if (!homeFeaturedSection || !homeFeaturedMedia || !homeGallerySection || !homeGalleryGrid) return;
+
+  try {
+    const imagesList = await fetchHomeImages();
+    const [featuredImage, ...galleryImages] = imagesList;
+
+    if (featuredImage) {
+      const img = document.createElement('img');
+      img.className = 'home-featured__image';
+      img.src = featuredImage;
+      img.alt = document.documentElement.lang === 'en'
+        ? 'Luxury Condo featured image'
+        : 'Imagen destacada de Luxury Condo';
+      img.loading = 'lazy';
+      img.decoding = 'async';
+      homeFeaturedMedia.replaceChildren(img);
+      homeFeaturedSection.hidden = false;
+      registerRevealNode(homeFeaturedSection);
+      registerRevealNode(img);
+    } else {
+      homeFeaturedSection.hidden = true;
+    }
+
+    homeGalleryGrid.replaceChildren();
+    if (galleryImages.length) {
+      galleryImages.forEach((src, index) => {
+        const figure = document.createElement('figure');
+        figure.className = 'home-gallery__item';
+
+        const img = document.createElement('img');
+        img.src = src;
+        img.alt = document.documentElement.lang === 'en'
+          ? `Luxury Condo gallery image ${index + 1}`
+          : `Imagen de galería ${index + 1} de Luxury Condo`;
+        img.loading = 'lazy';
+        img.decoding = 'async';
+
+        figure.appendChild(img);
+        homeGalleryGrid.appendChild(figure);
+        registerRevealNode(figure, index);
+      });
+      homeGallerySection.hidden = false;
+      registerRevealNode(homeGallerySection);
+    } else {
+      homeGallerySection.hidden = true;
+    }
+  } catch (error) {
+    homeFeaturedSection.hidden = true;
+    homeGallerySection.hidden = true;
+  }
+};
+
+setupRevealObserver();
+loadHomeImages();
