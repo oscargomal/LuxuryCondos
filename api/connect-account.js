@@ -1,8 +1,12 @@
 import Stripe from 'stripe';
 import { assertSupabase, parseBody, supabaseAdmin } from './_supabase.js';
+import {
+  normalizeSettingsError,
+  getStoredStripeAccountId,
+  getStripeAccountStatus
+} from './_stripe-connect.js';
 
 const STRIPE_ACCOUNT_REGEX = /^acct_[A-Za-z0-9]+$/;
-const APP_SETTINGS_MISSING_MESSAGE = 'falta ejecutar SQL de app_settings';
 const INVALID_ACCOUNT_LINK_MESSAGES = [
   'not connected to your platform',
   'does not exist'
@@ -12,19 +16,6 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const getFallbackUrl = (baseUrl, roomId, type) => (
   `${baseUrl}/admin/rooms.html?stripe=${type}&roomId=${roomId}`
 );
-
-const isMissingAppSettings = (error) => (
-  error?.code === '42P01'
-  || String(error?.message || '').includes('app_settings')
-);
-
-const normalizeSettingsError = (error) => {
-  if (!error) return null;
-  if (isMissingAppSettings(error)) {
-    return { message: APP_SETTINGS_MISSING_MESSAGE };
-  }
-  return { message: error.message || 'Error desconocido.' };
-};
 
 const isInvalidAccountLinkError = (error) => {
   if (!error) return false;
@@ -63,26 +54,6 @@ const upsertAppSettings = async (stripeAccountId) => {
   return { stripeAccountId: stripeAccountId || null };
 };
 
-const migrateStripeAccountId = async () => {
-  const { data, error } = await supabaseAdmin
-    .from('rooms')
-    .select('stripe_account_id')
-    .not('stripe_account_id', 'is', null)
-    .neq('stripe_account_id', '')
-    .limit(1);
-
-  if (error) return { error };
-  if (!data?.length) return { accountId: null };
-
-  const accountId = data[0].stripe_account_id;
-  if (!accountId) return { accountId: null };
-
-  const { error: upsertError } = await upsertAppSettings(accountId);
-  if (upsertError) return { error: upsertError };
-
-  return { accountId };
-};
-
 export default async function handler(req, res) {
   if (req.method !== 'POST' && req.method !== 'GET') {
     res.status(405).json({ error: 'Method not allowed' });
@@ -98,24 +69,24 @@ export default async function handler(req, res) {
     : null;
 
   if (req.method === 'GET') {
-    const { settings, error } = await getAppSettings();
+    const { accountId, error } = await getStoredStripeAccountId();
     if (error) {
       res.status(500).json({ error: error.message });
       return;
     }
 
-    let accountId = settings?.stripe_account_id || null;
     if (!accountId) {
-      const { accountId: migratedId, error: migrateError } = await migrateStripeAccountId();
-      if (migrateError) {
-        const normalized = normalizeSettingsError(migrateError);
-        res.status(500).json({ error: normalized?.message || migrateError.message });
-        return;
-      }
-      accountId = migratedId;
+      res.status(200).json({ stripeAccountId: null, status: null });
+      return;
     }
 
-    res.status(200).json({ stripeAccountId: accountId });
+    const { status, error: statusError } = await getStripeAccountStatus(accountId);
+    if (statusError) {
+      res.status(200).json({ stripeAccountId: accountId, status: null, warning: statusError.message });
+      return;
+    }
+
+    res.status(200).json({ stripeAccountId: accountId, status });
     return;
   }
 
@@ -125,13 +96,27 @@ export default async function handler(req, res) {
       return;
     }
 
+    if (manualAccountId && process.env.STRIPE_SECRET_KEY) {
+      const { status, error: statusError } = await getStripeAccountStatus(manualAccountId);
+      if (statusError || !status?.accountId) {
+        res.status(400).json({
+          error: statusError?.message || 'El acct_ de Stripe no es válido o no pertenece a esta plataforma.'
+        });
+        return;
+      }
+    }
+
     const { error } = await upsertAppSettings(manualAccountId || null);
     if (error) {
       res.status(500).json({ error: error.message });
       return;
     }
 
-    res.status(200).json({ accountId: manualAccountId || null });
+    const { status } = manualAccountId
+      ? await getStripeAccountStatus(manualAccountId)
+      : { status: null };
+
+    res.status(200).json({ accountId: manualAccountId || null, status: status || null });
     return;
   }
 
@@ -178,10 +163,9 @@ export default async function handler(req, res) {
 
   try {
     if (!accountId) {
-      const { accountId: migratedId, error: migrateError } = await migrateStripeAccountId();
+      const { accountId: migratedId, error: migrateError } = await getStoredStripeAccountId();
       if (migrateError) {
-        const normalized = normalizeSettingsError(migrateError);
-        res.status(500).json({ error: normalized?.message || migrateError.message });
+        res.status(500).json({ error: migrateError.message });
         return;
       }
       if (migratedId) {
@@ -233,7 +217,8 @@ export default async function handler(req, res) {
       accountLink = await createAccountLink(accountId);
     }
 
-    res.status(200).json({ accountId, url: accountLink.url });
+    const { status } = await getStripeAccountStatus(accountId);
+    res.status(200).json({ accountId, url: accountLink.url, status: status || null });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

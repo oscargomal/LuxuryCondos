@@ -11,7 +11,6 @@ const mapRoom = (room, currentStatus = null) => ({
   price_year: room?.price_year,
   minimum_months: room?.minimum_months ?? 0,
   images: room?.images || [],
-  stripe_account_id: room?.stripe_account_id || null,
   is_active: room?.is_active,
   occupied: room?.occupied,
   current_status: currentStatus,
@@ -77,7 +76,6 @@ export default async function handler(req, res) {
       price_year: body.price_year !== undefined ? Number(body.price_year) : null,
       minimum_months: body.minimum_months !== undefined ? Number(body.minimum_months) : 0,
       images: Array.isArray(body.images) ? body.images : [],
-      stripe_account_id: body.stripe_account_id || body.stripeAccountId || null,
       is_active: body.is_active !== undefined ? Boolean(body.is_active) : true,
       occupied: body.occupied !== undefined ? Boolean(body.occupied) : false
     };
@@ -116,11 +114,6 @@ export default async function handler(req, res) {
       price_year: body.price_year !== undefined ? Number(body.price_year) : undefined,
       minimum_months: body.minimum_months !== undefined ? Number(body.minimum_months) : undefined,
       images: Array.isArray(body.images) ? body.images : undefined,
-      stripe_account_id: body.stripe_account_id !== undefined
-        ? body.stripe_account_id || null
-        : body.stripeAccountId !== undefined
-          ? body.stripeAccountId || null
-          : undefined,
       is_active: body.is_active !== undefined ? Boolean(body.is_active) : undefined,
       occupied: body.occupied !== undefined ? Boolean(body.occupied) : undefined,
       updated_at: new Date().toISOString()

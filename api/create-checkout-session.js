@@ -1,64 +1,15 @@
 import Stripe from 'stripe';
 import { assertSupabase, parseBody, supabaseAdmin } from './_supabase.js';
 import { getMinimumStayError, getRoomAvailability } from './_room-availability.js';
+import {
+  getStoredStripeAccountId,
+  getStripeAccountStatus,
+  getStripeCheckoutReadinessError
+} from './_stripe-connect.js';
 
 const DEFAULT_PRICES = {
   month: 33000,
   year: 31000
-};
-
-const APP_SETTINGS_MISSING_MESSAGE = 'falta ejecutar SQL de app_settings';
-
-const isMissingAppSettings = (error) => (
-  error?.code === '42P01'
-  || String(error?.message || '').includes('app_settings')
-);
-
-const getStripeAccountId = async () => {
-  const { data, error } = await supabaseAdmin
-    .from('app_settings')
-    .select('stripe_account_id')
-    .order('id', { ascending: true })
-    .limit(1);
-
-  if (error) {
-    const message = isMissingAppSettings(error)
-      ? APP_SETTINGS_MISSING_MESSAGE
-      : error.message;
-    return { error: { message } };
-  }
-
-  let accountId = data?.[0]?.stripe_account_id || null;
-
-  if (!accountId) {
-    const { data: fallback } = await supabaseAdmin
-      .from('rooms')
-      .select('stripe_account_id')
-      .not('stripe_account_id', 'is', null)
-      .neq('stripe_account_id', '')
-      .limit(1);
-
-    const fallbackId = fallback?.[0]?.stripe_account_id || null;
-    if (fallbackId) {
-      const { error: upsertError } = await supabaseAdmin
-        .from('app_settings')
-        .upsert({
-          id: 1,
-          stripe_account_id: fallbackId,
-          updated_at: new Date().toISOString()
-        }, { onConflict: 'id' });
-
-      if (upsertError) {
-        const message = isMissingAppSettings(upsertError)
-          ? APP_SETTINGS_MISSING_MESSAGE
-          : upsertError.message;
-        return { error: { message } };
-      }
-      accountId = fallbackId;
-    }
-  }
-
-  return { accountId };
 };
 
 const getNights = (checkin, checkout) => {
@@ -155,7 +106,7 @@ export default async function handler(req, res) {
     return;
   }
 
-  const { accountId: connectedAccountId, error: settingsError } = await getStripeAccountId();
+  const { accountId: connectedAccountId, error: settingsError } = await getStoredStripeAccountId();
   if (settingsError) {
     res.status(500).json({ error: settingsError.message });
     return;
@@ -163,6 +114,20 @@ export default async function handler(req, res) {
 
   if (!connectedAccountId) {
     res.status(400).json({ error: 'Stripe Connect no configurado; conecta Stripe desde admin.' });
+    return;
+  }
+
+  const { status: accountStatus, error: accountStatusError } = await getStripeAccountStatus(connectedAccountId);
+  if (accountStatusError) {
+    res.status(400).json({
+      error: accountStatusError.message || 'La cuenta de Stripe Connect no se pudo validar.'
+    });
+    return;
+  }
+
+  const readinessError = getStripeCheckoutReadinessError(accountStatus);
+  if (readinessError) {
+    res.status(409).json({ error: readinessError, stripeStatus: accountStatus });
     return;
   }
 
