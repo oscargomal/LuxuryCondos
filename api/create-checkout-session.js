@@ -1,11 +1,11 @@
 import Stripe from 'stripe';
-import { assertSupabase, parseBody, supabaseAdmin } from './_supabase.js';
-import { getMinimumStayError, getRoomAvailability } from './_room-availability.js';
+import { assertSupabase, parseBody, supabaseAdmin } from '../server/supabase.js';
+import { getMinimumStayError, getRoomAvailability } from '../server/room-availability.js';
 import {
   getStoredStripeAccountId,
   getStripeAccountStatus,
   getStripeCheckoutReadinessError
-} from './_stripe-connect.js';
+} from '../server/stripe-connect.js';
 
 const DEFAULT_PRICES = {
   month: 33000,

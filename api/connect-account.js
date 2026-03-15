@@ -1,10 +1,10 @@
 import Stripe from 'stripe';
-import { assertSupabase, parseBody, supabaseAdmin } from './_supabase.js';
+import { assertSupabase, parseBody, supabaseAdmin } from '../server/supabase.js';
 import {
   normalizeSettingsError,
   getStoredStripeAccountId,
   getStripeAccountStatus
-} from './_stripe-connect.js';
+} from '../server/stripe-connect.js';
 
 const STRIPE_ACCOUNT_REGEX = /^acct_[A-Za-z0-9]+$/;
 const INVALID_ACCOUNT_LINK_MESSAGES = [

@@ -1,4 +1,4 @@
-import { assertSupabase, parseBody, supabaseAdmin } from './_supabase.js';
+import { assertSupabase, parseBody, supabaseAdmin } from '../server/supabase.js';
 
 const ALLOWED_BUCKETS = new Set(['customer-ids']);
 

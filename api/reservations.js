@@ -1,5 +1,5 @@
-import { assertSupabase, parseBody, supabaseAdmin } from './_supabase.js';
-import { fetchOccupiedReservations, fetchRoomBlocks, getMinimumStayError } from './_room-availability.js';
+import { assertSupabase, parseBody, supabaseAdmin } from '../server/supabase.js';
+import { fetchOccupiedReservations, fetchRoomBlocks, getMinimumStayError } from '../server/room-availability.js';
 
 const mapReservation = (reservation) => ({
   id: reservation?.id,

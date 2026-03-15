@@ -1,5 +1,5 @@
 import Stripe from 'stripe';
-import { assertSupabase, supabaseAdmin } from './_supabase.js';
+import { assertSupabase, supabaseAdmin } from '../server/supabase.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {

@@ -1,4 +1,4 @@
-import { assertSupabase, parseBody, supabaseAdmin } from './_supabase.js';
+import { assertSupabase, parseBody, supabaseAdmin } from '../server/supabase.js';
 
 export default async function handler(req, res) {
   if (req.method === 'GET') {

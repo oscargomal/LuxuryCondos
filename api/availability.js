@@ -1,5 +1,5 @@
-import { assertSupabase } from './_supabase.js';
-import { getRoomAvailability } from './_room-availability.js';
+import { assertSupabase } from '../server/supabase.js';
+import { getRoomAvailability } from '../server/room-availability.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') {

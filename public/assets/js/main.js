@@ -120,7 +120,7 @@ const homeGallerySection = document.querySelector('[data-home-gallery-section]')
 const homeGalleryGrid = document.querySelector('[data-home-gallery-grid]');
 
 const fetchHomeImages = async () => {
-  const response = await fetch('/api/home-images');
+  const response = await fetch('/api/config?section=home-images');
   const result = await response.json().catch(() => ({}));
   if (!response.ok) {
     throw new Error(result?.error || 'No se pudieron cargar las imágenes del inicio.');

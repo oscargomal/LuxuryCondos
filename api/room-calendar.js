@@ -1,5 +1,5 @@
-import { assertSupabase } from './_supabase.js';
-import { getMexicoToday, getRoomCalendar } from './_room-availability.js';
+import { assertSupabase } from '../server/supabase.js';
+import { getMexicoToday, getRoomCalendar } from '../server/room-availability.js';
 
 const addDays = (dateValue, days) => {
   const base = new Date(`${String(dateValue).slice(0, 10)}T00:00:00`);

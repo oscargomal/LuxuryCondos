@@ -1,4 +1,4 @@
-import { supabaseAdmin } from './_supabase.js';
+import { supabaseAdmin } from './supabase.js';
 
 const DATE_FORMATTER = new Intl.DateTimeFormat('en-CA', {
   timeZone: 'America/Mexico_City',

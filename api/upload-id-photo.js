@@ -1,5 +1,5 @@
 import crypto from 'crypto';
-import { assertSupabase, parseBody, supabaseAdmin } from './_supabase.js';
+import { assertSupabase, parseBody, supabaseAdmin } from '../server/supabase.js';
 
 const ID_BUCKET = 'customer-ids';
 

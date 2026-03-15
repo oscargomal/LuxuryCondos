@@ -1,5 +1,5 @@
-import { assertSupabase, parseBody, supabaseAdmin, supabaseAnon } from './_supabase.js';
-import { getMexicoToday, getRoomStatusMapForDate } from './_room-availability.js';
+import { assertSupabase, parseBody, supabaseAdmin, supabaseAnon } from '../server/supabase.js';
+import { getMexicoToday, getRoomStatusMapForDate } from '../server/room-availability.js';
 
 const mapRoom = (room, currentStatus = null) => ({
   id: room?.id,

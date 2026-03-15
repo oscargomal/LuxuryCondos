@@ -1,5 +1,5 @@
 import Stripe from 'stripe';
-import { supabaseAdmin } from './_supabase.js';
+import { supabaseAdmin } from './supabase.js';
 
 export const APP_SETTINGS_MISSING_MESSAGE = 'falta ejecutar SQL de app_settings';
 
